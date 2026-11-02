@@ -4574,6 +4574,7 @@ msgid "Persona"
 msgstr "ペルソナ"
 
 #: src/pages/onboarding/UseStep.tsx
+#: src/pages/onboarding/WorkspaceStep.tsx
 msgid "Personal"
 msgstr "個人"
 

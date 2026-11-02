@@ -8,10 +8,17 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const rename = vi.hoisted(() => vi.fn());
+/** What the person's language calls things; empty means English, which has no translation to apply. */
+const translated = vi.hoisted(() => ({ text: {} as Record<string, string> }));
 vi.mock("../../lib/rpc", () => ({ rpc: { spaces: { rename } } }));
 vi.mock("@lingui/react/macro", () => {
-  const t = (parts: TemplateStringsArray, ...values: unknown[]) =>
-    parts.reduce((text, part, index) => `${text}${index > 0 ? values[index - 1] : ""}${part}`, "");
+  const t = (parts: TemplateStringsArray, ...values: unknown[]) => {
+    const text = parts.reduce(
+      (joined, part, index) => `${joined}${index > 0 ? values[index - 1] : ""}${part}`,
+      "",
+    );
+    return translated.text[text] ?? text;
+  };
   return { useLingui: () => ({ t }), Trans: ({ children }: { children: ReactNode }) => children };
 });
 
@@ -48,6 +55,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  translated.text = {};
   act(() => root.unmount());
   container.remove();
 });
@@ -83,5 +91,25 @@ describe("WorkspaceStep", () => {
     await submit();
     expect(container.querySelector('[role="alert"]')).not.toBeNull();
     expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it("shows the starting name of a new space in the person's language", async () => {
+    translated.text = { Personal: "Pessoal" };
+    act(() =>
+      root.render(<WorkspaceStep key="pt" spaceId="s1" initialName="Personal" onDone={onDone} />),
+    );
+    expect((container.querySelector("input") as HTMLInputElement).value).toBe("Pessoal");
+    await submit();
+    expect(rename).toHaveBeenCalledWith({ spaceId: "s1", name: "Pessoal" });
+  });
+
+  it("leaves a name the person already chose alone", () => {
+    translated.text = { Personal: "Pessoal" };
+    act(() =>
+      root.render(
+        <WorkspaceStep key="named" spaceId="s1" initialName="Alves Studio" onDone={onDone} />,
+      ),
+    );
+    expect((container.querySelector("input") as HTMLInputElement).value).toBe("Alves Studio");
   });
 });

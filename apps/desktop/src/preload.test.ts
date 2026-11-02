@@ -147,3 +147,55 @@ describe("setup preload bridge", () => {
     expect(listener).toHaveBeenCalledWith({ phase: "starting" });
   });
 });
+
+describe("the app's language follows the one chosen in setup", () => {
+  /** Runs the preload as a page would see it, with this storage and the language setup chose. */
+  function loadWith(setupLocale: string | null, stored: Record<string, string>) {
+    const storage = new Map(Object.entries(stored));
+    const localStorage = {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => void storage.set(key, value),
+    };
+    vm.runInNewContext(readFileSync(path.join(import.meta.dirname, "preload.cjs"), "utf8"), {
+      process: { platform: "darwin" },
+      window: { localStorage },
+      require: () => ({
+        contextBridge: { exposeInMainWorld: vi.fn() },
+        ipcRenderer: { invoke: vi.fn(), on: vi.fn(), off: vi.fn(), sendSync: () => setupLocale },
+      }),
+    });
+    return storage;
+  }
+
+  it("applies the setup language when the app has none yet", () => {
+    const storage = loadWith("pt-BR", {});
+    expect(storage.get("corvo.uiLocale")).toBe("pt-BR");
+  });
+
+  it("applies a setup language the app has not followed yet, over an older one", () => {
+    const storage = loadWith("en", { "corvo.uiLocale": "pt-BR" });
+    expect(storage.get("corvo.uiLocale")).toBe("en");
+    expect(storage.get("corvo.setupLocaleSynced")).toBe("en");
+  });
+
+  it("keeps a language the person changed in the app after setup", () => {
+    const storage = loadWith("en", {
+      "corvo.uiLocale": "pt-BR",
+      "corvo.setupLocaleSynced": "en",
+    });
+    expect(storage.get("corvo.uiLocale")).toBe("pt-BR");
+  });
+
+  it("follows setup again when the setup language changes", () => {
+    const storage = loadWith("pt-BR", {
+      "corvo.uiLocale": "en",
+      "corvo.setupLocaleSynced": "en",
+    });
+    expect(storage.get("corvo.uiLocale")).toBe("pt-BR");
+  });
+
+  it("leaves the app alone when setup has not chosen a language", () => {
+    const storage = loadWith(null, { "corvo.uiLocale": "fr" });
+    expect(storage.get("corvo.uiLocale")).toBe("fr");
+  });
+});

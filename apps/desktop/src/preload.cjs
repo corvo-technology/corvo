@@ -1,10 +1,19 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-// The language chosen in setup becomes the app's language until the person picks another in the app.
+// The language chosen in setup becomes the app's language, and does so again whenever setup's choice
+// changes. A language the person picks inside the app afterwards is kept: the choice setup last
+// applied is remembered, so only a new one in setup wins.
 try {
   const chosen = ipcRenderer.sendSync("desktop.locale.get");
-  if (typeof chosen === "string" && !window.localStorage.getItem("corvo.uiLocale")) {
-    window.localStorage.setItem("corvo.uiLocale", chosen);
+  if (typeof chosen === "string") {
+    const storage = window.localStorage;
+    if (
+      !storage.getItem("corvo.uiLocale") ||
+      storage.getItem("corvo.setupLocaleSynced") !== chosen
+    ) {
+      storage.setItem("corvo.uiLocale", chosen);
+      storage.setItem("corvo.setupLocaleSynced", chosen);
+    }
   }
 } catch {
   /* Storage can be unavailable; the app then follows the system language. */
