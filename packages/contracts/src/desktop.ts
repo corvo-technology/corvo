@@ -38,6 +38,11 @@ export interface CorvoDesktopOAuthCallback {
 
 export interface CorvoDesktop {
   /** Optional for compatibility with older desktop releases. */
+  tools?: {
+    /** Which AI command-line tools are installed on this computer. */
+    detect: () => Promise<{ claude: boolean; codex: boolean }>;
+  };
+  /** Optional for compatibility with older desktop releases. */
   badge?: {
     set: (count: number) => Promise<boolean>;
   };

@@ -41,6 +41,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  delete (window as { corvoDesktop?: unknown }).corvoDesktop;
   act(() => root.unmount());
   container.remove();
 });
@@ -50,7 +51,10 @@ async function render() {
     root.render(
       <QuickKeyConnect
         catalog={catalog}
-        signInOptions={[{ value: "openai-codex", label: "ChatGPT" }]}
+        signInOptions={[
+          { value: "openai-codex", label: "ChatGPT subscription" },
+          { value: "anthropic:sign-in", label: "Claude subscription" },
+        ]}
         onSelectProvider={onSelectProvider}
         onMore={onMore}
         onConnected={onConnected}
@@ -117,9 +121,35 @@ describe("QuickKeyConnect", () => {
   it("keeps the other ways in: a subscription sign-in and the full provider list", async () => {
     await render();
     const buttons = [...container.querySelectorAll("button")];
-    await act(async () => buttons.find((item) => item.textContent === "ChatGPT")?.click());
+    await act(async () =>
+      buttons.find((item) => item.textContent === "ChatGPT subscription")?.click(),
+    );
     expect(onSelectProvider).toHaveBeenCalledWith("openai-codex");
     await act(async () => buttons.find((item) => item.textContent === "Other providers")?.click());
     expect(onMore).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers the subscriptions first, and puts one found on this computer ahead of the other", async () => {
+    (window as { corvoDesktop?: unknown }).corvoDesktop = {
+      tools: { detect: async () => ({ claude: true, codex: false }) },
+    };
+    await render();
+    const options = [...container.querySelectorAll("button[data-sign-in]")];
+    expect(options.map((option) => option.textContent)).toEqual([
+      "Claude subscriptionFound on this computer",
+      "ChatGPT subscription",
+    ]);
+    await act(async () => (options[0] as HTMLButtonElement).click());
+    expect(onSelectProvider).toHaveBeenCalledWith("anthropic:sign-in");
+  });
+
+  it("keeps the order and shows no badge when nothing is found or the app is not the desktop one", async () => {
+    await render();
+    const options = [...container.querySelectorAll("button[data-sign-in]")];
+    expect(options.map((option) => option.textContent)).toEqual([
+      "ChatGPT subscription",
+      "Claude subscription",
+    ]);
+    expect(text()).not.toContain("Found on this computer");
   });
 });

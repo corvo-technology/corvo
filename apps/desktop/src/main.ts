@@ -33,6 +33,7 @@ import {
 import { prepareHostComputer } from "./host-computer.js";
 import { enterLocalOwner } from "./local-entry.js";
 import { saveLocalComputerHost } from "./local-settings.js";
+import { detectInstalledTools } from "./local-tools.js";
 import {
   configureDesktopMonitoring,
   disableDesktopMonitoring,
@@ -1293,6 +1294,7 @@ app.whenReady().then(async () => {
   );
   ipcMain.handle("desktop.platform", () => process.platform);
   ipcMain.handle("desktop.passkeys.rpIds", () => passkeyRpIds);
+  ipcMain.handle("desktop.tools.detect", () => detectInstalledTools());
   ipcMain.handle("desktop.window.close", (event) => {
     windowFrom(event)?.close();
   });
