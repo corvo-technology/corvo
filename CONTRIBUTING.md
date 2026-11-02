@@ -64,6 +64,17 @@ These runs provision real machines and destroy them after the suite. Automatic r
 For the separate real-model desktop acceptance test, see
 [computer verification](docs/computer-runtime.md#verification).
 
+## Commits and pull request titles
+
+Use [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): summary`.
+
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- Scope is optional and names the area, for example `desktop`, `web`, `api`, `www` or `i18n`.
+- The summary is lowercase, imperative and has no trailing period. Put `!` before the colon for a breaking change.
+- Pull requests are squash-merged, so the PR title becomes the commit on `main`. The `pr-title` check rejects a title that does not match.
+
+Examples: `feat(desktop): install agent-desktop and read its permissions`, `fix(auth): provision the workspace as the system`.
+
 ## Secrets and configuration
 
 - **Never** commit `.env` files or secrets.
