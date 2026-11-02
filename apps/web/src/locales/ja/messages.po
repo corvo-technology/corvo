@@ -421,6 +421,10 @@ msgstr "{toolCount, plural, one {#個のツール} other {#個のツール}}"
 msgid "{used} tokens"
 msgstr "{used} トークン"
 
+#: src/pages/TeamPage.tsx
+msgid "{working} working"
+msgstr "{working} 件作業中"
+
 #. placeholder {0}: mention.name
 #: src/pages/shell/composer.tsx
 msgid "@{0}"
@@ -4258,6 +4262,10 @@ msgstr "未確認"
 msgid "Not imported"
 msgstr "インポートされていません"
 
+#: src/pages/TeamPage.tsx
+msgid "Not in a team"
+msgstr "チーム未所属"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
 msgstr "プラグインカタログにありません"
@@ -5865,7 +5873,9 @@ msgstr "タスクを教える"
 msgid "Teaching in progress. Stop teaching before sending a new message."
 msgstr "ティーチング中です。新しいメッセージを送信する前にティーチングを停止してください。"
 
+#: src/components/AppRail.tsx
 #: src/pages/shell/bot-panel.tsx
+#: src/pages/TeamPage.tsx
 msgid "Team"
 msgstr "チーム"
 

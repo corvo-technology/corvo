@@ -6,6 +6,7 @@ describe("railSection", () => {
     expect(railSection("/app", "")).toBe("agents");
     expect(railSection("/app/bot-1", "")).toBe("agents");
     expect(railSection("/app/g/group-1", "")).toBe("agents");
+    expect(railSection("/app/team", "")).toBe("team");
     expect(railSection("/app/routines", "")).toBe("routines");
     expect(railSection("/app/workflows", "")).toBe("workflows");
     expect(railSection("/app/artifacts/artifact-1", "")).toBe("artifacts");
