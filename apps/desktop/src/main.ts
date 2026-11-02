@@ -16,6 +16,13 @@ import {
   session,
   shell,
 } from "electron";
+import {
+  agentDesktopBinary,
+  desktopControlStatus,
+  extractWithTar,
+  installAgentDesktop,
+  openDesktopPermissionGuide,
+} from "./agent-desktop.js";
 import type { AppDocumentState } from "./app-document-state.js";
 import { APP_DOCUMENT_STATE_SCRIPT } from "./app-document-state.js";
 import { createAppOpener } from "./app-opener.js";
@@ -1295,6 +1302,26 @@ app.whenReady().then(async () => {
   ipcMain.handle("desktop.platform", () => process.platform);
   ipcMain.handle("desktop.passkeys.rpIds", () => passkeyRpIds);
   ipcMain.handle("desktop.tools.detect", () => detectInstalledTools());
+  const toolsDir = () => path.join(app.getPath("userData"), "tools");
+  const controlStatus = () => desktopControlStatus(toolsDir(), process.platform, process.arch);
+  ipcMain.handle("desktop.control.status", controlStatus);
+  ipcMain.handle("desktop.control.prepare", async () => {
+    await installAgentDesktop({
+      dir: toolsDir(),
+      platform: process.platform,
+      arch: process.arch,
+      download: async (url) => {
+        const response = await net.fetch(url, { redirect: "follow" });
+        if (!response.ok) throw new Error(`The download answered with HTTP ${response.status}.`);
+        return new Uint8Array(await response.arrayBuffer());
+      },
+      extract: extractWithTar,
+    });
+    return controlStatus();
+  });
+  ipcMain.handle("desktop.control.openPermissionGuide", () =>
+    openDesktopPermissionGuide(agentDesktopBinary(toolsDir(), process.platform)),
+  );
   ipcMain.handle("desktop.window.close", (event) => {
     windowFrom(event)?.close();
   });
