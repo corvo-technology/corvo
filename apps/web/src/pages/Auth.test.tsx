@@ -176,6 +176,26 @@ it.each(["in", "up"] as const)("puts quiet SSO below the primary action on %s", 
   expect(sso.dataset.size).toBe("sm");
 });
 
+const localNote = "Only identifies you on this computer. Your data stays here.";
+it.each(["in", "up"] as const)(
+  "says the account stays on this computer in the local edition on %s",
+  async (mode) => {
+    vi.mocked(fetchAuthCapabilities).mockResolvedValue({
+      ...capabilities,
+      passwordAuth: true,
+      localEdition: true,
+    });
+    await render(mode);
+    expect(host.textContent).toContain(localNote);
+  },
+);
+
+it("keeps the local note off a hosted sign-in", async () => {
+  vi.mocked(fetchAuthCapabilities).mockResolvedValue({ ...capabilities, passwordAuth: true });
+  await render("up");
+  expect(host.textContent).not.toContain(localNote);
+});
+
 it("hides SSO in password recovery", async () => {
   vi.mocked(fetchAuthCapabilities).mockResolvedValue({ ...capabilities, passwordAuth: true });
   await render("forgot");
