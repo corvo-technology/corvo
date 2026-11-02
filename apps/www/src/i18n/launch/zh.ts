@@ -51,7 +51,7 @@ const COPY: LaunchCopy = {
     line2: "行动之前，它们先问你。",
     lead: "Corvo 是一支开源的 AI 智能体团队。每个智能体都有自己的工作、工具和对话。它们在你电脑上的频道里协作，并在碰任何真实的东西之前先和你确认。",
     githubLabel: "在 GitHub 上加星标",
-    note: "支持 macOS、Windows 和 Linux。",
+    note: "也支持 {windows} 和 {linux}",
     tags: [
       { name: "Davi", role: "邮件智能体", hue: "rosa" },
       { name: "Bento", role: "支付监控", hue: "azul" },

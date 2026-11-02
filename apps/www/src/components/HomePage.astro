@@ -11,7 +11,15 @@ import type { Locale } from "../i18n/locales";
 import { getLaunchCopy } from "../i18n/launch";
 import { DEFAULT_LOCALE, LOCALE_HTML_LANG, isLocale, localeHomePath } from "../i18n/locales";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { DOWNLOAD_URL, GITHUB_URL, INSTALL_COMMAND, INSTALL_COMMAND_WINDOWS, SITE_URL } from "../site";
+import {
+  DOWNLOAD_URL,
+  DOWNLOAD_URL_LINUX,
+  DOWNLOAD_URL_WINDOWS,
+  GITHUB_URL,
+  INSTALL_COMMAND,
+  INSTALL_COMMAND_WINDOWS,
+  SITE_URL,
+} from "../site";
 import { homeStructuredData } from "../structured-data";
 import "../styles/launch.css";
 
@@ -90,7 +98,27 @@ const RINGS = [
             github={copy.hero.githubLabel}
             placement="hero"
           />
-          <p class="download-note">{copy.hero.note}</p>
+          <p class="download-note">
+            {
+              copy.hero.note.split(/(\{windows\}|\{linux\})/).map((part) =>
+                part === "{windows}" ? (
+                  <a href={DOWNLOAD_URL_WINDOWS} data-attr="hero-download-windows">Windows</a>
+                ) : part === "{linux}" ? (
+                  <a href={DOWNLOAD_URL_LINUX} data-attr="hero-download-linux">Linux</a>
+                ) : (
+                  part
+                ),
+              )
+            }
+          </p>
+          <div class="lp-command lp-hero__command">
+            <div>
+              <code id="hero-install">{INSTALL_COMMAND}</code>
+              <button type="button" data-copy="#hero-install" data-copied={copy.install.copiedLabel}>
+                {copy.install.copyLabel}
+              </button>
+            </div>
+          </div>
         </div>
         <div class="lp-hero__stage">
           <Mascot hue="menta" size={250} float interactive />

@@ -51,7 +51,7 @@ const COPY: LaunchCopy = {
     line2: "Ils demandent avant d'agir.",
     lead: "Corvo est une équipe d'agents IA open source. Chacun a un métier, ses propres outils et sa propre conversation. Ils travaillent ensemble dans des canaux, sur votre ordinateur, et vérifient avec vous avant de toucher à quoi que ce soit de réel.",
     githubLabel: "Mettre une étoile sur GitHub",
-    note: "Pour macOS, Windows et Linux.",
+    note: "Aussi pour {windows} et {linux}",
     tags: [
       { name: "Davi", role: "Agent e-mail", hue: "rosa" },
       { name: "Bento", role: "Veille des paiements", hue: "azul" },
