@@ -14,7 +14,6 @@
 <p align="center">
   <a href="./LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/license-Apache%202.0-black?labelColor=black&style=for-the-badge&color=3ddc97" /></a>
   <img alt="Platforms: macOS, Windows, Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-black?labelColor=black&style=for-the-badge" />
-  <img alt="Status: beta" src="https://img.shields.io/badge/status-beta-black?labelColor=black&style=for-the-badge" />
 </p>
 
 <p align="center">
