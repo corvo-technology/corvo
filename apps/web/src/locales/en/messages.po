@@ -3051,6 +3051,10 @@ msgstr "First messages, one per line"
 msgid "Forgot password?"
 msgstr "Forgot password?"
 
+#: src/pages/onboarding-quick-connect.tsx
+msgid "Found on this computer"
+msgstr "Found on this computer"
+
 #: src/components/ModelCredits.tsx
 #: src/pages/model-settings/model-picker.tsx
 msgid "Free"

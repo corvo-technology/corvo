@@ -3051,6 +3051,10 @@ msgstr "最初のメッセージ（1行に1つ）"
 msgid "Forgot password?"
 msgstr "パスワードをお忘れですか？"
 
+#: src/pages/onboarding-quick-connect.tsx
+msgid "Found on this computer"
+msgstr "このコンピューターで検出"
+
 #: src/components/ModelCredits.tsx
 #: src/pages/model-settings/model-picker.tsx
 msgid "Free"

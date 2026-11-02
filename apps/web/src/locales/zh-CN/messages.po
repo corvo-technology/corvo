@@ -3051,6 +3051,10 @@ msgstr "首条消息，每行一条"
 msgid "Forgot password?"
 msgstr "忘记密码？"
 
+#: src/pages/onboarding-quick-connect.tsx
+msgid "Found on this computer"
+msgstr "在这台电脑上找到"
+
 #: src/components/ModelCredits.tsx
 #: src/pages/model-settings/model-picker.tsx
 msgid "Free"
