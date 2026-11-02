@@ -148,7 +148,6 @@ export type LaunchCopy = {
     heading: string;
     copy: string;
     download: string;
-    beta: string;
     alsoFor: string;
     macLinux: string;
     windows: string;
@@ -156,5 +155,5 @@ export type LaunchCopy = {
     copiedLabel: string;
     note: string;
   };
-  cta: { heading: string; copy: string; download: string; beta: string; github: string };
+  cta: { heading: string; copy: string; download: string; github: string };
 };

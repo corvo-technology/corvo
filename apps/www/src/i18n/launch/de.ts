@@ -326,7 +326,6 @@ const COPY: LaunchCopy = {
     heading: "Installiere es auf deinem Computer.",
     copy: "Corvo läuft auf deinem Rechner, mit eigener Datenbank. Nichts einzurichten und kein Konto anzulegen.",
     download: "Für Mac laden",
-    beta: "Beta",
     alsoFor: "Auch für Windows und Linux",
     macLinux: "macOS und Linux",
     windows: "Windows (PowerShell)",
@@ -338,7 +337,6 @@ const COPY: LaunchCopy = {
     heading: "Stell deinen ersten Agenten ein.",
     copy: "Wähle einen im Store, gib ihm eine Aufgabe und deine nächste Aufgabe. Er fragt nach, bevor er etwas tut, das zählt.",
     download: "Für Mac laden",
-    beta: "Beta",
     github: "Auf GitHub ansehen",
   },
 };

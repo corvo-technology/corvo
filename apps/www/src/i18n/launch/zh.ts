@@ -326,7 +326,6 @@ const COPY: LaunchCopy = {
     heading: "装到你的电脑上。",
     copy: "Corvo 在你的机器上运行，带着自己的数据库。无需配置，也无需创建账号。",
     download: "下载 Mac 版",
-    beta: "测试版",
     alsoFor: "也支持 Windows 和 Linux",
     macLinux: "macOS 和 Linux",
     windows: "Windows（PowerShell）",
@@ -338,7 +337,6 @@ const COPY: LaunchCopy = {
     heading: "雇下你的第一个智能体。",
     copy: "从商店里选一个，给它一份工作和你的下一件任务。做任何要紧的事之前，它都会先问你。",
     download: "下载 Mac 版",
-    beta: "测试版",
     github: "在 GitHub 上查看",
   },
 };

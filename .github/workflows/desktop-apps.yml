@@ -94,4 +94,4 @@ jobs:
             --title "Corvo ${GITHUB_REF_NAME#v}" \
             --generate-notes \
             --latest \
-            --notes "Beta. These builds are not signed yet, so macOS and Windows warn the first time you open the app. The install commands in the README skip the macOS warning."
+            --notes "These builds are not signed yet, so macOS and Windows warn the first time you open the app. The install commands in the README skip the macOS warning."
