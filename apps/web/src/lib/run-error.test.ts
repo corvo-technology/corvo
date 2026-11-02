@@ -1,5 +1,5 @@
-import { i18n } from "@lingui/core";
 import { MODEL_OUTPUT_CUT_ERROR, normalizeRunError } from "@corvo/core";
+import { i18n } from "@lingui/core";
 import { afterEach, expect, it } from "vitest";
 import { translateRunError } from "./run-error";
 

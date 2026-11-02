@@ -1,4 +1,3 @@
-import { Plural, Trans } from "@lingui/react/macro";
 import type { ThreadMessage } from "@corvo/contracts";
 import { formatCompactDuration } from "@corvo/core";
 import {
@@ -6,6 +5,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@corvo/ui-web/components/ui/collapsible";
+import { Plural, Trans } from "@lingui/react/macro";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { activityLabelText } from "../lib/activity-label";

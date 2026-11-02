@@ -1,5 +1,5 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import { Button } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useRef, useState } from "react";
 import { desktopBridge } from "../../lib/desktop";
 import { chooseHostComputer } from "../../lib/host-computer";

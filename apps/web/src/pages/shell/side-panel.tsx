@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   AgentSkillCatalogEntry,
   Bot,
@@ -8,6 +7,7 @@ import type {
 } from "@corvo/contracts";
 import type { AgentImportReader } from "@corvo/core";
 import { Button } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Monitor, Settings, X } from "lucide-react";
 import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from "react";
 import { ComputerMaintenanceActions } from "../../components/ComputerMaintenanceActions";

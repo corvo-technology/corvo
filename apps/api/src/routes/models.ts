@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { SecretStoreUnavailableError } from "@corvo/adapter-kit";
 import {
   listPiCatalog,
@@ -41,6 +40,7 @@ import {
   updateModelRole,
   writeModelRole,
 } from "@corvo/db";
+import { ORPCError } from "@orpc/server";
 import { mayUsePrivateEndpoint } from "../mcp-servers.js";
 import { firstModelConnectAnalytics } from "../model-connect-analytics.js";
 import {

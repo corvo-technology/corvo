@@ -1,4 +1,3 @@
-import { t } from "@lingui/core/macro";
 import { isVoiceAccountErrorCode } from "@corvo/contracts";
 import type { CredentialField } from "@corvo/core";
 import {
@@ -8,6 +7,7 @@ import {
   MODEL_IMAGE_INPUT_UNKNOWN,
   userErrorMessage,
 } from "@corvo/core";
+import { t } from "@lingui/core/macro";
 
 /** Text for a failure: human messages pass through; network and implementation detail become copy. */
 export function errorText(error: unknown, fallback = t`Something went wrong. Try again.`): string {

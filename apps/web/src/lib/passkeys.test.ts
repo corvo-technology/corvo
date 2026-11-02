@@ -51,11 +51,17 @@ describe("passkeysSupported", () => {
               },
       },
     });
-    await expect(passkeysSupported("app.bots.corvo.tech", mac(["app.bots.corvo.tech"]))).resolves.toBe(true);
-    await expect(passkeysSupported("App.Bots.Corvo.Tech", mac(["app.bots.corvo.tech"]))).resolves.toBe(true);
+    await expect(
+      passkeysSupported("app.bots.corvo.tech", mac(["app.bots.corvo.tech"])),
+    ).resolves.toBe(true);
+    await expect(
+      passkeysSupported("App.Bots.Corvo.Tech", mac(["app.bots.corvo.tech"])),
+    ).resolves.toBe(true);
     await expect(passkeysSupported("app.bots.corvo.tech", mac([]))).resolves.toBe(false);
     await expect(passkeysSupported("app.bots.corvo.tech", mac())).resolves.toBe(false);
-    await expect(passkeysSupported("app.bots.corvo.tech", mac(new Error("ipc")))).resolves.toBe(false);
+    await expect(passkeysSupported("app.bots.corvo.tech", mac(new Error("ipc")))).resolves.toBe(
+      false,
+    );
     const selfHosted = { ...mac(["app.bots.corvo.tech"]), host: "corvo.example.com" };
     await expect(passkeysSupported("corvo.example.com", selfHosted)).resolves.toBe(false);
     expect(

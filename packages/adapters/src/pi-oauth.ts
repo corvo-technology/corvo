@@ -1,12 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import type {
-  AuthInteraction,
-  Credential,
-  OAuthAuth,
-  OAuthCredential,
-} from "@earendil-works/pi-ai";
-import { builtinModels } from "@earendil-works/pi-ai/providers/all";
-import type {
   ModelCredentialFailedState,
   ModelCredentialRetireReason,
   SecretStore,
@@ -29,6 +22,13 @@ import {
 import type { PrismaClient } from "@corvo/db";
 import { runAsSystem, runAsTenant } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
+import type {
+  AuthInteraction,
+  Credential,
+  OAuthAuth,
+  OAuthCredential,
+} from "@earendil-works/pi-ai";
+import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import { createManualAnthropicOAuthLogin } from "./pi-anthropic-oauth.js";
 
 export const CHATGPT_OAUTH_PROVIDER = "openai-codex";
@@ -49,8 +49,7 @@ export const SUBSCRIPTION_SIGN_IN_PROVIDERS: Record<
     mode: "device-code",
     loginLabel: "Sign in with ChatGPT",
     hint: "ChatGPT Plus/Pro",
-    billing:
-      "Sign in with ChatGPT Plus or Pro. Uses your OpenAI subscription. Corvo does not pay.",
+    billing: "Sign in with ChatGPT Plus or Pro. Uses your OpenAI subscription. Corvo does not pay.",
   },
   [COPILOT_OAUTH_PROVIDER]: {
     mode: "device-code",

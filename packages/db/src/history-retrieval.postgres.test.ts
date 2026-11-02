@@ -1,6 +1,6 @@
-import { PrismaPg } from "@prisma/adapter-pg";
 import { HistorySearchInputSchema } from "@corvo/contracts";
 import { escapeJsonSearchWildcards } from "@corvo/core";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { Prisma } from "./client.js";

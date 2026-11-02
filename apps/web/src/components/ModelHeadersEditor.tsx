@@ -1,6 +1,6 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { ModelHeaderRow } from "@corvo/contracts";
 import { Button, Input } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
 
 export function ModelHeadersEditor({

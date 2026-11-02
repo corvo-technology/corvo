@@ -1,6 +1,6 @@
 import { createCipheriv, createHash } from "node:crypto";
-import type { HttpInstance } from "@larksuiteoapi/node-sdk";
 import type { AdapterContext, MessagingInboundEvent } from "@corvo/adapter-kit";
+import type { HttpInstance } from "@larksuiteoapi/node-sdk";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatSdkMessagingSurface } from "./chat-sdk-surface.js";
 import { LazyLarkAdapter } from "./lark/lazy-adapter.js";

@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import type { SecretStore } from "@corvo/adapter-kit";
 import {
   findConnectedModelCredential,
@@ -15,6 +14,7 @@ import type { Actor, MessageBlock } from "@corvo/contracts";
 import { MODEL_IMAGE_INPUT_ERROR, MODEL_IMAGE_INPUT_UNKNOWN } from "@corvo/core";
 import type { PrismaClient } from "@corvo/db";
 import { appliedModelRole, findModelCredential, findModelCredentialById } from "@corvo/db";
+import { ORPCError } from "@orpc/server";
 
 type ModelChoice = {
   modelProvider: string | null;

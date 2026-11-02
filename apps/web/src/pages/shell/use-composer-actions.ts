@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/react/macro";
 import type {
   Bot,
   ComputerStatus,
@@ -16,6 +15,7 @@ import {
   newClientId,
   resolveComposerSendPlan,
 } from "@corvo/core";
+import { useLingui } from "@lingui/react/macro";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { requestBrowserNotificationPermission } from "../../lib/browser-notifications";

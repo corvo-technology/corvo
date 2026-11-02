@@ -210,9 +210,10 @@ describe("screen frame reports", () => {
     expect(screenFrameMessage({ corvoScreen: "connected" })).toEqual({
       corvoScreen: "connected",
     });
-    expect(screenFrameMessage({ corvoScreen: "failed", detail: "  Failed to connect  " })).toEqual(
-      { corvoScreen: "failed", detail: "Failed to connect" },
-    );
+    expect(screenFrameMessage({ corvoScreen: "failed", detail: "  Failed to connect  " })).toEqual({
+      corvoScreen: "failed",
+      detail: "Failed to connect",
+    });
     expect(
       screenFrameMessage({ corvoScreen: "failed", detail: "x".repeat(300) })?.detail,
     ).toHaveLength(200);

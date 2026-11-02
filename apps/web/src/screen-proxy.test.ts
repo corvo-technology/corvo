@@ -487,9 +487,9 @@ describe("refusing a screen that wasn't let through", () => {
 
 describe("the status-only probe", () => {
   it("is recognised only by its exact mark, and checks the same screen URL without it", () => {
-    expect(
-      screenProbePath("/novnc/session/view/1.t/vnc.html?autoconnect=true&corvo_probe=1"),
-    ).toBe("/novnc/session/view/1.t/vnc.html?autoconnect=true");
+    expect(screenProbePath("/novnc/session/view/1.t/vnc.html?autoconnect=true&corvo_probe=1")).toBe(
+      "/novnc/session/view/1.t/vnc.html?autoconnect=true",
+    );
     expect(screenProbePath("/novnc/session/view/1.t/vnc.html?corvo_probe=1")).toBe(
       "/novnc/session/view/1.t/vnc.html",
     );

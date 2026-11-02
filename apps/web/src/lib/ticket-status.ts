@@ -1,5 +1,5 @@
-import { useLingui } from "@lingui/react/macro";
 import type { TicketStatus } from "@corvo/contracts";
+import { useLingui } from "@lingui/react/macro";
 import { useMemo } from "react";
 
 export function useTicketStatusLabels(): Record<TicketStatus, string> {

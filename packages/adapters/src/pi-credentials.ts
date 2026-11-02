@@ -1,17 +1,17 @@
 import type {
-  AuthOperationOptions,
-  Credential,
-  CredentialInfo,
-  CredentialStore,
-  OAuthCredential,
-} from "@earendil-works/pi-ai";
-import type {
   AgentModelOAuthCredential,
   ModelCredentialFailedState,
   ModelCredentialRetireReason,
 } from "@corvo/adapter-kit";
 import { canonicalPiProviderId } from "@corvo/contracts";
 import { getLogger } from "@corvo/logging";
+import type {
+  AuthOperationOptions,
+  Credential,
+  CredentialInfo,
+  CredentialStore,
+  OAuthCredential,
+} from "@earendil-works/pi-ai";
 import {
   OAUTH_ACCOUNT_CHANGED_ERROR,
   oauthCredentialAccountId,

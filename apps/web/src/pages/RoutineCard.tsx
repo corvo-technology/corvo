@@ -11,8 +11,8 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Play } from "lucide-react";
 import { useState } from "react";
 import { rpc } from "../lib/rpc";
-import { RoutineRunDetail } from "./RoutineRunDetail";
 import { errorText } from "../lib/user-error";
+import { RoutineRunDetail } from "./RoutineRunDetail";
 
 /** One routine from the calendar: when, by whom, and a way to run it now or go to its agent. */
 export function RoutineCard({

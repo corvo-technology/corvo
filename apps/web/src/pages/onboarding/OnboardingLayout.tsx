@@ -1,5 +1,5 @@
-import { useLingui } from "@lingui/react/macro";
 import { Button } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { Check, ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { BrandMascot } from "../../components/BrandMascot";

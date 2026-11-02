@@ -130,9 +130,7 @@ describe("the updater compose service", () => {
     expect(updater.environment?.CORVO_COMPOSE_FILE).toBe(
       interpolated("CORVO_COMPOSE_FILE", "infra/compose/docker-compose.prod.yml"),
     );
-    expect(updater.environment?.CORVO_UPDATE_SERVICES).toBe(
-      interpolated("CORVO_UPDATE_SERVICES"),
-    );
+    expect(updater.environment?.CORVO_UPDATE_SERVICES).toBe(interpolated("CORVO_UPDATE_SERVICES"));
     expect(updater.environment?.COMPOSE_PATH_SEPARATOR).toBe(
       interpolated("COMPOSE_PATH_SEPARATOR"),
     );

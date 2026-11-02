@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import { filterModelCatalog } from "@corvo/core";
 import {
   Command,
@@ -13,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ModelCatalogEntry } from "../../lib/model-auth";

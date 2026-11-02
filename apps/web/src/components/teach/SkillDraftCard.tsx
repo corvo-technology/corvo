@@ -1,7 +1,7 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { SkillPlaybook } from "@corvo/contracts";
 import { formatSkillRunPrompt } from "@corvo/core";
 import { Button, Input, Label, Textarea } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useRef, useState } from "react";
 import { rpc } from "../../lib/rpc";
 import { errorText } from "../../lib/user-error";

@@ -1,5 +1,3 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { BotMcpServer, McpServer, McpTransport } from "@corvo/contracts";
 import { deriveMcpSlug, isRetryableError } from "@corvo/core";
 import { fetchFresh, writeSaved } from "@corvo/core/query";
@@ -29,6 +27,8 @@ import {
   toast,
 } from "@corvo/ui-web";
 import { Disclosure } from "@corvo/ui-web/components/ui/disclosure";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";

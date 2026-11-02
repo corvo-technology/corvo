@@ -43,7 +43,6 @@ x-app-environment: &app-environment
   MAX_UPLOAD_SIZE_MB:
   CORVO_UPDATE_RESTART_SUPERVISOR:
   TICKET_BOARD_ENABLED:
-  PARTNER_ADMIN_EMAILS:
   BOT_MESSAGE_MAX_HOPS:
   CORVO_MESSAGE_USER_MAX_CHARS:
   TEACH_RECORDING_TTL_MS:
@@ -365,6 +364,7 @@ services:
       # Sign-in, sessions, billing and inbound webhooks: API only.
       API_HOST: "0.0.0.0"
       API_PORT:
+      PARTNER_ADMIN_EMAILS:
       BETTER_AUTH_SECRET:
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://127.0.0.1:5173}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://127.0.0.1:5173}

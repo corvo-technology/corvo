@@ -1,7 +1,7 @@
-import type { Credential, OAuthCredential } from "@earendil-works/pi-ai";
 import type { ModelCredentialFailedState, ModelCredentialRetireReason } from "@corvo/adapter-kit";
 import { containsSecret, redactSecrets } from "@corvo/core";
 import type { PrismaClient } from "@corvo/db";
+import type { Credential, OAuthCredential } from "@earendil-works/pi-ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PiOAuthBegin } from "./pi-oauth.js";
 import {

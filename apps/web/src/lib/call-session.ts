@@ -1,4 +1,3 @@
-import { t } from "@lingui/core/macro";
 import type { ThreadMessage, ThreadSnapshot } from "@corvo/contracts";
 import type { CallExchange } from "@corvo/core";
 import {
@@ -15,6 +14,7 @@ import {
   spokenDecision,
   spokenMemory,
 } from "@corvo/core";
+import { t } from "@lingui/core/macro";
 import { useSyncExternalStore } from "react";
 import { pickUp } from "./call-pickup.js";
 import { dictation } from "./dictation.js";

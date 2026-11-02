@@ -1,6 +1,6 @@
-import { Plural, Trans } from "@lingui/react/macro";
 import type { McpServerHealth } from "@corvo/contracts";
 import { Disclosure } from "@corvo/ui-web";
+import { Plural, Trans } from "@lingui/react/macro";
 import { CircleCheck, CircleDashed, LoaderCircle, TriangleAlert } from "lucide-react";
 import { formatRelativeTime } from "../lib/relative-time";
 

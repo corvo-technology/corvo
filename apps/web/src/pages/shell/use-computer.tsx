@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   Bot,
   ComputerReleaseReason,
@@ -15,6 +14,7 @@ import {
   waitForScreenPage,
 } from "@corvo/core";
 import { Button, Spinner } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ComputerMaintenanceActions } from "../../components/ComputerMaintenanceActions";

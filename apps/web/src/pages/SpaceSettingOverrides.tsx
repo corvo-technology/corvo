@@ -1,7 +1,7 @@
-import { useLingui } from "@lingui/react/macro";
 import type { SpaceSetting } from "@corvo/contracts";
 import { writeSaved } from "@corvo/core/query";
 import { Button } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import type { QueryKey } from "@tanstack/react-query";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";

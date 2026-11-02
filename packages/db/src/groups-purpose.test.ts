@@ -116,8 +116,10 @@ describe("group purpose when a group is created", () => {
     return { repos: createGroupRepos(prisma as unknown as PrismaClient), create };
   }
 
-  const dataOf = (create: ReturnType<typeof vi.fn>) =>
-    (create.mock.calls.at(-1)?.[0] as { data: Record<string, unknown> }).data;
+  const dataOf = (create: ReturnType<typeof vi.fn>) => {
+    const [args] = create.mock.calls.at(-1) ?? [];
+    return (args as { data: Record<string, unknown> }).data;
+  };
 
   it("stores a trimmed purpose", async () => {
     const f = createFixture();

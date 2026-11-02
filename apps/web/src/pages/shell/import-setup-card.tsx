@@ -1,7 +1,7 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { AgentImportSetupItem, AgentImportSetupState, MessageBlock } from "@corvo/contracts";
 import { isRetiredImportSetup } from "@corvo/core";
 import { Button } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BuiCard, SuccessPop } from "../../components/ai/primitives";

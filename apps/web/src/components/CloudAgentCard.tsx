@@ -1,8 +1,8 @@
-import { Trans } from "@lingui/react/macro";
 import type { MessageBlock } from "@corvo/contracts";
 import { cloudAgentHttpsUrl } from "@corvo/core";
 import { Badge } from "@corvo/ui-web/components/ui/badge";
 import { Card, CardContent } from "@corvo/ui-web/components/ui/card";
+import { Trans } from "@lingui/react/macro";
 
 export function CloudAgentCard({
   block,

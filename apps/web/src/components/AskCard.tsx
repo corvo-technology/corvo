@@ -1,5 +1,3 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
 import { ChatMarkdown } from "@corvo/chat-ui/web";
 import type { ThreadMessage } from "@corvo/contracts";
 import { BOT_INSTRUCTIONS_MAX_LENGTH, commandVariableName } from "@corvo/contracts";
@@ -11,6 +9,8 @@ import {
   selectedAskActionLabel,
 } from "@corvo/core";
 import { Button, Input, Textarea } from "@corvo/ui-web";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { rpc } from "../lib/rpc";

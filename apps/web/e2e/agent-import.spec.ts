@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { crc32, gzipSync } from "node:zlib";
+import type { AgentImportInfo, AgentImportPlan, Bot, MemoryDocument } from "@corvo/contracts";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { AgentImportInfo, AgentImportPlan, Bot, MemoryDocument } from "@corvo/contracts";
 import {
   activeBotId,
   captureScreenshot,

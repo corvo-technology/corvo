@@ -1,5 +1,3 @@
-import type { MenuAction } from "@expo/ui/community/menu";
-import { MenuView } from "@expo/ui/community/menu";
 import type { AgentSkillCatalogEntry } from "@corvo/contracts";
 import type { buildComposerMentionOptions, ComposerMention, SlashActionId } from "@corvo/core";
 import {
@@ -9,6 +7,8 @@ import {
   truncateSlashDescription,
 } from "@corvo/core";
 import { MAX_FONT_SCALE } from "@corvo/ui-tokens";
+import type { MenuAction } from "@expo/ui/community/menu";
+import { MenuView } from "@expo/ui/community/menu";
 import type { Ref } from "react";
 import { useImperativeHandle, useMemo, useRef, useState } from "react";
 import type { ViewStyle } from "react-native";

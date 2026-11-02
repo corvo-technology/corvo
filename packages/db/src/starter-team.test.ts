@@ -40,16 +40,7 @@ const run = (
   f: ReturnType<typeof fixture>,
   locale: "en" | "pt-BR" = "en",
   options?: { channel?: string; storeAccess?: boolean },
-) =>
-  ensureStarterTeam(
-    f.prisma,
-    actor,
-    locale,
-    { createBot: f.createBot as never, reorderBots: vi.fn() as never },
-    options,
-  );
-
-const teamKeys = STARTER_AGENT_SLUGS.map((slug) => `agent-catalog:${slug}`).sort();
+) => ensureStarterTeam(f.prisma, actor, locale, { createBot: f.createBot as never }, options);
 
 describe("ensureStarterTeam", () => {
   it("creates the Chief in the person's language, able to look up and add Store agents", async () => {

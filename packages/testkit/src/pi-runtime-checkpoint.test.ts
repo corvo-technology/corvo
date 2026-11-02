@@ -1,5 +1,5 @@
-import type { Message } from "@earendil-works/pi-ai";
 import type { AgentRunRequest, AgentRuntimeEvent } from "@corvo/adapter-kit";
+import type { Message } from "@earendil-works/pi-ai";
 import { describe, expect, it, vi } from "vitest";
 import { approvalPausedToolResult } from "../../adapters/src/approval-effect.js";
 import { builtinAgentTools } from "../../adapters/src/builtin-tools.js";

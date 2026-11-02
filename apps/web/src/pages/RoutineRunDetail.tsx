@@ -2,8 +2,8 @@ import type { RoutineRun } from "@corvo/contracts";
 import { normalizeRunError } from "@corvo/core";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { formatRunDuration } from "../lib/routine-calendar";
 import { useSpaceQueries } from "../lib/query";
+import { formatRunDuration } from "../lib/routine-calendar";
 import { translateRunError } from "../lib/run-error";
 
 /** What a finished run did: how long it took, and why it stopped when it did not work. */

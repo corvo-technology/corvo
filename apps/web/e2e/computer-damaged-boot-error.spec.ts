@@ -6,12 +6,7 @@ const damaged = "This computer's system is damaged. Recover the computer to rebu
 test("a damaged computer tells the user to recover it when the boot fails", async ({
   page,
 }, testInfo) => {
-  await signup(
-    page,
-    `computer-damaged-${Date.now()}@corvo.test`,
-    "password12",
-    "Computer Damaged",
-  );
+  await signup(page, `computer-damaged-${Date.now()}@corvo.test`, "password12", "Computer Damaged");
   await completeOnboarding(page);
   await page.route("**/rpc/computer/boot", (route) =>
     route.fulfill({

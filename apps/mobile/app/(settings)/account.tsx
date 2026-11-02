@@ -1,6 +1,6 @@
-import { MenuView } from "@expo/ui/community/menu";
 import type { AccountSecurity, UsageSummary } from "@corvo/contracts";
 import { accountDisplay, displayName } from "@corvo/core";
+import { MenuView } from "@expo/ui/community/menu";
 import * as Notifications from "expo-notifications";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";

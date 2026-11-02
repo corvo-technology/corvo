@@ -1,8 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { PassThrough, Readable } from "node:stream";
-import type * as KubernetesClient from "@kubernetes/client-node";
-import type { CoreV1Api, Exec, V1Pod, V1PodSpec, V1Status } from "@kubernetes/client-node";
 import type {
   AdapterContext,
   CommandRequest,
@@ -20,6 +18,8 @@ import type {
   TerminalRequest,
 } from "@corvo/adapter-kit";
 import { boundedSandboxCommandTimeoutMs } from "@corvo/core";
+import type * as KubernetesClient from "@kubernetes/client-node";
+import type { CoreV1Api, Exec, V1Pod, V1PodSpec, V1Status } from "@kubernetes/client-node";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import { shouldSkipPortableWorkspaceFile } from "./computer-workspace.js";
 import { LinuxDesktop } from "./linux-desktop.js";

@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import type { AdapterContext, ConnectorCatalogItem } from "@corvo/adapter-kit";
 import {
   pickReusableConnection,
@@ -15,6 +14,7 @@ import {
   runProviderTransaction,
 } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
+import { ORPCError } from "@orpc/server";
 import { connectionCreatedEvent } from "../security-audit.js";
 import type { RouterContext } from "./context.js";
 

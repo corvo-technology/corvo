@@ -1,6 +1,6 @@
-import { t } from "@lingui/core/macro";
 import { accountSecuritySchema, legacyAccountSecurity } from "@corvo/contracts";
 import { readBoundedJsonResponse } from "@corvo/core";
+import { t } from "@lingui/core/macro";
 import { authErrorText } from "./user-error";
 
 export async function fetchAccountSecurity() {

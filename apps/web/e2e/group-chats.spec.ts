@@ -1,6 +1,6 @@
+import { GROUP_NAME_MAX_LENGTH } from "@corvo/contracts";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { GROUP_NAME_MAX_LENGTH } from "@corvo/contracts";
 import {
   captureScreenshot,
   completeOnboarding,

@@ -1,5 +1,5 @@
-import { useLingui } from "@lingui/react/macro";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@corvo/ui-web/components/ui/tooltip";
+import { useLingui } from "@lingui/react/macro";
 import { CircleHelp } from "lucide-react";
 import { useId, useRef, useState } from "react";
 

@@ -1,6 +1,6 @@
-import { Trans } from "@lingui/react/macro";
 import type { SearchHit } from "@corvo/contracts";
 import { searchHitListKey } from "@corvo/core";
+import { Trans } from "@lingui/react/macro";
 
 export function SpaceSearchResults({
   hits,

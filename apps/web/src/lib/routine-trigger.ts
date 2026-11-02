@@ -1,7 +1,7 @@
-import { t } from "@lingui/core/macro";
 import type { Routine } from "@corvo/contracts";
 import type { CronLabels } from "@corvo/core";
 import { ENGLISH_CRON_LABELS, formatCron } from "@corvo/core";
+import { t } from "@lingui/core/macro";
 
 /** When a routine starts, in a few words: its schedule and every other way to wake it. */
 export function routineTriggerSummary(

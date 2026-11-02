@@ -1,9 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type {
-  AdapterContext,
-  BackgroundJobPayloads,
-  CloudAgentSnapshot,
-} from "@corvo/adapter-kit";
+import type { AdapterContext, BackgroundJobPayloads, CloudAgentSnapshot } from "@corvo/adapter-kit";
 import {
   CloudAgentRequestRejected,
   CloudAgentRetryLater,

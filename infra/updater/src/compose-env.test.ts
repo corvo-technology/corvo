@@ -42,6 +42,14 @@ const KUBERNETES_SANDBOX =
 /** Read by code but never passed to the api or worker containers, with the reason. */
 const NOT_PASSED: Record<string, string> = {
   VITEST: "set by the test runner",
+  CORVO_WEB_URL: "input of the partner embed demo command, passed on its own command line",
+  DEMO_CONNECTOR_TOKEN: "input of the partner demo command, passed on its own command line",
+  DEMO_CONNECTOR_URL: "input of the partner demo command, passed on its own command line",
+  PARTNER_API_KEY: "input of the partner demo commands, passed on their own command line",
+  PARTNER_API_URL: "input of the partner demo commands, passed on their own command line",
+  MIGRATIONS_DIR: "set by the migration command for the bundled engine only",
+  PATH: "the process's own search path, which the container image sets",
+  PORT: "listen port of the partner embed demo command only; the servers use API_PORT",
   OWNER_EMAIL: "bootstrap-owner CLI input, passed on its own command line",
   OWNER_PASSWORD: "bootstrap-owner CLI input, passed on its own command line",
   PM2_HOME: "restart-supervisor detection for PM2 hosts; Compose restarts containers",

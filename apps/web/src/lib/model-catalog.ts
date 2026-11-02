@@ -1,7 +1,7 @@
-import { i18n } from "@lingui/core";
 import type { ModelCatalogEntry, ModelCredential, ThinkingLevel } from "@corvo/contracts";
 import type { ConnectedModelChoice } from "@corvo/core";
 import { connectedModelChoices } from "@corvo/core";
+import { i18n } from "@lingui/core";
 
 export { modelOptionKey, parseModelOptionKey } from "@corvo/core";
 

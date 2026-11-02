@@ -5,10 +5,7 @@ import path from "node:path";
 import type * as TimersPromises from "node:timers/promises";
 import { promisify } from "node:util";
 import type { ComputerRef, PortableFile, ProcessEvent } from "@corvo/adapter-kit";
-import {
-  browserProfilePathForScreen,
-  DEFAULT_DESKTOP_ENV,
-} from "@corvo/core/node/desktop-runtime";
+import { browserProfilePathForScreen, DEFAULT_DESKTOP_ENV } from "@corvo/core/node/desktop-runtime";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   CHROME_OWNS_DEBUG_PORT_SCRIPT,

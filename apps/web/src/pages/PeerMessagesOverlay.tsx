@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import { ChatMarkdown } from "@corvo/chat-ui/web";
 import { loadPeerHistory, peerConversations } from "@corvo/core";
 import {
@@ -10,6 +9,7 @@ import {
   DialogTitle,
   Spinner,
 } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useSpaceQueries } from "../lib/query";

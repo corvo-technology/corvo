@@ -1,6 +1,6 @@
+import type { ComputerStatus } from "@corvo/contracts";
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import type { ComputerStatus } from "@corvo/contracts";
 
 export function DesktopKindEmptyState({ className }: { className?: string }) {
   return (

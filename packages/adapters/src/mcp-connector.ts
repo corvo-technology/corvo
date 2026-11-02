@@ -1,12 +1,6 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
-import { StreamableHTTPError } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import {
-  ServerError,
-  TemporarilyUnavailableError,
-} from "@modelcontextprotocol/sdk/server/auth/errors.js";
 import type {
   AdapterContext,
   ConnectorCall,
@@ -26,6 +20,12 @@ import {
 import type { McpServer, PrismaClient, ThreadEvents } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
 import { sanitizedError } from "@corvo/logging/monitoring";
+import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
+import { StreamableHTTPError } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import {
+  ServerError,
+  TemporarilyUnavailableError,
+} from "@modelcontextprotocol/sdk/server/auth/errors.js";
 import { catalogToolPrefix } from "./approval-effect.js";
 import {
   combineSignals,

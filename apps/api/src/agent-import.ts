@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { ORPCError } from "@orpc/server";
 import type { SecretStore } from "@corvo/adapter-kit";
 import type { AgentImportSettings, ImportedMcpServer } from "@corvo/adapters";
 import {
@@ -50,6 +49,7 @@ import {
   writeBotInstructions,
 } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
+import { ORPCError } from "@orpc/server";
 
 type Reader = Pick<Prisma.TransactionClient, "memoryDocument" | "agentSkill" | "mcpServer">;
 type Stored = Awaited<ReturnType<SecretStore["put"]>> | null;

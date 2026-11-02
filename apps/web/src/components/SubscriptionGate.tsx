@@ -1,6 +1,6 @@
-import { useLingui } from "@lingui/react/macro";
 import type { BillingStatus, Me } from "@corvo/contracts";
 import { Dialog, DialogContent } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import { createContext, Suspense, useContext, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";

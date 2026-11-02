@@ -32,7 +32,7 @@ const MASK_STOP = /#000(?:000)?\b/g;
 const ARBITRARY_VAR = /\[var\(--/;
 
 /** The lines of a source file that hard-code a color or reach into a CSS variable. */
-export function colorViolations(
+function colorViolations(
   source: string,
   kind: "css" | "code" = "code",
 ): Array<{ line: number; text: string }> {

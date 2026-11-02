@@ -21,6 +21,7 @@ import {
   revertConnectedMcpApprovals,
 } from "../mcp-approval.js";
 import { buildMcpUpdateMaterial } from "../mcp-material.js";
+import { mcpOAuthRedirectAllowed } from "../mcp-oauth-redirect.js";
 import {
   assertMcpOAuthTemplates,
   assertMcpRemoteEndpoint,
@@ -30,7 +31,6 @@ import {
   mcpAssignmentDto,
   mcpServerDto,
 } from "../mcp-servers.js";
-import { mcpOAuthRedirectAllowed } from "../mcp-oauth-redirect.js";
 import {
   chooseFocus,
   dismissFocus,

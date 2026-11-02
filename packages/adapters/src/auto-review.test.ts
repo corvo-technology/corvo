@@ -82,9 +82,7 @@ describe("resolveAutoReviewProviderKind", () => {
         TYPESAFE_API_KEY: "ts-key",
       }),
     ).toBe("jev");
-    expect(resolveAutoReviewProviderKind({ CORVO_AUTO_REVIEW_PROVIDER: "openrouter" })).toBe(
-      "llm",
-    );
+    expect(resolveAutoReviewProviderKind({ CORVO_AUTO_REVIEW_PROVIDER: "openrouter" })).toBe("llm");
     expect(
       resolveAutoReviewProviderKind({
         CORVO_AUTO_REVIEW_PROVIDER: "scripted",

@@ -1,5 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
+import type { SecretStore } from "@corvo/adapter-kit";
+import { SecretStoreUnavailableError } from "@corvo/adapter-kit";
+import {
+  isLocalhostOrLoopbackIp,
+  mcpOAuthEnvReferences,
+  parseMcpOAuthAuthorizationParams,
+} from "@corvo/contracts";
+import { readBoundedResponseBytes } from "@corvo/core";
+import type { Prisma, PrismaClient } from "@corvo/db";
+import { runAsSystem } from "@corvo/db";
+import { getLogger } from "@corvo/logging";
 import type {
   OAuthClientProvider,
   OAuthDiscoveryState,
@@ -18,17 +29,6 @@ import type {
   OAuthClientMetadata,
   OAuthTokens,
 } from "@modelcontextprotocol/sdk/shared/auth.js";
-import type { SecretStore } from "@corvo/adapter-kit";
-import { SecretStoreUnavailableError } from "@corvo/adapter-kit";
-import {
-  isLocalhostOrLoopbackIp,
-  mcpOAuthEnvReferences,
-  parseMcpOAuthAuthorizationParams,
-} from "@corvo/contracts";
-import { readBoundedResponseBytes } from "@corvo/core";
-import type { Prisma, PrismaClient } from "@corvo/db";
-import { runAsSystem } from "@corvo/db";
-import { getLogger } from "@corvo/logging";
 import { sanitizeConnectorError } from "./connector-safety.js";
 import { secureFetch, validateUrl, withEndpointOriginFallback } from "./mcp-transport.js";
 import type { RemoteTransportDependencies } from "./remote-mcp.js";

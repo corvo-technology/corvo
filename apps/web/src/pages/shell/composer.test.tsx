@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
-import { i18n } from "@lingui/core";
 import type { AgentSkillCatalogEntry, ThreadMessage } from "@corvo/contracts";
 import type { ComposerMention } from "@corvo/core";
 import { MODEL_REQUIRED_SEND_ERROR } from "@corvo/core";
+import { i18n } from "@lingui/core";
 import type { ComponentProps, ReactNode } from "react";
 import { act, createRef } from "react";
 import type { Root } from "react-dom/client";

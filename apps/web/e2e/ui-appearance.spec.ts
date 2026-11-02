@@ -109,9 +109,7 @@ test("sidebar footer opens integrations and the account menu", async ({ page }, 
   await page.getByTestId("sidebar-search-trigger").click();
   const searchBox = await page.getByTestId("sidebar-search").boundingBox();
   const avatarBox = await page.getByTestId("user-menu-trigger").boundingBox();
-  const pillBox = await footer
-    .getByRole("button", { name: "Store", exact: true })
-    .boundingBox();
+  const pillBox = await footer.getByRole("button", { name: "Store", exact: true }).boundingBox();
   expect(searchBox).toBeTruthy();
   expect(avatarBox).toBeTruthy();
   expect(pillBox).toBeTruthy();

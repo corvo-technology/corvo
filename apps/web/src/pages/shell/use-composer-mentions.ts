@@ -1,6 +1,6 @@
-import { useLingui } from "@lingui/react/macro";
 import type { Bot, Connection, ConnectionCatalogItem, Group, Routine } from "@corvo/contracts";
 import { buildComposerMentionOptions, mentionConnectorsFrom } from "@corvo/core";
+import { useLingui } from "@lingui/react/macro";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { connectedAppMarks } from "../../lib/connected-apps";

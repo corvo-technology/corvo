@@ -1,9 +1,4 @@
-import type {
-  ComputerStatus,
-  ProductEvent,
-  ThreadMessage,
-  ThreadSnapshot,
-} from "@corvo/contracts";
+import type { ComputerStatus, ProductEvent, ThreadMessage, ThreadSnapshot } from "@corvo/contracts";
 import { answerableAskMessageIds, withLiveStreamingProgress } from "@corvo/core";
 import { describe, expect, it } from "vitest";
 import {

@@ -1,9 +1,4 @@
-import type {
-  AdapterContext,
-  CommandRequest,
-  ComputerRef,
-  ProcessEvent,
-} from "@corvo/adapter-kit";
+import type { AdapterContext, CommandRequest, ComputerRef, ProcessEvent } from "@corvo/adapter-kit";
 import { FakeSandboxProvider } from "@corvo/adapters";
 
 /** A model must not receive successful shell results for commands the fixture never ran. */

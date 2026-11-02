@@ -11,11 +11,7 @@ import {
   phoneCallSettings,
 } from "@corvo/core";
 import type { Prisma, PrismaClient, ThreadEvents } from "@corvo/db";
-import {
-  appendEventInTransaction,
-  createThreadMessageInTransaction,
-  runAsSystem,
-} from "@corvo/db";
+import { appendEventInTransaction, createThreadMessageInTransaction, runAsSystem } from "@corvo/db";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { isUniqueViolation, publishMessage } from "./run-messages.js";
 

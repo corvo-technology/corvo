@@ -1,15 +1,3 @@
-import type { AgentToolResult } from "@earendil-works/pi-agent-core";
-import { Agent } from "@earendil-works/pi-agent-core";
-import type {
-  Api,
-  AssistantMessage,
-  Context,
-  JsonValue,
-  Message,
-  Model,
-  ModelsSimpleStreamOptions,
-} from "@earendil-works/pi-ai";
-import { validateToolArguments } from "@earendil-works/pi-ai";
 import type {
   AdapterContext,
   AgentRunRequest,
@@ -27,6 +15,18 @@ import {
   modelFallbackFailure,
 } from "@corvo/core";
 import { getLogger } from "@corvo/logging";
+import type { AgentToolResult } from "@earendil-works/pi-agent-core";
+import { Agent } from "@earendil-works/pi-agent-core";
+import type {
+  Api,
+  AssistantMessage,
+  Context,
+  JsonValue,
+  Message,
+  Model,
+  ModelsSimpleStreamOptions,
+} from "@earendil-works/pi-ai";
+import { validateToolArguments } from "@earendil-works/pi-ai";
 import { uncertainEffectResult } from "./approval-effect.js";
 import { automated, withAutomatedLabels } from "./automated-messages.js";
 import { withCloudflareAuth } from "./cloudflare-ai-gateway.js";

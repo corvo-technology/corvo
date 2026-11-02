@@ -1,7 +1,7 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { ScratchpadItem } from "@corvo/contracts";
 import { fetchFresh, writeSaved } from "@corvo/core/query";
 import { Button, Checkbox, Input } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
