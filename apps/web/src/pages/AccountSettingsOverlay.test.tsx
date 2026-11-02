@@ -98,7 +98,8 @@ vi.mock("../components/AccountAccess", () => ({
 vi.mock("../components/ApprovalRulesSettings", () => ({ ApprovalRulesSettings: () => null }));
 vi.mock("../components/ai/primitives", () => ({ SuccessPop: () => null }));
 vi.mock("../components/ComputersUnavailableHint", () => ({
-  ComputersUnavailableHint: () => null,
+  CHOOSE_COMPUTER_EVENT: "corvo:choose-computer",
+  ComputersUnavailableHint: () => <p>Computers are off.</p>,
 }));
 vi.mock("../components/DesktopUpdates", () => ({ DesktopUpdateSection: () => null }));
 vi.mock("../lib/auth", () => ({ authClient: { changePassword: vi.fn(), updateUser: vi.fn() } }));
@@ -119,7 +120,11 @@ import {
 } from "../lib/composer-enter-to-send-pref";
 import { getRemoteImagesEnabled } from "../lib/remote-images-preference";
 import { TOOL_ACTIVITY_STORAGE_KEY } from "../lib/tool-activity-preference";
-import { GeneralSettingsPanels, UsageSettingsPanel } from "./AccountSettingsOverlay";
+import {
+  ComputerSettingsPanel,
+  GeneralSettingsPanels,
+  UsageSettingsPanel,
+} from "./AccountSettingsOverlay";
 
 afterEach(() => {
   localStorage.clear();
@@ -544,5 +549,57 @@ it("closes the name editor before refresh finishes and ignores a refresh failure
     expect(editor.card.querySelector('[role="alert"]')).toBeNull();
   } finally {
     await editor.cleanup();
+  }
+});
+
+async function renderComputerPanel(props: React.ComponentProps<typeof ComputerSettingsPanel>) {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  await act(async () => {
+    root.render(<ComputerSettingsPanel {...props} />);
+  });
+  return {
+    container,
+    cleanup: async () => {
+      await act(async () => root.unmount());
+      container.remove();
+      vi.unstubAllGlobals();
+    },
+  };
+}
+
+it("says computers are off, with the way back, while they are", async () => {
+  const { container, cleanup } = await renderComputerPanel({ sandboxProvider: "none" });
+  try {
+    expect(container.textContent).toContain("Computers are off.");
+    expect(container.textContent).not.toContain("Bots run on");
+  } finally {
+    await cleanup();
+  }
+});
+
+it("says where bots run once computers work, and offers to change it", async () => {
+  const isolated = await renderComputerPanel({ sandboxProvider: "docker", showHint: false });
+  try {
+    expect(isolated.container.textContent).toContain("Bots run on isolated computers in Docker.");
+    expect(isolated.container.textContent).not.toContain("Computers are off.");
+    const opened = vi.fn();
+    window.addEventListener("corvo:choose-computer", opened);
+    const choose = [...isolated.container.querySelectorAll("button")].find(
+      (button) => button.textContent === "Choose where bots run",
+    );
+    await act(async () => choose?.click());
+    window.removeEventListener("corvo:choose-computer", opened);
+    expect(opened).toHaveBeenCalledOnce();
+  } finally {
+    await isolated.cleanup();
+  }
+  const local = await renderComputerPanel({ sandboxProvider: "desktop", showHint: false });
+  try {
+    expect(local.container.textContent).toContain("Bots run on this computer.");
+  } finally {
+    await local.cleanup();
   }
 });

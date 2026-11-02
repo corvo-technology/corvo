@@ -19,9 +19,10 @@ import {
 import type { ComponentType } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApprovalRulesSettings } from "../components/ApprovalRulesSettings";
-import { computersAreUnavailable } from "../components/ComputersUnavailableHint";
 import { SETTINGS_CONTENT_WIDTH, SettingsGroup, SettingsRow } from "../components/SettingsRows";
+import { computersAreUnavailable, showsComputerSettings } from "../lib/computer-sandbox";
 import { desktopBridge } from "../lib/desktop";
+import { useLocalEdition } from "../lib/local-edition";
 import { SpaceRpcProvider } from "../lib/space-rpc";
 import {
   ComputerSettingsPanel,
@@ -101,7 +102,13 @@ export function SettingsOverlay({
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [keepComputerRecovery, setKeepComputerRecovery] = useState(false);
   const recoveryHoldTimer = useRef<number | undefined>(undefined);
-  const showComputer = keepComputerRecovery || computersAreUnavailable(sandboxProvider);
+  const localEdition = useLocalEdition();
+  const managedLocal = localEdition && Boolean(desktopBridge()?.desktopControl);
+  const showComputer = showsComputerSettings({
+    provider: sandboxProvider,
+    recovering: keepComputerRecovery,
+    managedLocal,
+  });
   const showUpdates = Boolean(desktopBridge()?.update);
   // A section that isn't available yet (billing before its flag loads) shows General until it is.
   const section =
@@ -399,6 +406,7 @@ export function SettingsOverlay({
                   {section === "computer" && showComputer ? (
                     <ComputerSettingsPanel
                       sandboxProvider={sandboxProvider}
+                      showHint={keepComputerRecovery || computersAreUnavailable(sandboxProvider)}
                       onSandboxProviderChange={(next) => {
                         onSandboxProviderChange?.(next);
                         holdComputerRecovery();
