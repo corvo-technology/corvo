@@ -24,6 +24,14 @@ import {
 } from "./user-progress.js";
 
 /**
+ * A routine is the owner's own schedule, so its runs route like a run the owner started. Webhook
+ * and channel runs do not, and any run that received an outside message is refused per call.
+ */
+export function mayRouteWithoutOwner(trigger: string, ownerStartedRun: boolean): boolean {
+  return ownerStartedRun || trigger === "routine";
+}
+
+/**
  * Whether this call may hand off to a group its bot is not in. Every condition is checked per call:
  * the owner can turn the switch off mid-run, a helper never routes, and outside text that reached
  * the run could steer where work goes.
@@ -32,7 +40,7 @@ export async function squadRoutingAuthority(
   ctx: Pick<RunContext, "deps" | "run" | "source" | "trust">,
   executionId: string,
 ) {
-  const ownerStarted = ctx.source.ownerStartedRun;
+  const ownerStarted = mayRouteWithoutOwner(ctx.run.trigger, ctx.source.ownerStartedRun);
   if (!ownerStarted || isSubagentToolExecution(executionId)) {
     return { squadRouting: false, ownerStarted };
   }

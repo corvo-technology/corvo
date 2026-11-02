@@ -160,6 +160,7 @@ import {
   selectBuiltinToolsForRun,
 } from "./run-tool-selection.js";
 import { applyTool } from "./run-tools.js";
+import { mayRouteWithoutOwner } from "./run-tools-messaging.js";
 import { createRunTrustLoaders } from "./run-trust.js";
 import { completeRun, consumeRunEvents, failRun } from "./run-turn.js";
 import {
@@ -1288,7 +1289,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
               }),
           !thread.groupId
             ? loadBotGroupDirectory(deps.prisma, run, {
-                allGroups: bot.squadRouting && ownerStartedRun,
+                allGroups: bot.squadRouting && mayRouteWithoutOwner(run.trigger, ownerStartedRun),
               })
             : undefined,
         ]);
