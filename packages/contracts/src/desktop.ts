@@ -36,7 +36,25 @@ export interface CorvoDesktopOAuthCallback {
   state?: string;
 }
 
+/** The state of the grants desktop control needs from the operating system. */
+export type CorvoDesktopPermission = "granted" | "denied" | "unknown";
+
+export interface CorvoDesktopControlStatus {
+  /** False on a machine the tool does not ship for. */
+  supported: boolean;
+  installed: boolean;
+  permissions: { accessibility: CorvoDesktopPermission; screenRecording: CorvoDesktopPermission };
+}
+
 export interface CorvoDesktop {
+  /** Optional for compatibility with older desktop releases. */
+  desktopControl?: {
+    status: () => Promise<CorvoDesktopControlStatus>;
+    /** Downloads the pinned build if needed, then reports the status. */
+    prepare: () => Promise<CorvoDesktopControlStatus>;
+    /** Opens the system page where the permissions are granted. */
+    openPermissionGuide: () => Promise<void>;
+  };
   /** Optional for compatibility with older desktop releases. */
   tools?: {
     /** Which AI command-line tools are installed on this computer. */
