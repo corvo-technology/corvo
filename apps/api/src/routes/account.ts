@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import {
   deploymentAutoReviewDefault,
   effectiveModelRole,
@@ -24,6 +23,7 @@ import {
   selectVoicePreference,
   voicePreferenceTarget,
 } from "@corvo/db";
+import { ORPCError } from "@orpc/server";
 import { aiConsentStatus, allowAiConsent } from "../ai-consent.js";
 import type { BillingService } from "../billing.js";
 import { firstModelConnectAnalytics } from "../model-connect-analytics.js";

@@ -1,7 +1,7 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { IntegrationCatalogResult } from "@corvo/contracts";
 import { newClientId } from "@corvo/core";
 import { Button, Disclosure, Input } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { connectMcpOauth } from "../../lib/mcp-connect";
 import { rpc } from "../../lib/rpc";

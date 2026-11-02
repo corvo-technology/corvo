@@ -1,9 +1,9 @@
-import { ORPCError } from "@orpc/server";
 import type { SecretStore } from "@corvo/adapter-kit";
 import { persistPreparedSecret } from "@corvo/adapters";
 import type { Actor } from "@corvo/contracts";
 import type { PrismaClient } from "@corvo/db";
 import { Prisma, withTransactionRetry } from "@corvo/db";
+import { ORPCError } from "@orpc/server";
 
 type AgentSecretDeps = {
   prisma: PrismaClient;

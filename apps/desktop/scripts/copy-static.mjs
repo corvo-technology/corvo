@@ -4,7 +4,15 @@ import { fileURLToPath } from "node:url";
 
 // tsc only emits the TypeScript sources; the preload bridges and the setup
 // window's static assets have to be copied into dist alongside them.
-const STATIC_FILES = ["preload.cjs", "setup-preload.cjs", "setup.html", "setup.css", "setup.js", "setup-strings.js", "mascot.png"];
+const STATIC_FILES = [
+  "preload.cjs",
+  "setup-preload.cjs",
+  "setup.html",
+  "setup.css",
+  "setup.js",
+  "setup-strings.js",
+  "mascot.png",
+];
 const TOKENS_FILE = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../../packages/ui-tokens/src/tokens.css",

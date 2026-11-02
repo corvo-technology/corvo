@@ -1,5 +1,5 @@
-import { t } from "@lingui/core/macro";
 import type { CorvoDesktop } from "@corvo/contracts";
+import { t } from "@lingui/core/macro";
 
 /**
  * Saves where bots run through the desktop app. Resolves `false` when the person declines the

@@ -1,7 +1,7 @@
-import { useLingui } from "@lingui/react/macro";
 import type { ReplyPreview, ThreadMessage } from "@corvo/contracts";
 import { formatTimeSeparator, isPeerReceiptBlocks, replyLabel } from "@corvo/core";
 import { cn } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ArtifactTarget } from "../../lib/artifact-open";

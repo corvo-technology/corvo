@@ -38,9 +38,7 @@ type NativeNotifications = {
 };
 
 const nativeNotifications =
-  Platform.OS === "android"
-    ? requireNativeModule<NativeNotifications>("CorvoNotifications")
-    : null;
+  Platform.OS === "android" ? requireNativeModule<NativeNotifications>("CorvoNotifications") : null;
 
 export type NotificationThreadTarget = { botId?: string; threadId?: string; groupId?: string };
 

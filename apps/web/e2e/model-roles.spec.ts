@@ -1,6 +1,6 @@
+import type { ModelCatalogEntry, ModelRoleSettings } from "@corvo/contracts";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { ModelCatalogEntry, ModelRoleSettings } from "@corvo/contracts";
 import { captureScreenshot, completeOnboarding, openUserSettings, rpc, signup } from "./helpers";
 
 async function pickModel(page: Page, search: string, label: string) {

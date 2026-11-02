@@ -138,6 +138,7 @@ export function RoutineTimeGrid({
           {days.map((day, index) => {
             const isToday = dayKey(day) === today;
             return (
+              // biome-ignore lint/a11y/useSemanticElements: a calendar column, not form fields
               <div
                 key={dayKey(day)}
                 role="group"

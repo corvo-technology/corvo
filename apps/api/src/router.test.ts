@@ -6142,6 +6142,7 @@ describe("bot model auth on save", () => {
       userModelPreference: { findFirst: preferenceFindFirst },
       userModelCredential: { findFirst: vi.fn(async () => null) },
       secret: { findFirst: secretFindFirst },
+      partnerTenant: { findFirst: vi.fn(async () => null) },
       $transaction: vi.fn(async (fn: (client: typeof tx) => unknown) => fn(tx)),
     };
     const deps = {

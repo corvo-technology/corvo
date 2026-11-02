@@ -74,9 +74,7 @@ describe("SerenityMemoryProvider", () => {
   it("keeps bot and space entity namespaces inside the adapter", () => {
     expect(serenityBotEntity("bot-1")).toBe("corvo-bot/bot-1");
     expect(serenitySpaceEntity("workspace-1")).toBe("corvo-space/workspace-1");
-    expect(serenityBotEntity("bot-1", "Personal Brain")).toBe(
-      `corvo-bot/${PERSONAL_BRAIN}--bot-1`,
-    );
+    expect(serenityBotEntity("bot-1", "Personal Brain")).toBe(`corvo-bot/${PERSONAL_BRAIN}--bot-1`);
     expect(serenitySpaceEntity("workspace-1", "Personal Brain")).toBe(
       `corvo-space/${PERSONAL_BRAIN}--workspace-1`,
     );

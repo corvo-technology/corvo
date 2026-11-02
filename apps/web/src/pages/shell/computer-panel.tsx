@@ -1,6 +1,6 @@
+import type { Bot, ComputerStatus, Routine } from "@corvo/contracts";
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import type { Bot, ComputerStatus, Routine } from "@corvo/contracts";
 import { Maximize2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { ComputersUnavailableHint } from "../../components/ComputersUnavailableHint";

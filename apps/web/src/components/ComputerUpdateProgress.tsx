@@ -1,8 +1,8 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { ComputerUpdate } from "@corvo/contracts";
 import { COMPUTER_UPDATE_STAGES } from "@corvo/contracts";
 import { computerUpdateNeedsAttention, computerUpdateStages } from "@corvo/core";
 import { Button, cn, Dialog, DialogContent, DialogTitle, Spinner } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { CheckCircle2, Circle, CircleAlert } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { computerUpdates } from "../lib/computer-updates";

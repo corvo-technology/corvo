@@ -1,7 +1,7 @@
-import { Trans } from "@lingui/react/macro";
 import type { SignupSurvey, StoreCategory } from "@corvo/contracts";
 import { STORE_CATEGORIES } from "@corvo/contracts";
 import { Button, ToggleGroup, ToggleGroupItem } from "@corvo/ui-web";
+import { Trans } from "@lingui/react/macro";
 import { useId, useState } from "react";
 import { rpc } from "../../lib/rpc";
 import { useStoreCategoryLabels } from "../StoreCategoryChips";

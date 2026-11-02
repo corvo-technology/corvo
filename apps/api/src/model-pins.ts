@@ -1,9 +1,9 @@
-import { ORPCError } from "@orpc/server";
 import type { CodexLiveCatalog, parseModelSecret } from "@corvo/adapters";
 import { findConnectedModelCredential, validateConnectedModelChoice } from "@corvo/adapters";
 import type { Actor } from "@corvo/contracts";
 import { OPENAI_COMPATIBLE_PROVIDER_ID, usableModelId } from "@corvo/contracts";
 import { modelRoleTarget, runAsSystem } from "@corvo/db";
+import { ORPCError } from "@orpc/server";
 import type { RouterDeps } from "./router.js";
 
 /**

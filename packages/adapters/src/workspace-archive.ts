@@ -1,11 +1,7 @@
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createGunzip } from "node:zlib";
-import type {
-  PortableFile,
-  StreamedPortableFile,
-  WorkspaceExportLimits,
-} from "@corvo/adapter-kit";
+import type { PortableFile, StreamedPortableFile, WorkspaceExportLimits } from "@corvo/adapter-kit";
 import { WorkspaceTooLargeError } from "@corvo/adapter-kit";
 import { normalizeWorkspacePath } from "./computer-support.js";
 

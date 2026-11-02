@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { ThinkingLevel } from "@corvo/contracts";
 import { isOllamaCloudBaseUrl } from "@corvo/contracts";
 import { toggleEnabledModelId } from "@corvo/core";
@@ -12,6 +11,7 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { ModelPreflightFeedback } from "../../components/ModelConnectionPreflightNotice";
 import { ModelHeadersEditor } from "../../components/ModelHeadersEditor";
 

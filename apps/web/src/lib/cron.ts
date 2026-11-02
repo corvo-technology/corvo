@@ -1,6 +1,6 @@
-import { t } from "@lingui/core/macro";
 import type { CronLabels, CronUnit } from "@corvo/core";
 import { ENGLISH_CRON_LABELS } from "@corvo/core";
+import { t } from "@lingui/core/macro";
 
 /** Translate a cron interval unit in its plural form. */
 export function cronUnitLabel(unit: CronUnit): string {

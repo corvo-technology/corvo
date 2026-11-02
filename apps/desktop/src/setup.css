@@ -235,7 +235,6 @@ html[data-platform="darwin"] .titlebar {
   }
 }
 
-
 /* No size to report (a failure, or before the first layer): take no room. */
 
 .stack-phase[data-tone="error"] {
@@ -261,10 +260,6 @@ html[data-platform="darwin"] .titlebar {
   white-space: pre-wrap;
   word-break: break-word;
 }
-
-
-
-
 
 .status {
   margin: 14px 0 0;

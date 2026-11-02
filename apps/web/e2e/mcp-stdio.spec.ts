@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import type { McpServer } from "@corvo/contracts";
+import { expect, test } from "@playwright/test";
 import { captureScreenshot, completeOnboarding, expandAdvancedSection, signup } from "./helpers";
 
 const credentialsTemplate = `{

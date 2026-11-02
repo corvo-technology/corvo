@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { BillingStatus } from "@corvo/contracts";
 import {
   DEFAULT_MONTHLY_CREDIT_AMOUNT,
@@ -25,6 +24,7 @@ import {
   SelectValue,
   Switch,
 } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { formatBillingDate } from "../lib/billing";

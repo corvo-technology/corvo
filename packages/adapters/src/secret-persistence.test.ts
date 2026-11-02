@@ -1,8 +1,8 @@
-import type { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js";
 import type { AdapterContext } from "@corvo/adapter-kit";
 import { BOT_SECRET_VALUE_MAX_LENGTH } from "@corvo/contracts";
 import type { Prisma, PrismaClient } from "@corvo/db";
 import { withTransactionRetry } from "@corvo/db";
+import type { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js";
 import { describe, expect, it, vi } from "vitest";
 import { InfisicalSecretStore } from "./infisical-secret-store.js";
 import { McpConnector } from "./mcp-connector.js";

@@ -1,12 +1,12 @@
 import { lookup } from "node:dns/promises";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import {
   ipVersion,
   isCloudMetadataAddress,
   isLocalhostOrLoopbackIp,
   isNonPublicAddress,
 } from "@corvo/contracts";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { Agent } from "undici";
 import { combineSignals } from "./connector-safety.js";
 import type { ResolvedAddress, ResolveHostname } from "./network-address.js";

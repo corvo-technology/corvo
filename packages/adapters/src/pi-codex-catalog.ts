@@ -1,8 +1,8 @@
-import type { OAuthCredential } from "@earendil-works/pi-ai";
 import type { SecretStore } from "@corvo/adapter-kit";
 import type { ThinkingLevel } from "@corvo/contracts";
 import { ThinkingLevelSchema } from "@corvo/contracts";
 import type { PrismaClient } from "@corvo/db";
+import type { OAuthCredential } from "@earendil-works/pi-ai";
 import { LiveCatalogCache, liveModelCatalogEnabled } from "./pi-live-cache.js";
 import type { CatalogSpaceAuth } from "./pi-live-catalog.js";
 import { liveCatalogEntry, overlayLiveCatalog } from "./pi-live-catalog.js";

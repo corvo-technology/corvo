@@ -958,9 +958,7 @@ function SpaceShell() {
               enterToSend={enterToSend}
               onImportAgent={(agent) => openImport(agent, false)}
               activeName={
-                inGroup
-                  ? `#${activeGroup?.name ?? activeSnapshot?.groupName ?? ""}`
-                  : active?.name
+                inGroup ? `#${activeGroup?.name ?? activeSnapshot?.groupName ?? ""}` : active?.name
               }
               running={composerRunning}
               disabled={Boolean(recordingSkill)}
@@ -1002,8 +1000,7 @@ function SpaceShell() {
               mentionTargets={composerMentionTargets}
               groupRecipient={
                 inGroup
-                  ? (text, mentionBotIds) =>
-                      groupRecipientName(activeSnapshot, text, mentionBotIds)
+                  ? (text, mentionBotIds) => groupRecipientName(activeSnapshot, text, mentionBotIds)
                   : undefined
               }
               agentSkills={agentSkills}

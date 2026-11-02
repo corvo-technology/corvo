@@ -1,5 +1,5 @@
-import { getEnvApiKey } from "@earendil-works/pi-ai/compat";
 import type { ModelUsageLookup } from "@corvo/adapter-kit";
+import { getEnvApiKey } from "@earendil-works/pi-ai/compat";
 import { OpenRouterUsageLookup } from "./openrouter-usage.js";
 
 export const DEFAULT_OPENROUTER_MODEL_ID = "openai/gpt-6-luna";

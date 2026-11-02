@@ -1,6 +1,6 @@
-import type { MenuAction } from "@expo/ui/community/menu";
 import { ATTACHMENT_MAX_COUNT, attachmentMaxBytes } from "@corvo/contracts";
 import { attachmentsForThread } from "@corvo/core";
+import type { MenuAction } from "@expo/ui/community/menu";
 import { useRef, useState } from "react";
 import { t, useI18n } from "./i18n";
 import type { PickedAttachment } from "./pick-attachments";

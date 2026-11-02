@@ -1,7 +1,7 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { ModelCatalogEntry } from "@corvo/contracts";
 import { detectProviderFromKey, pickCatalogModelId } from "@corvo/core";
 import { Button, Input } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useId, useState } from "react";
 import { runModelConnectionPreflight } from "../lib/model-connection-preflight";
 import { rpc } from "../lib/rpc";

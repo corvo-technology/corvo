@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import { BOT_NAME_MAX_LENGTH } from "@corvo/contracts";
 import { MASCOT_COLORS } from "@corvo/core";
 import {
@@ -11,6 +10,7 @@ import {
   DialogTitle,
   Input,
 } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useRef, useState } from "react";
 import { errorText } from "../../lib/user-error";
 import { BotLookPicker } from "./avatar-studio-popover";

@@ -314,9 +314,7 @@ describe("computer loopback provision lifecycle", () => {
         enabled ? [{ HostIp: "127.0.0.1", HostPort: "0" }] : undefined,
       );
       expect(options.HostConfig.Binds).toEqual([`${homePath}:/home/corvo`]);
-      expect(options.Env).toContainEqual(
-        expect.stringMatching(/^CORVO_COMPUTER_CONTROL_TOKEN=.+/),
-      );
+      expect(options.Env).toContainEqual(expect.stringMatching(/^CORVO_COMPUTER_CONTROL_TOKEN=.+/));
     }
   });
 });
@@ -1484,9 +1482,8 @@ describe("screen registry across run boundaries", () => {
       claiming = false;
       expect(response.status).toBe(continuous ? 400 : 200);
       expect(
-        commands.filter((command) =>
-          command.includes("for marker in /tmp/corvo/browser-profile-*"),
-        ).length,
+        commands.filter((command) => command.includes("for marker in /tmp/corvo/browser-profile-*"))
+          .length,
       ).toBe(continuous ? 3 : 2);
       if (continuous) {
         expect(await response.json()).toEqual({ error: "computer restarted during screen setup" });
@@ -1500,9 +1497,8 @@ describe("screen registry across run boundaries", () => {
       ).length;
       expect((await view()).status).toBe(200);
       expect(
-        commands.filter((command) =>
-          command.includes("for marker in /tmp/corvo/browser-profile-*"),
-        ).length,
+        commands.filter((command) => command.includes("for marker in /tmp/corvo/browser-profile-*"))
+          .length,
       ).toBe(resets);
     },
   );
@@ -1662,9 +1658,8 @@ describe("screen registry across run boundaries", () => {
           body: JSON.stringify({ interactive: false, revokeControl: false }),
         });
       const resets = () =>
-        commands.filter((command) =>
-          command.includes("for marker in /tmp/corvo/browser-profile-*"),
-        ).length;
+        commands.filter((command) => command.includes("for marker in /tmp/corvo/browser-profile-*"))
+          .length;
       expect((await view()).status).toBe(200);
       blockCommand = true;
       const holder = view();

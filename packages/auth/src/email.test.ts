@@ -14,7 +14,8 @@ describe("account email templates", () => {
     ["verification", () => verificationEmail(origin, "user@example.test", url)],
     [
       "password reset",
-      () => passwordResetEmail(origin, { id: "user-1", email: "user@example.test", name: "Test" }, url),
+      () =>
+        passwordResetEmail(origin, { id: "user-1", email: "user@example.test", name: "Test" }, url),
     ],
   ] as const)("preserves the exact %s link in HTML and text", async (_name, create) => {
     const message = await create();

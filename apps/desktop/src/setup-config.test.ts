@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  CORVO_CLOUD_URL,
   DEFAULT_LOCAL_WEB_URL,
   isCorvoHealth,
   managedLocalOpenUrl,
@@ -8,7 +9,6 @@ import {
   parseSetupInput,
   parseStoredSetup,
   probeFailureMessage,
-  CORVO_CLOUD_URL,
   readProbeJson,
   resolveStartupTarget,
   safeExternalUrl,

@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { BotSecretMetadata } from "@corvo/contracts";
 import {
   BotSecretName,
@@ -9,6 +8,7 @@ import {
 import { fetchFresh, writeSaved } from "@corvo/core/query";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@corvo/ui-web";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@corvo/ui-web/components/ui/tooltip";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, RotateCcw, X } from "lucide-react";
 import { useId, useState } from "react";

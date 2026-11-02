@@ -1,8 +1,8 @@
+import type { AgentRunRequest } from "@corvo/adapter-kit";
+import { canonicalPiProviderId, usableModelId } from "@corvo/contracts";
 import type { Api, Model, Models, ModelThinkingLevel } from "@earendil-works/pi-ai";
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
 import { builtinModels } from "@earendil-works/pi-ai/providers/all";
-import type { AgentRunRequest } from "@corvo/adapter-kit";
-import { canonicalPiProviderId, usableModelId } from "@corvo/contracts";
 import { DEFAULT_OPENROUTER_MODEL_ID } from "./deployment-model.js";
 import { PiRuntimeCredentialStore, toOAuthCredential } from "./pi-credentials.js";
 import { liveModelSibling } from "./pi-live-model.js";

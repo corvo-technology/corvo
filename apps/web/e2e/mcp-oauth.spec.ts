@@ -1,6 +1,6 @@
+import type { McpServer } from "@corvo/contracts";
 import type { Route } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { McpServer } from "@corvo/contracts";
 import { MCP_OAUTH_CHANNEL } from "../src/lib/mcp-oauth-channel";
 import { captureScreenshot, completeOnboarding, expandAdvancedSection, signup } from "./helpers";
 

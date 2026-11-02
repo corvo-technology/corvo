@@ -26,6 +26,7 @@ beforeEach(() => {
       codes.length ? Response.json({ code: codes.shift() }) : new Response("no", { status: 500 }),
     ),
   );
+  // biome-ignore lint/security/noGlobalEval: loads the built widget script the way a page would
   if (!customElements.get("corvo-assistant")) (0, eval)(source);
 });
 afterEach(() => {
@@ -89,8 +90,13 @@ describe("<corvo-assistant>", () => {
     const post = vi.fn();
     Object.defineProperty(frame, "contentWindow", { value: { postMessage: post } });
     const spoof = (init: MessageEventInit) =>
-      window.dispatchEvent(new MessageEvent("message", { data: { type: "corvo:refresh" }, ...init }));
-    spoof({ origin: "https://evil.example", source: frame.contentWindow as unknown as MessageEventSource });
+      window.dispatchEvent(
+        new MessageEvent("message", { data: { type: "corvo:refresh" }, ...init }),
+      );
+    spoof({
+      origin: "https://evil.example",
+      source: frame.contentWindow as unknown as MessageEventSource,
+    });
     spoof({ origin: ORIGIN, source: window });
     await settle();
     expect(post).not.toHaveBeenCalled();

@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { AgentImportInfo } from "@corvo/contracts";
 import {
   AlertDialog,
@@ -10,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { agentImportErrorText } from "../../lib/agent-import-errors";
 import { rpc } from "../../lib/rpc";

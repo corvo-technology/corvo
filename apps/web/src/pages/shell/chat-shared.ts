@@ -1,6 +1,6 @@
-import { t } from "@lingui/core/macro";
 import type { ThreadMessage } from "@corvo/contracts";
 import { previewMessageText as previewText } from "@corvo/core";
+import { t } from "@lingui/core/macro";
 
 export type PendingAttachment = {
   id: string;

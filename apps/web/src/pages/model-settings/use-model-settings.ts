@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/react/macro";
 import type { Me, ModelHeaderRow, SettingsScope, ThinkingLevel } from "@corvo/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
@@ -31,6 +30,7 @@ import {
   savedCompatibleModelIds,
 } from "@corvo/core";
 import { fetchFresh } from "@corvo/core/query";
+import { useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useCopyText } from "../../lib/copy-text";

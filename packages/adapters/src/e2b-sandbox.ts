@@ -1,5 +1,3 @@
-import type { CommandResult, CommandStartOpts, EntryInfo } from "@e2b/desktop";
-import { Sandbox, TimeoutError } from "@e2b/desktop";
 import type {
   AdapterContext,
   CommandRequest,
@@ -18,6 +16,8 @@ import type {
 } from "@corvo/adapter-kit";
 import { boundedSandboxCommandTimeoutMs } from "@corvo/core";
 import { getLogger } from "@corvo/logging";
+import type { CommandResult, CommandStartOpts, EntryInfo } from "@e2b/desktop";
+import { Sandbox, TimeoutError } from "@e2b/desktop";
 import { sandboxIdleMs } from "./computer-idle.js";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import {

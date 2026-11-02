@@ -1,6 +1,6 @@
+import type { Bot, Routine } from "@corvo/contracts";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { Bot, Routine } from "@corvo/contracts";
 import {
   activeBotId,
   captureScreenshot,

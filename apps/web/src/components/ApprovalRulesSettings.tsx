@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   ActionApprovalRule,
   ActionAutoReviewSettings,
@@ -8,6 +7,7 @@ import type {
 import { humanizeToolName } from "@corvo/core";
 import { writeSaved } from "@corvo/core/query";
 import { Button, ToggleGroup, ToggleGroupItem } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useId, useState } from "react";
 import { useSpaceQueries } from "../lib/query";
@@ -107,6 +107,7 @@ export function ApprovalRulesSettings({ scope }: { scope: SettingsScope }) {
   return (
     <div data-testid="approval-settings" className="space-y-8">
       <div className="space-y-2">
+        {/* biome-ignore lint/a11y/useSemanticElements: a grid of option buttons, not form fields */}
         <div
           role="group"
           aria-label={t`Mode`}

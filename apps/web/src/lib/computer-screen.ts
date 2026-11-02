@@ -1,5 +1,5 @@
-import { t } from "@lingui/core/macro";
 import { isLocalhostOrLoopbackIp } from "@corvo/contracts";
+import { t } from "@lingui/core/macro";
 import { errorText } from "./user-error";
 
 export interface ComputerScreenResult {

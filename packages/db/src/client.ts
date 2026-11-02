@@ -1,7 +1,7 @@
-import { PrismaPg } from "@prisma/adapter-pg";
 import type { KeyProvider } from "@corvo/adapter-kit";
 import { resolveContentEncryption } from "@corvo/core";
 import { getLogger } from "@corvo/logging";
+import { PrismaPg } from "@prisma/adapter-pg";
 import type { PoolClient } from "pg";
 import { Pool } from "pg";
 import { withContentEncryption } from "./content-encryption.js";

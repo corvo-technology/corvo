@@ -6,14 +6,14 @@ import os from "node:os";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { brotliCompressSync, gzipSync } from "node:zlib";
-import { serve } from "@hono/node-server";
-import type { CDPSession, ElectronApplication, Page } from "@playwright/test";
-import { _electron as electron, expect } from "@playwright/test";
 import type { createApp } from "@corvo/api/app";
 import { abortableDelay } from "@corvo/core";
 import { loadRootEnv } from "@corvo/core/node/load-root-env";
 import type { PrismaClient } from "@corvo/db";
 import { createThreadMessage } from "@corvo/db";
+import { serve } from "@hono/node-server";
+import type { CDPSession, ElectronApplication, Page } from "@playwright/test";
+import { _electron as electron, expect } from "@playwright/test";
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import type { NumericSummary, PerformanceReport } from "../performance-report.js";
 import {

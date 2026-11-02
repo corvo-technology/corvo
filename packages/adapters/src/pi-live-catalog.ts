@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
-import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type { SecretStore } from "@corvo/adapter-kit";
 import { canonicalPiProviderId } from "@corvo/contracts";
 import type { PrismaClient } from "@corvo/db";
+import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type { ModelCredentialAuthKind } from "./pi-catalog-availability.js";
 import { LiveCatalogCache, liveModelCatalogEnabled } from "./pi-live-cache.js";
 import { isChatModelId, liveModelSibling } from "./pi-live-model.js";

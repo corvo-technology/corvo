@@ -1,5 +1,3 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { CronFreq, CronPreset, CronUnit } from "@corvo/core";
 import {
   CRON_FREQS,
@@ -9,6 +7,8 @@ import {
   describeCronPreset,
 } from "@corvo/core";
 import { Input, NativeSelect, NativeSelectOption } from "@corvo/ui-web";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Clock } from "lucide-react";
 import { cronLabels, cronUnitLabel } from "../lib/cron";
 

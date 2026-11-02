@@ -1,6 +1,6 @@
-import { useLingui } from "@lingui/react/macro";
 import { SPACE_NAME_MAX_LENGTH } from "@corvo/contracts";
 import { Button, Input } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { useId, useRef, useState } from "react";
 import { rpc } from "../../lib/rpc";
 import { errorText } from "../../lib/user-error";

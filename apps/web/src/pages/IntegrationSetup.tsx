@@ -1,6 +1,6 @@
-import { useLingui } from "@lingui/react/macro";
 import type { Bot } from "@corvo/contracts";
 import { NativeSelect, NativeSelectOption, Spinner } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";

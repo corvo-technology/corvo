@@ -1,6 +1,6 @@
+import { signupRequiresEmailVerification } from "@corvo/core";
 import type { Locator, Page, TestInfo } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { signupRequiresEmailVerification } from "@corvo/core";
 
 export function isRealSandboxProvider(provider = process.env.SANDBOX_PROVIDER) {
   return provider === "e2b" || provider === "daytona" || provider === "boat";

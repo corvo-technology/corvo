@@ -1,6 +1,6 @@
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { isOllamaCloudBaseUrl } from "@corvo/contracts";
 import { Button, Disclosure, Input } from "@corvo/ui-web";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 import {

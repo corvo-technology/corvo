@@ -560,7 +560,10 @@ describe("managed env assignments", () => {
 describe("sidecar boundary validation", () => {
   it("normalizes a request the API already validated", () => {
     expect(
-      validateUpdateRequest({ repoUrl: "https://github.com/corvo-technology/corvo.git", branch: " main " }),
+      validateUpdateRequest({
+        repoUrl: "https://github.com/corvo-technology/corvo.git",
+        branch: " main ",
+      }),
     ).toEqual({
       request: {
         repoUrl: "https://github.com/corvo-technology/corvo.git",

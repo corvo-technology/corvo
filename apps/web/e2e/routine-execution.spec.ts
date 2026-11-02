@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
 import type { Routine } from "@corvo/contracts";
+import { expect, test } from "@playwright/test";
 import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("Slack message and GitHub event triggers persist their settings", async ({

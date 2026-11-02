@@ -30,7 +30,8 @@
       this.frame = document.createElement("iframe");
       this.frame.title = "Corvo";
       this.frame.allow = "clipboard-write";
-      this.frame.style.cssText = "border:0;width:100%;height:100%;display:block;background:transparent";
+      this.frame.style.cssText =
+        "border:0;width:100%;height:100%;display:block;background:transparent";
       this.appendChild(this.frame);
       this.onMessage = (event) => this.handle(event);
       window.addEventListener("message", this.onMessage);
@@ -88,7 +89,11 @@
     }
 
     handle(event) {
-      if (!this.frame || event.source !== this.frame.contentWindow || event.origin !== this.origin) {
+      if (
+        !this.frame ||
+        event.source !== this.frame.contentWindow ||
+        event.origin !== this.origin
+      ) {
         return;
       }
       const type = event.data && event.data.type;

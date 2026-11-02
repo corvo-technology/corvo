@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { RPCHandler } from "@orpc/server/fetch";
 import type { AgentRunRequest, JobPublisher } from "@corvo/adapter-kit";
 import {
   createRunExecutor,
@@ -15,6 +14,7 @@ import type { Actor } from "@corvo/contracts";
 import type { PrismaClient } from "@corvo/db";
 import { asSystem, createDb, createThreadEvents, runAsSystem, runAsTenant } from "@corvo/db";
 import { MarkdownMemoryStore } from "@corvo/memory";
+import { RPCHandler } from "@orpc/server/fetch";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { RouterDeps } from "./router.js";
 import { createRouter } from "./router.js";

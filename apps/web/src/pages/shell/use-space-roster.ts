@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/react/macro";
 import type {
   AppBootstrap,
   Bot,
@@ -10,6 +9,7 @@ import type {
   ThreadSnapshot,
 } from "@corvo/contracts";
 import { isRetryableError, reorderBotTo } from "@corvo/core";
+import { useLingui } from "@lingui/react/macro";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { takeInitialBootstrap } from "../../lib/bootstrap";

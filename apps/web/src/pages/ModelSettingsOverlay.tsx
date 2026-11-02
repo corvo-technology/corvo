@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type { SettingsScope } from "@corvo/contracts";
 import {
   compatibleConnectionName,
@@ -26,6 +25,7 @@ import {
   ModelThinkingOptions,
   Spinner,
 } from "@corvo/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ModelCredential } from "../lib/model-auth";

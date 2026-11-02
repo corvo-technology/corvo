@@ -6,12 +6,9 @@ import type { AddressInfo, Server as NetServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
-import { expect, test } from "@playwright/test";
-import {
-  addScreenProxyCapability,
-  openScreenCapability,
-} from "@corvo/core/node/screen-capability";
+import { addScreenProxyCapability, openScreenCapability } from "@corvo/core/node/screen-capability";
 import { screenProbeUrl } from "@corvo/core/screen-reconnect";
+import { expect, test } from "@playwright/test";
 import type { Plugin, ViteDevServer } from "vite";
 import { createServer, preview } from "vite";
 

@@ -64,7 +64,13 @@ new AgentSideConnection(
       if (text.includes("TOOL")) {
         await conn.sessionUpdate({
           sessionId: params.sessionId,
-          update: { sessionUpdate: "tool_call", toolCallId: "call-1", title: "Run a command", kind: "execute", status: "pending" },
+          update: {
+            sessionUpdate: "tool_call",
+            toolCallId: "call-1",
+            title: "Run a command",
+            kind: "execute",
+            status: "pending",
+          },
         });
         const answer = await conn.requestPermission({
           sessionId: params.sessionId,
@@ -75,7 +81,9 @@ new AgentSideConnection(
           ],
         });
         await say(
-          answer.outcome.outcome === "selected" ? `permission:${answer.outcome.optionId}` : "permission:cancelled",
+          answer.outcome.outcome === "selected"
+            ? `permission:${answer.outcome.optionId}`
+            : "permission:cancelled",
         );
         return { stopReason: "end_turn" };
       }

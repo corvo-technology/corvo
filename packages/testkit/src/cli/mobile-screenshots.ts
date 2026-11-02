@@ -4,7 +4,6 @@ import type { Server } from "node:http";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve } from "@hono/node-server";
 import {
   ComposioConnector,
   EmailEmulator,
@@ -14,6 +13,7 @@ import {
 } from "@corvo/adapters";
 import type { PrismaClient } from "@corvo/db";
 import { createThreadMessage } from "@corvo/db";
+import { serve } from "@hono/node-server";
 import { sessionCookieHeader } from "../index.js";
 import { runProcess } from "./process.js";
 

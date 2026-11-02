@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import { BUILTIN_AGENT_SKILLS } from "@corvo/adapters";
 import type { Actor, AgentSkill, AgentSkillSource } from "@corvo/contracts";
 import type { SkillSource } from "@corvo/core";
@@ -11,6 +10,7 @@ import {
 } from "@corvo/core";
 import type { PrismaClient } from "@corvo/db";
 import { IsolationError } from "@corvo/db";
+import { ORPCError } from "@orpc/server";
 
 type AgentSkillRow = {
   id: string;

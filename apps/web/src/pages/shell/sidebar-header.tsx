@@ -1,6 +1,6 @@
-import { useLingui } from "@lingui/react/macro";
 import type { Bot } from "@corvo/contracts";
 import { Button, Popover, PopoverContent, PopoverTrigger } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { Bell, PanelLeftClose, PanelLeftOpen, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { IconTooltip } from "../../components/IconTooltip";

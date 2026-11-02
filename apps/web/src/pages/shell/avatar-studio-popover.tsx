@@ -1,5 +1,3 @@
-import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
 import { MASCOT_COLORS, mascotForColorDef } from "@corvo/core";
 import {
   BotAvatar,
@@ -18,6 +16,8 @@ import {
   TabsTrigger,
 } from "@corvo/ui-web";
 import { Button } from "@corvo/ui-web/components/ui/button";
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { Check, Pencil, Upload, X } from "lucide-react";
 import type { ClipboardEvent, DragEvent } from "react";
 import { useRef, useState } from "react";

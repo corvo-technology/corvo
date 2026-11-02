@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/react/macro";
 import type { AgentSkillCatalogEntry, ThreadMessage } from "@corvo/contracts";
 import type { AgentImportReader, ComposerMention, SlashActionId } from "@corvo/core";
 import {
@@ -12,6 +11,7 @@ import {
   truncateSlashDescription,
 } from "@corvo/core";
 import { Button } from "@corvo/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { ArrowUp, Box, Paperclip, Plus, Settings, Square, X } from "lucide-react";
 import type { ClipboardEvent, DragEvent, RefObject } from "react";
 import { memo, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -565,7 +565,10 @@ export const Composer = memo(function Composer({
         />
       ) : null}
       {recipient ? (
-        <div data-testid="group-recipient" className="mb-1 px-1 text-[12.5px] text-muted-foreground">
+        <div
+          data-testid="group-recipient"
+          className="mb-1 px-1 text-[12.5px] text-muted-foreground"
+        >
           {t`Goes to ${recipient}`}
         </div>
       ) : null}
