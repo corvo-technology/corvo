@@ -8,7 +8,7 @@ import { chromium } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 import { resolveWwwPort } from "../www-port.mjs";
 
-const LOCALES = ["en", "pt", "de", "ko", "zh", "ja"];
+const LOCALES = ["en", "pt", "es", "fr", "de", "ja", "zh"];
 const baseUrl = process.argv[2] ?? `http://127.0.0.1:${resolveWwwPort()}`;
 const publicDir = fileURLToPath(new URL("../public/", import.meta.url));
 

@@ -6,6 +6,7 @@ const COPY: LaunchCopy = {
     description:
       "Corvo ist ein Open-Source-Team aus KI-Agenten. Jeder hat eine Aufgabe, eigene Tools und eine eigene Unterhaltung. Sie arbeiten in Kanälen auf deinem Computer zusammen und fragen nach, bevor sie handeln.",
     ogImageAlt: "Corvo. KI-Agenten, die als Team arbeiten und nachfragen, bevor sie handeln.",
+    ogTagline: "Open Source. Läuft auf deinem Computer.",
     availableLanguage: "Deutsch",
     skipToContent: "Zum Inhalt springen",
   },

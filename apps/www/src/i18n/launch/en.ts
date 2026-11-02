@@ -6,6 +6,7 @@ const COPY: LaunchCopy = {
     description:
       "Corvo is an open source team of AI agents. Each one has a job, its own tools and its own conversation. They work together in channels on your computer and ask before they act.",
     ogImageAlt: "Corvo. AI agents that work as a team and ask before they act.",
+    ogTagline: "Open source. Runs on your computer.",
     availableLanguage: "English",
     skipToContent: "Skip to content",
   },

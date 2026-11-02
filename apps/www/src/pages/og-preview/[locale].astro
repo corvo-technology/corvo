@@ -13,11 +13,12 @@ const { locale } = Astro.params;
 if (!isLocale(locale)) throw new Error(`Unknown locale: ${locale}`);
 
 const copy = getLaunchCopy(locale);
-const heading = `${copy.hero.line1} ${copy.hero.line2}`;
+const { line1, line2 } = copy.hero;
+const [tag] = copy.hero.tags.slice(1);
 // Long headlines step down so every language fits the same block.
-const size = heading.length <= 40 ? 76 : heading.length <= 68 ? 66 : heading.length <= 76 ? 56 : 52;
-// A hyphenated word such as "E-Mails" stays on one line.
-const words = heading.split(" ");
+const length = line1.length + line2.length;
+const cjk = locale === "ja" || locale === "zh";
+const size = cjk ? 44 : length <= 50 ? 68 : length <= 64 ? 60 : 52;
 ---
 
 <html lang={LOCALE_HTML_LANG[locale]}>
@@ -33,16 +34,30 @@ const words = heading.split(" ");
     />
   </head>
   <body>
-    <main id="og" style={`--size:${size}px`}>
+    <main id="og" style={`--size:${size}px;--width:${cjk ? 620 : 660}px`}>
       <header>
-        <Mascot hue="menta" size={44} />
+        <Mascot hue="menta" size={46} />
         <span>Corvo</span>
       </header>
-      <h1>{words.map((word, index) => (<>{index > 0 && " "}{word.includes("-") ? <span class="nobreak">{word}</span> : word}</>))}</h1>
-      <ul aria-hidden="true">
-        {copy.preview.agents.map((agent) => <li><Mascot hue={agent.hue} size={72} /></li>)}
-      </ul>
-      <div class="prompt" aria-hidden="true"></div>
+      <h1>
+        <span>{line1}</span>
+        <span class="accent">{line2}</span>
+      </h1>
+      <p>{copy.meta.ogTagline}</p>
+      <div class="stage" aria-hidden="true">
+        <Mascot hue="menta" size={300} />
+        {
+          tag && (
+            <div class="tag">
+              <Mascot hue={tag.hue} size={40} />
+              <span>
+                <b>{tag.name}</b>
+                {tag.role}
+              </span>
+            </div>
+          )
+        }
+      </div>
     </main>
   </body>
 </html>
@@ -58,9 +73,22 @@ const words = heading.split(" ");
     width: 1200px;
     height: 630px;
     overflow: hidden;
-    background: #0b0b0c;
+    background: linear-gradient(180deg, #11231d 0%, #0b0b0c 62%);
     color: #f5f5f5;
-    font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans", "Apple SD Gothic Neo", sans-serif;
+    font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans", sans-serif;
+  }
+  /* The page loads no site styles, so a mascot takes its size from --s here. */
+  #og .mascot {
+    display: block;
+    flex: none;
+    width: var(--s);
+    height: var(--s);
+  }
+  #og .mascot svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
   }
   #og header {
     position: absolute;
@@ -73,45 +101,67 @@ const words = heading.split(" ");
     font-weight: 600;
     letter-spacing: -0.02em;
   }
-  #og header .mascot {
-    border-radius: 10px;
-  }
   #og h1 {
     position: absolute;
-    top: 144px;
+    top: 168px;
     left: 64px;
     z-index: 1;
-    width: 540px;
+    width: var(--width);
     margin: 0;
     font-size: var(--size);
-    font-weight: 600;
+    font-weight: 650;
     letter-spacing: -0.03em;
-    line-height: 1.04;
+    line-height: 1.05;
     text-wrap: balance;
   }
-  #og .nobreak {
-    white-space: nowrap;
-  }
-  #og ul {
-    position: absolute;
-    bottom: 56px;
-    left: 64px;
-    display: flex;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  #og li .mascot {
+  #og h1 span {
     display: block;
-    width: 56px;
-    height: 56px;
-    border-radius: 13px;
   }
-  /* The approval prompt from the real app, placed so the whole card and its three choices show. */
-  #og .prompt {
+  #og h1 .accent {
+    margin-top: 10px;
+    color: #3fd6a8;
+  }
+  #og p {
     position: absolute;
-    inset: 0 0 0 600px;
-    background: url("/graphics/chat/approval.png") -246px 101px / 1260px 840px no-repeat;
+    bottom: 60px;
+    left: 64px;
+    margin: 0;
+    color: #a1a1a6;
+    font-size: 30px;
+    letter-spacing: -0.01em;
+  }
+  #og .stage {
+    position: absolute;
+    top: 150px;
+    right: 90px;
+    width: 340px;
+  }
+  #og .stage > .mascot {
+    filter: drop-shadow(0 28px 40px rgb(0 0 0 / 0.5));
+  }
+  #og .tag {
+    position: absolute;
+    top: -34px;
+    left: -110px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px 12px 12px;
+    border: 1px solid #2a2a2e;
+    border-radius: 16px;
+    background: #151517;
+    box-shadow: 0 14px 30px rgb(0 0 0 / 0.45);
+    font-size: 20px;
+    line-height: 1.2;
+    color: #a1a1a6;
+  }
+  #og .tag b {
+    display: block;
+    color: #f5f5f5;
+    font-weight: 600;
+  }
+  #og .tag .mascot {
+    border-radius: 10px;
+    filter: none;
   }
 </style>

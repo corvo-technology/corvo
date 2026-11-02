@@ -6,6 +6,7 @@ const COPY: LaunchCopy = {
     description:
       "Corvo は、オープンソースの AI エージェントのチームです。それぞれに仕事と専用のツール、専用の会話があります。あなたのコンピューター上のチャンネルで協力して働き、動く前に確認します。",
     ogImageAlt: "Corvo。チームで働き、動く前に確認する AI エージェント。",
+    ogTagline: "オープンソース。あなたのコンピューターで動きます。",
     availableLanguage: "日本語",
     skipToContent: "本文へ移動",
   },

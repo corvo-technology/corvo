@@ -6,6 +6,7 @@ const COPY: LaunchCopy = {
     description:
       "Corvo 是一支开源的 AI 智能体团队。每个智能体都有自己的工作、工具和对话。它们在你电脑上的频道里协作，并在行动前先问你。",
     ogImageAlt: "Corvo。以团队方式工作、行动前先询问的 AI 智能体。",
+    ogTagline: "开源。在你的电脑上运行。",
     availableLanguage: "简体中文",
     skipToContent: "跳到正文",
   },
