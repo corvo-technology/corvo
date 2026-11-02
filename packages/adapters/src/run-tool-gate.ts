@@ -271,15 +271,18 @@ export async function gateToolCall(
             ),
           )
         : false));
+  const steerable =
+    requiresMandatoryApproval && mode === "never"
+      ? !ctx.source.ownerStartedRun || (await isRunTainted(ctx))
+      : undefined;
   const plan = planActionGate({
     resolved: approvalResolved,
     mode,
     mandatory: requiresMandatoryApproval,
-    steerable:
-      requiresMandatoryApproval && mode === "never"
-        ? !ctx.source.ownerStartedRun || (await isRunTainted(ctx))
-        : undefined,
-    ownerPresent: ctx.source.ownerStartedRun && !(await ctx.trust.receivedOutsideMessage()),
+    steerable,
+    ownerPresent: steerable
+      ? ctx.source.ownerStartedRun && !(await ctx.trust.receivedOutsideMessage())
+      : undefined,
     consequential: requiresApprovalByDefault,
     reviewOnly: connectorReadGated,
     checkerConfigured,
