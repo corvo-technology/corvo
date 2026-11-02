@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { signupPolicyFromEnv } from "@corvo/core";
 import type { PrismaClient } from "./client.js";
+import { runAsSystem } from "./row-security.js";
 
 export interface SignupPolicyEnv {
   signupsEnabled: string | undefined;
@@ -16,8 +17,19 @@ function isUniqueViolation(error: unknown): boolean {
   return Boolean(error && typeof error === "object" && "code" in error && error.code === "P2002");
 }
 
-/** Provision a personal workspace. Signup never grants deployment administration. */
-export async function bootstrapUserSpace(
+/**
+ * Provision a personal workspace. Signup never grants deployment administration. The person has no
+ * workspace yet, so there is no tenant to scope the writes to: they run as the system.
+ */
+export function bootstrapUserSpace(
+  prisma: PrismaClient,
+  user: { id: string },
+  env: SignupPolicyEnv,
+): Promise<{ spaceId: string }> {
+  return runAsSystem("bootstrap user space", () => createUserSpace(prisma, user, env));
+}
+
+async function createUserSpace(
   prisma: PrismaClient,
   user: { id: string },
   env: SignupPolicyEnv,
