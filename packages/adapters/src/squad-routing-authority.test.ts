@@ -4,7 +4,12 @@ import { squadRoutingAuthority } from "./run-tools-messaging.js";
 const mainCall = JSON.stringify(["pi-tool", "main", "call-1"]);
 const helperCall = JSON.stringify(["pi-tool", "helper-1", "call-1"]);
 
-function ctx(over: { live?: boolean | null; ownerStarted?: boolean; outsideMessage?: boolean }) {
+function ctx(over: {
+  live?: boolean | null;
+  ownerStarted?: boolean;
+  outsideMessage?: boolean;
+  trigger?: string;
+}) {
   const findUnique = vi.fn(async () =>
     over.live === null ? null : { squadRouting: over.live ?? true },
   );
@@ -12,7 +17,10 @@ function ctx(over: { live?: boolean | null; ownerStarted?: boolean; outsideMessa
     findUnique,
     ctx: {
       deps: { prisma: { bot: { findUnique } } },
-      run: { botId: "bot-a" },
+      run: {
+        botId: "bot-a",
+        trigger: over.trigger ?? (over.ownerStarted === false ? "webhook" : "user"),
+      },
       source: { ownerStartedRun: over.ownerStarted ?? true },
       trust: { receivedOutsideMessage: vi.fn(async () => over.outsideMessage ?? false) },
     } as never,
@@ -64,6 +72,28 @@ describe("squadRoutingAuthority", () => {
 
   it("denies routing once a channel or webhook message reached the run", async () => {
     const f = ctx({ outsideMessage: true });
+    await expect(squadRoutingAuthority(f.ctx, mainCall)).resolves.toMatchObject({
+      squadRouting: false,
+    });
+  });
+
+  it("grants routing in a routine run, so the team can pass work on without the owner", async () => {
+    const f = ctx({ ownerStarted: false, trigger: "routine" });
+    await expect(squadRoutingAuthority(f.ctx, mainCall)).resolves.toEqual({
+      squadRouting: true,
+      ownerStarted: true,
+    });
+  });
+
+  it("still denies a routine run once a channel or webhook message reached it", async () => {
+    const f = ctx({ ownerStarted: false, trigger: "routine", outsideMessage: true });
+    await expect(squadRoutingAuthority(f.ctx, mainCall)).resolves.toMatchObject({
+      squadRouting: false,
+    });
+  });
+
+  it("still denies a webhook run", async () => {
+    const f = ctx({ ownerStarted: false, trigger: "webhook" });
     await expect(squadRoutingAuthority(f.ctx, mainCall)).resolves.toMatchObject({
       squadRouting: false,
     });
