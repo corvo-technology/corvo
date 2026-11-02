@@ -1139,11 +1139,7 @@ app.whenReady().then(async () => {
     appPath: app.getAppPath(),
   });
   desktopControlScript = path.join(enginePaths.engineDir, "desktop-control-mcp.mjs");
-  // Windows keeps stdio MCP servers off until its launcher has run there.
-  desktopControlLauncher =
-    process.platform === "win32"
-      ? undefined
-      : desktopControlLauncherPath(toolsDir(), process.platform);
+  desktopControlLauncher = desktopControlLauncherPath(toolsDir(), process.platform);
   localStack = new EmbeddedEngineController({
     dataDir: engineDir(userDataDir),
     engineDir: enginePaths.engineDir,

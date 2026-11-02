@@ -4,7 +4,20 @@ import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 
 /** The one person an engine on their own computer belongs to, when it has no account yet. */
-export const LOCAL_OWNER_EMAIL = "owner@local.invalid";
+export const LOCAL_OWNER_EMAIL = "owner@local.me";
+
+/** The placeholder earlier versions created the local owner with. */
+const LEGACY_LOCAL_OWNER_EMAIL = "owner@local.invalid";
+
+/** An owner created with the old placeholder takes the current one; any other address stays. */
+export async function withCurrentOwnerEmail<T extends { id: string; email: string }>(
+  adapter: { updateUser: (id: string, data: { email: string }) => Promise<T | null | unknown> },
+  user: T,
+): Promise<T> {
+  if (user.email !== LEGACY_LOCAL_OWNER_EMAIL) return user;
+  await adapter.updateUser(user.id, { email: LOCAL_OWNER_EMAIL });
+  return { ...user, email: LOCAL_OWNER_EMAIL };
+}
 
 export interface LocalEntryOptions {
   /** The private identity the desktop app shares with the engine it starts. */
@@ -44,7 +57,8 @@ export function localEntry(options: LocalEntryOptions): BetterAuthPlugin {
           sortBy: { field: "createdAt", direction: "asc" },
           limit: 1,
         });
-        let user = oldest ? await adapter.findUserById(oldest.id) : null;
+        const found = oldest ? await adapter.findUserById(oldest.id) : null;
+        let user = found ? await withCurrentOwnerEmail(adapter, found) : null;
         if (!user) {
           user = await adapter.createUser(
             { email: LOCAL_OWNER_EMAIL, name: "", emailVerified: true },
