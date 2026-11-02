@@ -2,6 +2,7 @@ import { validateToolArguments } from "@earendil-works/pi-ai/utils/validation";
 import { describe, expect, it } from "vitest";
 import { builtinAgentTools } from "./builtin-tools.js";
 import { jsonField, parametersFor } from "./pi-runtime-tool-parameters.js";
+import { spawnBotArguments } from "./pi-runtime-tools.js";
 
 /** What the model is shown for a tool: the Pi parameters, serialised. */
 function wire(tool: { name: string; description: string; inputSchema: Record<string, unknown> }) {
@@ -133,6 +134,15 @@ describe("string enums keep their allowed values in a plain enum", () => {
         () => validate(spawnBot!, { name: "Media Manager", computer_mode }),
         computer_mode,
       ).toThrow();
+    }
+  });
+
+  it("prepares spawn_bot arguments the schema accepts when computer_mode is left out", () => {
+    for (const raw of [
+      { name: "Media Manager" },
+      { name: "Media Manager", computer_mode: "dedicated", instructions: "Ask first." },
+    ]) {
+      expect(() => validate(spawnBot!, spawnBotArguments(raw)), JSON.stringify(raw)).not.toThrow();
     }
   });
 });
