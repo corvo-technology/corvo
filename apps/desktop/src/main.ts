@@ -32,6 +32,7 @@ import type { ElectronAutoUpdater } from "./auto-update.js";
 import { DesktopUpdateController, LAUNCH_CHECK_DELAY_MS, updaterSupport } from "./auto-update.js";
 import { createBadgeHandler } from "./badge.js";
 import { openBrowserAuth } from "./browser-auth.js";
+import { computerImageTag, ensureComputerImage } from "./computer-image.js";
 import { detectDockerHere } from "./docker-detect.js";
 import {
   EmbeddedEngineController,
@@ -1188,6 +1189,17 @@ app.whenReady().then(async () => {
   });
   desktopControlScript = path.join(enginePaths.engineDir, "desktop-control-mcp.mjs");
   desktopControlLauncher = desktopControlLauncherPath(toolsDir(), process.platform);
+  const dockerProgram = await detectDockerHere();
+  const computerImage = dockerProgram ? await computerImageTag(enginePaths.computerContextDir) : "";
+  if (dockerProgram) {
+    // Built here, with Docker's own build, while the engine starts; the supervisor then finds it ready.
+    // A computer asked for in the meantime fails at once with a clear reason.
+    void ensureComputerImage({
+      docker: dockerProgram,
+      contextDir: enginePaths.computerContextDir,
+      tag: computerImage,
+    }).catch((error) => reportDesktopError(error, "desktop.child"));
+  }
   localStack = new EmbeddedEngineController({
     dataDir: engineDir(userDataDir),
     engineDir: enginePaths.engineDir,
@@ -1202,16 +1214,14 @@ app.whenReady().then(async () => {
     desktopControlLauncher,
     // With Docker here, bots get isolated computers; without it they have none until the person
     // allows this computer.
-    ...((await detectDockerHere())
+    ...(dockerProgram
       ? {
           docker: {
             computerContext: enginePaths.computerContextDir,
             controlViaLoopback: process.platform !== "linux",
+            image: computerImage,
           },
         }
-      : {}),
-    ...(openCodeModels
-      ? { localModels: { url: openCodeModels.url, models: openCodeModels.models } }
       : {}),
     spawn: (command, args, options) =>
       spawn(command, args, {

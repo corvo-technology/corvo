@@ -37,6 +37,7 @@ import {
   homeVolumeMatches,
   hostComputerUser,
   legacyNetworkOwnedSolelyBy,
+  localImageBuildAllowed,
   parseMemoryBytes,
   publishedLoopbackControlHostPort,
   resolveComputerControlEndpoint,
@@ -2002,5 +2003,13 @@ describe("computer home storage", () => {
     );
     // Steady state waits on Xvfb instead of polling, so the trap runs immediately.
     expect(start).toMatch(/^wait "\$XVFB_PID"$/m);
+  });
+});
+
+describe("localImageBuildAllowed", () => {
+  it("builds the image itself unless told another program builds it", () => {
+    expect(localImageBuildAllowed({})).toBe(true);
+    expect(localImageBuildAllowed({ SANDBOX_COMPUTER_IMAGE_BUILD: "on" })).toBe(true);
+    expect(localImageBuildAllowed({ SANDBOX_COMPUTER_IMAGE_BUILD: "off" })).toBe(false);
   });
 });

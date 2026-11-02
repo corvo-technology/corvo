@@ -12,9 +12,9 @@ function probe(over: Partial<Parameters<typeof detectDocker>[0]> = {}) {
 }
 
 describe("detectDocker", () => {
-  it("finds Docker where an app started from Finder does not look, and checks that it answers", async () => {
+  it("finds Docker where an app started from Finder does not look, checks that it answers and says where it is", async () => {
     const options = probe();
-    expect(await detectDocker(options)).toBe(true);
+    expect(await detectDocker(options)).toBe("/usr/local/bin/docker");
     expect(options.run).toHaveBeenCalledWith("/usr/local/bin/docker", [
       "info",
       "--format",
@@ -27,11 +27,11 @@ describe("detectDocker", () => {
       env: { PATH: "/opt/tools/bin:/usr/bin" },
       exists: (file) => file === "/opt/tools/bin/docker",
     });
-    expect(await detectDocker(options)).toBe(true);
+    expect(await detectDocker(options)).toBe("/opt/tools/bin/docker");
   });
 
   it("says no when Docker is not installed", async () => {
-    expect(await detectDocker(probe({ exists: () => false }))).toBe(false);
+    expect(await detectDocker(probe({ exists: () => false }))).toBeNull();
   });
 
   it("says no when Docker is installed but not running", async () => {
@@ -40,7 +40,7 @@ describe("detectDocker", () => {
         throw new Error("Cannot connect to the Docker daemon");
       }),
     });
-    expect(await detectDocker(options)).toBe(false);
+    expect(await detectDocker(options)).toBeNull();
   });
 
   it("looks for the Windows program name there", async () => {
@@ -49,6 +49,8 @@ describe("detectDocker", () => {
       env: { PATH: "C:\\Tools", ProgramFiles: "C:\\Program Files" },
       exists: (file) => file === "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
     });
-    expect(await detectDocker(options)).toBe(true);
+    expect(await detectDocker(options)).toBe(
+      "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+    );
   });
 });
