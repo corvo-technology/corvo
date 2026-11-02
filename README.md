@@ -121,7 +121,7 @@ irm https://github.com/corvo-technology/corvo/releases/latest/download/install.p
 ```
 
 Or download the app from the [releases page](https://github.com/corvo-technology/corvo/releases/latest):
-`corvo-mac-universal.zip`, `corvo-win-x64.exe` or `corvo-linux-x86_64.AppImage`. The same command
+`corvo-mac-arm64.dmg` (Apple silicon), `corvo-win-x64.exe` or `corvo-linux-x86_64.AppImage`. The same command
 updates the app later. Details and signing notes: [desktop releases](./docs/desktop-release.md).
 
 On Linux the AppImage needs FUSE 2 (`libfuse2`, or `libfuse2t64` on Ubuntu 24.04). Without it, run
