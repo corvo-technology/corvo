@@ -348,7 +348,8 @@
   }
 
   changeLanguage.addEventListener("click", () => {
-    if (languageList.childElementCount === 0) buildLanguageList(locale);
+    // The list holds a hidden legend too, so look for the choices themselves.
+    if (languageList.querySelector(".choice") === null) buildLanguageList(locale);
     showStep("language");
   });
   languageForm.addEventListener("change", (event) => {
