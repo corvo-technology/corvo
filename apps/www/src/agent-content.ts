@@ -50,7 +50,7 @@ ${home.open.points.map((point) => `- **${point.title}:** ${point.body}`).join("\
 
 ${home.install.copy}
 
-- [${home.install.download} (${home.install.beta})](${DOWNLOAD_URL})
+- [${home.install.download}](${DOWNLOAD_URL})
 - ${home.install.macLinux}: \`${INSTALL_COMMAND}\`
 - ${home.install.windows}: \`${INSTALL_COMMAND_WINDOWS}\`
 

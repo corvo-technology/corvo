@@ -5,13 +5,12 @@ import GithubMark from "./GithubMark.astro";
 type Props = {
   class: string;
   download: string;
-  beta: string;
   github: string;
   /** PostHog `data-attr` prefix that tells this placement apart from others. */
   placement: string;
 };
 
-const { class: className, download, beta, github, placement } = Astro.props;
+const { class: className, download, github, placement } = Astro.props;
 ---
 
 <div class={className}>
@@ -29,7 +28,6 @@ const { class: className, download, beta, github, placement } = Astro.props;
       ></path>
     </svg>
     {download}
-    <span class="button__badge">{beta}</span>
   </a>
   <a
     class="button button--secondary"
