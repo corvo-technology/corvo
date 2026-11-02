@@ -12,9 +12,19 @@ import { useEffect, useState } from "react";
 import { CHOOSE_COMPUTER_EVENT } from "../components/ComputersUnavailableHint";
 import { sandboxCheckFailureMessage } from "../lib/computer-sandbox";
 import { desktopBridge } from "../lib/desktop";
-import { chooseHostComputer } from "../lib/host-computer";
+import {
+  chooseHostComputer,
+  declineHostComputer,
+  hostComputerDeclined,
+} from "../lib/host-computer";
 import { rpc } from "../lib/rpc";
 import { errorText } from "../lib/user-error";
+
+/** Whether to ask at launch: a choice is open, and not one the person already put off. */
+function asksOnLaunch(me: Me): boolean {
+  if (!me.canChooseHostComputer || me.computerHost != null) return false;
+  return me.sandboxProvider === "docker" || !hostComputerDeclined();
+}
 
 export function HostComputerPrompt({
   initialMe,
@@ -26,6 +36,8 @@ export function HostComputerPrompt({
   const { t } = useLingui();
   const desktop = desktopBridge();
   const [configuring, setConfiguring] = useState(false);
+  // The desktop app's own engine has no Docker: there the choice is this computer or nothing.
+  const [dockerOffered, setDockerOffered] = useState(true);
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -40,6 +52,7 @@ export function HostComputerPrompt({
         .me()
         .then((me) => {
           if (me.canChooseHostComputer) {
+            setDockerOffered(me.sandboxProvider === "docker");
             setConfiguring(me.computerHost != null);
             setOpen(true);
           }
@@ -57,13 +70,19 @@ export function HostComputerPrompt({
   useEffect(() => {
     if (!desktop) return;
     if (initialMe) {
-      if (initialMe.canChooseHostComputer && initialMe.computerHost == null) setOpen(true);
+      if (asksOnLaunch(initialMe)) {
+        setDockerOffered(initialMe.sandboxProvider === "docker");
+        setOpen(true);
+      }
       return;
     }
     void rpc
       .me()
       .then((me) => {
-        if (me.canChooseHostComputer && me.computerHost == null) setOpen(true);
+        if (asksOnLaunch(me)) {
+          setDockerOffered(me.sandboxProvider === "docker");
+          setOpen(true);
+        }
       })
       .catch(() => undefined);
   }, [desktop, initialMe]);
@@ -126,10 +145,14 @@ export function HostComputerPrompt({
           </DialogTitle>
           <DialogDescription className="space-y-2 leading-relaxed">
             <span className="block">
-              <Trans>
-                Docker limits access to your computer for added security. Using {hostLabel} lets
-                bots work with your local files and tools.
-              </Trans>
+              {dockerOffered ? (
+                <Trans>
+                  Docker limits access to your computer for added security. Using {hostLabel} lets
+                  bots work with your local files and tools.
+                </Trans>
+              ) : (
+                <Trans>Bots can work on {hostLabel} with your local files and tools.</Trans>
+              )}
             </span>
             <span className="block text-xs text-muted-foreground/80">
               <Trans>
@@ -145,9 +168,16 @@ export function HostComputerPrompt({
           </p>
         ) : null}
         <div className="flex flex-col gap-2">
-          <Button variant="outline" size="lg" disabled={busy} onClick={() => void choose("docker")}>
-            <Trans>Docker</Trans>
-          </Button>
+          {dockerOffered ? (
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={busy}
+              onClick={() => void choose("docker")}
+            >
+              <Trans>Docker</Trans>
+            </Button>
+          ) : null}
           <Button
             variant="outline"
             size="lg"
@@ -156,6 +186,19 @@ export function HostComputerPrompt({
           >
             <Trans>Use {hostLabel}</Trans>
           </Button>
+          {dockerOffered ? null : (
+            <Button
+              variant="ghost"
+              size="lg"
+              disabled={busy}
+              onClick={() => {
+                declineHostComputer();
+                setOpen(false);
+              }}
+            >
+              <Trans>Not now</Trans>
+            </Button>
+          )}
         </div>
         {error ? (
           <div className="mt-1 flex flex-wrap gap-2">

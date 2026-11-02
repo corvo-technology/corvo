@@ -75,6 +75,8 @@ export interface AppEnv {
   sandboxSupervisorToken: string | undefined;
   screenProxySecret: string;
   sandboxProvider: string;
+  /** The desktop app gave this engine a connection to its own computer. */
+  sandboxHostComputer: boolean;
   cloudAgentProvider: string;
   cloudAgentSpaceId: string | undefined;
   cursorApiKey: string | undefined;
@@ -252,6 +254,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
       sandboxProvider === "docker" ? resolveSupervisorToken(source) : undefined,
     screenProxySecret: resolveScreenProxySecret(source),
     sandboxProvider,
+    sandboxHostComputer: Boolean(source.SANDBOX_HOST_URL?.trim()),
     cloudAgentProvider,
     cloudAgentSpaceId: optional(source.CLOUD_AGENT_SPACE_ID),
     cursorApiKey: optional(source.CURSOR_API_KEY),

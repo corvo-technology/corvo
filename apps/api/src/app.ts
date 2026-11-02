@@ -737,6 +737,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       integrationsCatalogUrl: env.integrationsCatalogUrl,
       mcpAllowPrivateEndpoint: env.mcpAllowPrivateEndpoint,
       desktopHostChoiceEnabled: Boolean(env.desktopStackToken),
+      sandboxHostComputer: env.sandboxHostComputer,
       mcpStdioEnabled: env.mcpStdioEnabled,
       mcpStdioAllowedCommands: env.mcpStdioAllowedCommands,
     },
@@ -830,6 +831,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
   mountLocalComputerHost(app, {
     token: env.desktopStackToken,
     sandboxProvider: env.sandboxProvider,
+    hostComputer: env.sandboxHostComputer,
     prisma,
   });
   const requestSession = async (request: Request) => {

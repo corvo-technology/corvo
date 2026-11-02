@@ -8,8 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const bridge = vi.hoisted(() => ({ computer: {} }));
 const chooseHostComputer = vi.hoisted(() => vi.fn());
+const declineHostComputer = vi.hoisted(() => vi.fn());
 vi.mock("../../lib/desktop", () => ({ desktopBridge: () => bridge }));
-vi.mock("../../lib/host-computer", () => ({ chooseHostComputer }));
+vi.mock("../../lib/host-computer", () => ({ chooseHostComputer, declineHostComputer }));
 vi.mock("@lingui/react/macro", () => {
   const t = (parts: TemplateStringsArray, ...values: unknown[]) =>
     parts.reduce((text, part, index) => `${text}${index > 0 ? values[index - 1] : ""}${part}`, "");
@@ -34,6 +35,7 @@ function button(name: string) {
 beforeEach(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   chooseHostComputer.mockReset().mockResolvedValue(true);
+  declineHostComputer.mockReset();
   onDone.mockReset();
   container = document.createElement("div");
   document.body.append(container);
@@ -79,5 +81,39 @@ describe("ComputerStep", () => {
       button("Continue").click();
     });
     expect(chooseHostComputer).toHaveBeenCalledOnce();
+  });
+
+  describe("without Docker, as in the desktop app's own engine", () => {
+    beforeEach(() => {
+      act(() =>
+        root.render(
+          <ComputerStep key="local" hostLabel="this Mac" dockerOffered={false} onDone={onDone} />,
+        ),
+      );
+    });
+
+    it("offers this Mac or nothing, and no Docker", () => {
+      const labels = [...container.querySelectorAll("button")].map((b) => b.textContent);
+      expect(labels).toEqual(["Use this Mac", "Not now"]);
+    });
+
+    it("uses this Mac when asked to", async () => {
+      await act(async () => button("Use this Mac").click());
+      expect(chooseHostComputer).toHaveBeenCalledWith(bridge, "this-mac");
+      expect(onDone).toHaveBeenCalledOnce();
+    });
+
+    it("moves on without saving when the person is not ready, and remembers not to ask again at once", async () => {
+      await act(async () => button("Not now").click());
+      expect(chooseHostComputer).not.toHaveBeenCalled();
+      expect(declineHostComputer).toHaveBeenCalledOnce();
+      expect(onDone).toHaveBeenCalledOnce();
+    });
+
+    it("stays where it is when the person declines the app's own question", async () => {
+      chooseHostComputer.mockResolvedValue(false);
+      await act(async () => button("Use this Mac").click());
+      expect(onDone).not.toHaveBeenCalled();
+    });
   });
 });

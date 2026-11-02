@@ -24,6 +24,8 @@ export function mountLocalComputerHost(
   deps: {
     token?: string;
     sandboxProvider?: string;
+    /** The app gave the engine a connection to its own computer. */
+    hostComputer?: boolean;
     prisma: PrismaClient;
   },
 ) {
@@ -33,7 +35,9 @@ export function mountLocalComputerHost(
     if (!validLocalSettingsToken(deps.token, c.req.header(LOCAL_SETTINGS_TOKEN_HEADER))) {
       return c.json({ error: "Local settings are unavailable" }, 401);
     }
-    if (deps.sandboxProvider !== "docker") return c.json({ error: "Unavailable" }, 403);
+    const chooses =
+      deps.sandboxProvider === "docker" || (deps.sandboxProvider === "none" && deps.hostComputer);
+    if (!chooses) return c.json({ error: "Unavailable" }, 403);
     const body = await readBoundedBody(c.req.raw, 1024);
     if (body === null) return c.json({ error: "Request too large" }, 413);
     let computerHost: unknown;

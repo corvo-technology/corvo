@@ -224,6 +224,28 @@ describe("host-aware sandbox", () => {
     }
   });
 
+  it("gives the desktop app's own engine this Mac as its computer once the person allows it", async () => {
+    const settings = { computerHost: null as string | null };
+    const prisma = { deploymentSettings: { findUnique: async () => settings } };
+    const sandbox = createRunSandbox("none", {
+      hostComputerUrl: "http://127.0.0.1:45900",
+      hostComputerToken: "t".repeat(64),
+      prisma: prisma as never,
+    });
+    expect(await sandbox.provisionKind?.()).toBe("none");
+    settings.computerHost = "this-mac";
+    expect(await sandbox.provisionKind?.()).toBe("desktop");
+  });
+
+  it("keeps a deployment without computers and without a host connection off", () => {
+    const prisma = {
+      deploymentSettings: { findUnique: async () => ({ computerHost: "this-mac" }) },
+    };
+    const sandbox = createRunSandbox("none", { hostComputerUrl: "", prisma: prisma as never });
+    expect(sandbox.describe().id).toBe("none");
+    expect(sandbox.provisionKind).toBeUndefined();
+  });
+
   it("only switches docker deployments onto this Mac", () => {
     expect(sandboxKindForBot("docker", "this-mac")).toBe("desktop");
     expect(sandboxKindForBot("docker", "docker")).toBe("docker");
