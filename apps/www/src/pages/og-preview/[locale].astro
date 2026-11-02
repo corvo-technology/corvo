@@ -1,0 +1,117 @@
+---
+import type { GetStaticPaths } from "astro";
+import Mascot from "../../components/Mascot.astro";
+import { getLaunchCopy } from "../../i18n/launch";
+import { LOCALES, LOCALE_HTML_LANG, isLocale } from "../../i18n/locales";
+
+// The social image is drawn here and captured by scripts/generate-og.mjs, so it reads the same
+// headline as the page. The route exists only in dev; production builds skip it.
+export const getStaticPaths = (() =>
+  import.meta.env.DEV ? LOCALES.map((locale) => ({ params: { locale } })) : []) satisfies GetStaticPaths;
+
+const { locale } = Astro.params;
+if (!isLocale(locale)) throw new Error(`Unknown locale: ${locale}`);
+
+const copy = getLaunchCopy(locale);
+const heading = `${copy.hero.line1} ${copy.hero.line2}`;
+// Long headlines step down so every language fits the same block.
+const size = heading.length <= 40 ? 76 : heading.length <= 68 ? 66 : heading.length <= 76 ? 56 : 52;
+// A hyphenated word such as "E-Mails" stays on one line.
+const words = heading.split(" ");
+---
+
+<html lang={LOCALE_HTML_LANG[locale]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Corvo social image</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main id="og" style={`--size:${size}px`}>
+      <header>
+        <Mascot hue="menta" size={44} />
+        <span>Corvo</span>
+      </header>
+      <h1>{words.map((word, index) => (<>{index > 0 && " "}{word.includes("-") ? <span class="nobreak">{word}</span> : word}</>))}</h1>
+      <ul aria-hidden="true">
+        {copy.preview.agents.map((agent) => <li><Mascot hue={agent.hue} size={72} /></li>)}
+      </ul>
+      <div class="prompt" aria-hidden="true"></div>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  html,
+  body {
+    margin: 0;
+    background: #0b0b0c;
+  }
+  #og {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: #0b0b0c;
+    color: #f5f5f5;
+    font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans", "Apple SD Gothic Neo", sans-serif;
+  }
+  #og header {
+    position: absolute;
+    top: 56px;
+    left: 64px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  #og header .mascot {
+    border-radius: 10px;
+  }
+  #og h1 {
+    position: absolute;
+    top: 144px;
+    left: 64px;
+    z-index: 1;
+    width: 540px;
+    margin: 0;
+    font-size: var(--size);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+  #og .nobreak {
+    white-space: nowrap;
+  }
+  #og ul {
+    position: absolute;
+    bottom: 56px;
+    left: 64px;
+    display: flex;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  #og li .mascot {
+    display: block;
+    width: 56px;
+    height: 56px;
+    border-radius: 13px;
+  }
+  /* The approval prompt from the real app, placed so the whole card and its three choices show. */
+  #og .prompt {
+    position: absolute;
+    inset: 0 0 0 600px;
+    background: url("/graphics/chat/approval.png") -246px 101px / 1260px 840px no-repeat;
+  }
+</style>

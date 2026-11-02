@@ -1,0 +1,63 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { i18n } from "@lingui/core";
+import { beforeEach, expect, it } from "vitest";
+import { activityLabelText } from "./activity-label";
+import { UI_LOCALES } from "./ui-locale";
+
+beforeEach(() => {
+  i18n.load("en", {});
+  i18n.activate("en");
+});
+
+const MESSAGES = [
+  "Finding a tool",
+  "Looking at the screen",
+  "Reading the page",
+  "Using the page",
+  "Operating the computer",
+  "Saving a note to memory",
+  "Rendering a chart",
+  "Running: {value}",
+  "Reading {value}",
+  "Writing {value}",
+  "Listing {value}",
+  "Attaching {value}",
+  "Opening {value}",
+  "Opening page: {value}",
+  "Reading page: {value}",
+  "Searching the web: {value}",
+  "Reading skill: {value}",
+  "Delegating to helper: {value}",
+  "Using {value}",
+  "Review before {reviewing}",
+];
+
+it("keeps the words of a known activity line and fills in its name", () => {
+  expect(activityLabelText("Reading make_carousel.py")).toBe("Reading make_carousel.py");
+  expect(activityLabelText("Searching the web: node version")).toBe(
+    "Searching the web: node version",
+  );
+  expect(activityLabelText("Finding a tool")).toBe("Finding a tool");
+});
+
+it("leaves a line it does not know as it was written", () => {
+  expect(activityLabelText("Anything else")).toBe("Anything else");
+});
+
+it("is translated in every other language", () => {
+  for (const locale of UI_LOCALES.filter((item) => item !== "en")) {
+    const catalog = readFileSync(
+      fileURLToPath(new URL(`../locales/${locale}/messages.po`, import.meta.url)),
+      "utf8",
+    );
+    for (const message of MESSAGES) {
+      const entry = catalog
+        .split("\n\n")
+        .find((block) => block.includes(`msgid ${JSON.stringify(message)}\n`));
+      const translated = entry?.split("msgstr ")[1]?.trim();
+      expect(translated, `${locale}: ${message}`).toBeTruthy();
+      expect(translated, `${locale}: ${message}`).not.toBe('""');
+    }
+  }
+});

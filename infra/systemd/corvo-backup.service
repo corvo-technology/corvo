@@ -1,0 +1,15 @@
+[Unit]
+Description=Create and verify a Corvo production backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/corvo/backup.env
+ExecStart=/usr/local/sbin/corvo-backup
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/backups

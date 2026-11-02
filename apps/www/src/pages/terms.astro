@@ -1,0 +1,20 @@
+---
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { CONTACT_EMAIL } from "../site";
+---
+
+<BaseLayout title="Terms · Corvo" description="Corvo terms." index={false}>
+  <div class="container">
+    <Header />
+    <main id="main" class="privacy-copy">
+      <h1>Corvo terms</h1>
+      <p>
+        This page is being finalized and will be published before launch. For questions or requests, email
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      </p>
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>

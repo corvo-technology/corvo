@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="corvo_call_channel">Ligação em andamento</string>
+  <string name="corvo_call_title">Ligação do Corvo</string>
+  <string name="corvo_call_text">O microfone está ativo</string>
+</resources>

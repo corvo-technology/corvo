@@ -1,0 +1,17 @@
+/** Speech recognizers need regional BCP-47 tags for the app's UI locale codes. */
+const SPEECH_LOCALE_TAGS = {
+  en: "en-US",
+  de: "de-DE",
+  es: "es-ES",
+  fr: "fr-FR",
+  ja: "ja-JP",
+  "pt-BR": "pt-BR",
+  "zh-CN": "zh-CN",
+} as const;
+
+export type SpeechLocale = keyof typeof SPEECH_LOCALE_TAGS;
+
+/** The tag the recognizer needs for a supported UI locale. */
+export function speechLocaleTag(locale: SpeechLocale): string {
+  return SPEECH_LOCALE_TAGS[locale];
+}

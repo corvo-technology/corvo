@@ -1,0 +1,21 @@
+---
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { CONTACT_EMAIL } from "../site";
+---
+
+<BaseLayout title="About · Corvo" description="Corvo gives your business a team of AI bots that ask before they act.">
+  <div class="container">
+    <Header />
+    <main id="main" class="privacy-copy">
+      <h1>About Corvo</h1>
+      <p>
+        Corvo gives a business a team of AI bots. Each bot has one job, keeps its own conversation and memory,
+        works in the background, and asks for approval before the actions you choose.
+      </p>
+      <p>Questions? Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>

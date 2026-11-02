@@ -1,0 +1,15 @@
+---
+import Mascot from "./Mascot.astro";
+
+type Props = {
+  href?: string;
+  label?: string;
+};
+
+const { href = "/", label = "Corvo home" } = Astro.props as Props;
+---
+
+<a class="brand-lockup" href={href} aria-label={label}>
+  <Mascot hue="menta" size={30} />
+  <span class="brand-lockup__word" aria-hidden="true">Corvo</span>
+</a>

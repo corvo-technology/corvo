@@ -1,0 +1,9 @@
+# Optional drop-in: /etc/systemd/system/corvo-backup.service.d/alerts.conf
+[Unit]
+OnFailure=corvo-backup-alert.service
+
+[Service]
+ExecStartPost=-/usr/local/sbin/corvo-host-alert backup-failure ""
+ReadWritePaths=/var/lib/corvo/alerts
+StateDirectory=corvo/alerts
+StateDirectoryMode=0700

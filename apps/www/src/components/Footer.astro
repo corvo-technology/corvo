@@ -1,0 +1,106 @@
+---
+import {
+  DEFAULT_LOCALE,
+  LOCALE_HREFLANG,
+  LOCALE_LABELS,
+  LOCALES,
+  isLocale,
+  localeHashPath,
+  localeHomePath,
+  type Locale,
+} from "../i18n/locales";
+import { getLaunchCopy } from "../i18n/launch";
+import type { LaunchCopy } from "../i18n/launch";
+import { GITHUB_URL } from "../site";
+import Logo from "./Logo.astro";
+
+type Props = {
+  locale?: Locale;
+  homeHref?: string;
+  homeLabel?: string;
+  languagesLabel?: string;
+  navLabel?: string;
+  linkLabels?: LaunchCopy["footer"];
+};
+
+const currentLocale: Locale = isLocale(Astro.currentLocale)
+  ? Astro.currentLocale
+  : (Astro.props.locale ?? DEFAULT_LOCALE);
+const localeCopy = getLaunchCopy(currentLocale);
+
+const {
+  languagesLabel = localeCopy.footer.languagesLabel,
+  navLabel = localeCopy.footer.navLabel,
+  homeHref = localeHomePath(currentLocale),
+  homeLabel = localeCopy.nav.home,
+  linkLabels = localeCopy.footer,
+} = Astro.props;
+
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
+
+function isCurrentPage(href: string): boolean {
+  return (href.replace(/\/+$/, "") || "/") === currentPath;
+}
+
+type FooterLink = { href: string; label: string };
+
+const columns: Array<{ heading: string; links: FooterLink[] }> = [
+  {
+    heading: linkLabels.product,
+    links: [
+      { href: localeHashPath(currentLocale, "features"), label: linkLabels.features },
+      { href: localeHashPath(currentLocale, "open"), label: linkLabels.open },
+      { href: localeHashPath(currentLocale, "install"), label: linkLabels.install },
+      { href: GITHUB_URL, label: localeCopy.nav.github },
+      { href: localeHashPath(currentLocale, "faq"), label: linkLabels.faq },
+    ],
+  },
+  {
+    heading: linkLabels.company,
+    links: [
+      { href: "/about/", label: linkLabels.about },
+      { href: "/support/", label: linkLabels.support },
+      { href: "/privacy/", label: linkLabels.privacy },
+      { href: "/terms/", label: linkLabels.terms },
+    ],
+  },
+];
+---
+
+<footer class="site-footer">
+  <div class="site-footer__brand">
+    <Logo href={homeHref} label={homeLabel} />
+    <nav class="site-footer__languages" aria-label={languagesLabel}>
+      {
+        LOCALES.map((locale) => (
+          <a
+            href={localeHomePath(locale)}
+            hreflang={LOCALE_HREFLANG[locale]}
+            aria-current={isCurrentPage(localeHomePath(locale)) ? "page" : undefined}
+          >
+            {LOCALE_LABELS[locale]}
+          </a>
+        ))
+      }
+    </nav>
+    <span class="site-footer__legal">© 2026 Corvo</span>
+  </div>
+  <nav class="site-footer__columns" aria-label={navLabel}>
+    {
+      columns.map((column) => (
+        <div class="site-footer__column">
+          <h2>{column.heading}</h2>
+          <ul>
+            {column.links.map((link) => (
+              <li>
+                <a href={link.href} aria-current={isCurrentPage(link.href) ? "page" : undefined}>
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </nav>
+</footer>

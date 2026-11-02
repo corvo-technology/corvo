@@ -1,0 +1,518 @@
+@import "tw-animate-css";
+@import "./shadcn.css";
+@import "@corvo/ui-tokens/css";
+
+@source "./**/*.{ts,tsx}";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Web type: Instrument Sans (bundled by the app, with the system font as fallback) and a 14/20 base
+   scale. Mobile sets its own type natively. */
+@theme {
+  --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  --text-caption: 11px;
+  --text-caption--line-height: 16px;
+  --text-caption--letter-spacing: 0.005em;
+  --text-label: 12px;
+  --text-label--line-height: 16px;
+  --text-body2: 13px;
+  --text-body2--line-height: 18px;
+  --text-body1: 14px;
+  --text-body1--line-height: 20px;
+  --text-heading3: 17px;
+  --text-heading3--line-height: 24px;
+  --text-heading3--letter-spacing: -0.008em;
+  --text-heading2: 22px;
+  --text-heading2--line-height: 28px;
+  --text-heading2--letter-spacing: -0.012em;
+  --text-heading1: 26px;
+  --text-heading1--line-height: 32px;
+  --text-heading1--letter-spacing: -0.015em;
+}
+
+/* Light text on a dark ground reads thin on macOS; regular text uses 420 there. Medium and semibold stay. */
+:root[data-os="mac"] {
+  --font-weight-normal: 420;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-dialog: var(--dialog);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-disabled: var(--primary-disabled);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-chat-user: var(--chat-user);
+  --color-chat-user-foreground: var(--chat-user-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint-foreground: var(--faint-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-fill: var(--destructive-fill);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-link: var(--link);
+  --color-favicon-plate: var(--favicon-plate);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-status-working: var(--status-working);
+  --color-unread: var(--unread);
+  --color-overlay: var(--overlay);
+  --color-scrollbar: var(--scrollbar);
+  --color-scrollbar-hover: var(--scrollbar-hover);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --animate-caret-blink: caret-blink 1.25s ease-out infinite;
+
+  @keyframes caret-blink {
+    0%,
+    70%,
+    100% {
+      opacity: 1;
+    }
+    20%,
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Native <details> fold-outs slide open and closed instead of snapping. */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    overflow: clip;
+    /* Keep focus rings of full-width controls visible. */
+    overflow-clip-margin: 4px;
+    transition:
+      block-size 150ms ease-out,
+      content-visibility 150ms allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+@keyframes corvo-avatar-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.corvo-bot-avatar-ring {
+  animation: corvo-avatar-spin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  opacity: 0;
+  transition: opacity 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.corvo-bot-avatar {
+  transition: box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.corvo-bot-avatar[data-working="true"] .corvo-bot-avatar-ring {
+  opacity: 1;
+}
+
+@keyframes corvo-avatar-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.07);
+    filter: brightness(1.12);
+  }
+}
+
+.corvo-bot-avatar-picture {
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.5);
+}
+
+.corvo-bot-avatar-ring-working {
+  filter: drop-shadow(0 0 4px var(--status-working));
+}
+
+.corvo-bot-avatar[data-working="true"] .corvo-bot-avatar-picture {
+  animation: corvo-avatar-breathe 1.6s ease-in-out infinite;
+  box-shadow:
+    0 0 0 2px var(--status-working),
+    0 0 10px color-mix(in srgb, var(--status-working) 60%, transparent);
+}
+
+/* The whole chick is one SVG on a 100-unit tile; the crest and an accessory reach past its edge. */
+.corvo-mascot-eyes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.corvo-mascot-eye-ball {
+  fill: #0f0f0f;
+}
+
+.corvo-mascot-eye-light {
+  fill: #fff;
+}
+
+.corvo-mascot-smile {
+  stroke: #0f0f0f;
+}
+
+/* The crest sways while the chick works or is pointed at, and is still in a quiet list. */
+.corvo-mascot-crest {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.corvo-mascot-avatar[data-working="true"] .corvo-mascot-crest,
+.corvo-mascot-avatar:hover .corvo-mascot-crest {
+  animation: corvo-mascot-sway 3s ease-in-out infinite;
+}
+
+@keyframes corvo-mascot-sway {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+
+.corvo-mascot-gaze {
+  transform: translate(var(--gaze-x, 0px), var(--gaze-y, 0px));
+  transition: transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.corvo-mascot-eye,
+.corvo-mascot-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.corvo-mascot-eye {
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Each mascot blinks on its own beat (set from its name), never in step with the others. */
+.corvo-mascot-blink {
+  animation: corvo-mascot-blink var(--blink-every, 5s) ease-in-out var(--blink-delay, 0s) infinite;
+}
+
+@keyframes corvo-mascot-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.08);
+  }
+}
+
+/* Working: the pupils scan, as if reading. */
+.corvo-mascot-eyes[data-mood="thinking"] .corvo-mascot-scan {
+  animation: corvo-mascot-scan 2.6s ease-in-out infinite;
+}
+
+@keyframes corvo-mascot-scan {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  22% {
+    transform: translate(-3.2px, -2.6px);
+  }
+  48% {
+    transform: translate(3.4px, -3px);
+  }
+  74% {
+    transform: translate(2px, -0.6px);
+  }
+}
+
+/* Waiting for you: wide open. */
+.corvo-mascot-eyes[data-mood="alert"] .corvo-mascot-eye {
+  transform: scale(1.14);
+}
+
+/* Failed: tired eyes that do not blink. */
+.corvo-mascot-eyes[data-mood="failed"] .corvo-mascot-eye {
+  transform: translateY(2px) scaleY(0.6);
+}
+
+.corvo-mascot-eyes[data-mood="failed"] .corvo-mascot-blink {
+  animation: none;
+}
+
+/* Done: a smile that pops in. */
+.corvo-mascot-eyes[data-mood="happy"] .corvo-mascot-smile {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: corvo-mascot-smile 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes corvo-mascot-smile {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.corvo-mascot-avatar-image {
+  transform-origin: 50% 90%;
+}
+
+.corvo-mascot-avatar[data-working="true"] .corvo-mascot-avatar-image {
+  animation: corvo-mascot-bob 1.6s ease-in-out infinite;
+}
+
+/* Pointing at an agent, or at the row it is in, makes its mascot hop once. Working mascots keep bobbing. */
+.corvo-mascot-avatar:not([data-working="true"]):hover .corvo-mascot-avatar-image,
+:is(button, a, [role="button"], [role="option"], li):hover
+  .corvo-mascot-avatar:not([data-working="true"])
+  .corvo-mascot-avatar-image {
+  animation: corvo-mascot-hop 460ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* A message that arrives while the chat is open rises in; history never animates. */
+.corvo-message-in {
+  animation: corvo-message-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes corvo-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes corvo-mascot-hop {
+  0% {
+    transform: translateY(0) rotate(0) scale(1);
+  }
+  35% {
+    transform: translateY(-3px) rotate(-7deg) scale(1.1);
+  }
+  70% {
+    transform: translateY(0) rotate(4deg) scale(1.04);
+  }
+  100% {
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
+@keyframes corvo-mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3%) scale(1.04);
+  }
+}
+
+@keyframes corvo-eyes-idle-0 {
+  0%,
+  32%,
+  100% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  35% {
+    transform: translate(0, 0) scaleY(0.08);
+  }
+  38% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  48%,
+  62% {
+    transform: translate(3px, -0.5px) scaleY(1);
+  }
+  70%,
+  84% {
+    transform: translate(-2.5px, 0.5px) scaleY(1);
+  }
+  89% {
+    transform: translate(0, 0) scaleY(0.12);
+  }
+  91% {
+    transform: translate(0, 0) scaleY(1);
+  }
+}
+
+@keyframes corvo-eyes-idle-1 {
+  0%,
+  25%,
+  100% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  32%,
+  48% {
+    transform: translate(-3px, -1px) scaleY(1);
+  }
+  54% {
+    transform: translate(0, 0) scaleY(0.08);
+  }
+  56% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  59% {
+    transform: translate(0, 0) scaleY(0.08);
+  }
+  61% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  68%,
+  82% {
+    transform: translate(2.5px, 0.5px) scaleY(1);
+  }
+}
+
+@keyframes corvo-eyes-idle-2 {
+  0%,
+  28%,
+  100% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  36%,
+  52% {
+    transform: translate(0.5px, -1.8px) scaleY(1.05);
+  }
+  58% {
+    transform: translate(0, 0) scaleY(0.08);
+  }
+  60% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  68%,
+  85% {
+    transform: translate(3px, 0) scaleY(1);
+  }
+  92% {
+    transform: translate(0, 0) scaleY(0.1);
+  }
+  94% {
+    transform: translate(0, 0) scaleY(1);
+  }
+}
+
+@keyframes corvo-eyes-idle-3 {
+  0%,
+  24%,
+  100% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  30%,
+  46% {
+    transform: translate(-2.5px, 1.2px) scaleY(0.95);
+  }
+  52% {
+    transform: translate(0, 0) scaleY(0.08);
+  }
+  54% {
+    transform: translate(0, 0) scaleY(1);
+  }
+  62%,
+  78% {
+    transform: translate(2.8px, -1px) scaleY(1);
+  }
+  86% {
+    transform: translate(0, 0) scaleY(0.08);
+  }
+  88% {
+    transform: translate(0, 0) scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .corvo-bot-avatar-ring,
+  .corvo-mascot-avatar[data-working="true"] .corvo-mascot-avatar-image,
+  .corvo-message-in,
+  .corvo-mascot-blink,
+  .corvo-mascot-gaze,
+  .corvo-mascot-crest,
+  .corvo-mascot-avatar:hover .corvo-mascot-crest,
+  .corvo-mascot-avatar[data-working="true"] .corvo-mascot-crest,
+  .corvo-mascot-eye,
+  .corvo-mascot-eyes[data-mood="thinking"] .corvo-mascot-scan,
+  .corvo-mascot-eyes[data-mood="happy"] .corvo-mascot-smile,
+  .corvo-mascot-avatar:hover .corvo-mascot-avatar-image,
+  :is(button, a, [role="button"], [role="option"], li):hover .corvo-mascot-avatar-image,
+  .corvo-bot-avatar[data-working="true"] .corvo-bot-avatar-picture {
+    animation: none;
+    transition: none;
+  }
+
+  .corvo-bot-avatar {
+    transition: none;
+  }
+
+  /* Decorative loops stop; a spinner keeps turning, slowly, because it is the only sign that work is running. */
+  .animate-ping {
+    animation: none;
+    opacity: 0;
+  }
+
+  .animate-pulse,
+  .animate-bounce,
+  [class*="bui-shimmer-text"],
+  .rk-chat-markdown-cursor {
+    animation: none;
+  }
+
+  .animate-spin {
+    animation-duration: 2.5s;
+  }
+}

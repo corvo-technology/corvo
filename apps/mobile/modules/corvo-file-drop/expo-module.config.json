@@ -1,0 +1,6 @@
+{
+  "platforms": ["android"],
+  "android": {
+    "modules": ["tech.corvo.bots.filedrop.CorvoFileDropModule"]
+  }
+}

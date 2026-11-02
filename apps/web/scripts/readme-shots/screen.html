@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>screen</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;font:2.17vw/1.45 system-ui,sans-serif;color:#e8e8ea}
+  body{background:radial-gradient(120% 120% at 20% 10%,#2a3a4a,#12161c)}
+  .win{position:absolute;border-radius:.8vw;background:#1b1e24;box-shadow:0 1.2vw 3vw #0008;overflow:hidden;border:1px solid #ffffff14}
+  .bar{height:3.2vw;background:#262a32;display:flex;align-items:center;gap:.6vw;padding:0 1vw;font-size:1.81vw;color:#a7acb6}
+  .dot{width:1vw;height:1vw;border-radius:50%;background:#ff5f57}.dot:nth-child(2){background:#febc2e}.dot:nth-child(3){background:#28c840}
+  .url{flex:1;margin-left:1vw;background:#14161b;border-radius:2vw;padding:.4vw 1.4vw;color:#c9ced8}
+  .body{padding:1.6vw 2vw}
+  h1{font-size:3.19vw;margin:0 0 .6vw;font-weight:600}
+  .pill{display:inline-block;padding:.1vw 1vw;border-radius:2vw;font-size:1.74vw;background:#1f6f43;color:#cdf5dc;margin-right:.6vw}
+  .row{display:flex;align-items:center;gap:1vw;padding:.7vw 0;border-top:1px solid #ffffff12;font-size:2.03vw}
+  .ok{color:#3ddc97}
+  code{font:1.96vw/1.6 ui-monospace,Menlo,monospace;display:block;color:#cfe4d8}
+</style>
+<div class="win" style="left:3%;top:5%;width:62%;height:62%">
+  <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">git.example.com/acme/checkout/pull/128</span></div>
+  <div class="body">
+    <h1>Raise checkout timeout to 10 s, retry once</h1>
+    <span class="pill">Open</span><span style="color:#a7acb6;font-size:1.89vw">fabio wants to merge 1 commit into main</span>
+    <div style="height:1.4vw"></div>
+    <div class="row"><span class="ok">✓</span> tests <span style="margin-left:auto;color:#a7acb6">52 passed</span></div>
+    <div class="row"><span class="ok">✓</span> lint <span style="margin-left:auto;color:#a7acb6">clean</span></div>
+    <div class="row"><span class="ok">✓</span> build <span style="margin-left:auto;color:#a7acb6">2m 14s</span></div>
+  </div>
+</div>
+<div class="win" style="left:30%;top:42%;width:66%;height:50%">
+  <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:1vw">fabio@computer: ~/checkout</span></div>
+  <div class="body" style="background:#0f1115;height:100%">
+    <code>$ npm test</code>
+    <code>  ✓ checkout retries once after a timeout</code>
+    <code>  ✓ checkout fails after the second timeout</code>
+    <code>  Tests: 52 passed, 52 total</code>
+    <code>$ git push origin fix/checkout-timeout</code>
+    <code>  Branch 'fix/checkout-timeout' set up to track remote.</code>
+  </div>
+</div>

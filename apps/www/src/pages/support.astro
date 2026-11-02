@@ -1,0 +1,23 @@
+---
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { CONTACT_EMAIL, SECURITY_EMAIL } from "../site";
+---
+
+<BaseLayout title="Support · Corvo" description="Get help with your Corvo account.">
+  <div class="container">
+    <Header />
+    <main id="main" class="privacy-copy">
+      <h1>Corvo support</h1>
+      <p>
+        For help with your account, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Include the
+        email address on your account, what you expected to happen, and any error message you saw. Do not send
+        passwords, API keys, access tokens, or other secrets.
+      </p>
+      <h2>Security</h2>
+      <p>Report vulnerabilities only to <a href={`mailto:${SECURITY_EMAIL}`}>{SECURITY_EMAIL}</a>.</p>
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>

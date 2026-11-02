@@ -1,0 +1,759 @@
+/* The launch page. Dark, one green, the baby crows as the only illustration. */
+
+.lp-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(2.1rem, 5vw, 3.9rem);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.lp-title--small {
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+}
+
+.lp-accent {
+  display: block;
+  color: var(--blue);
+}
+
+/* Hero */
+.lp-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 80px);
+  padding: clamp(40px, 7vw, 88px) 0 0;
+}
+
+.lp-hero h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(2.6rem, 6.2vw, 5.4rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.lp-underline {
+  display: block;
+  width: fit-content;
+  background: linear-gradient(var(--blue), var(--blue)) 0 96% / 100% 0.1em no-repeat;
+  padding-bottom: 0.06em;
+}
+
+.lp-hero .lead {
+  max-width: 34em;
+  margin: 28px 0 0;
+  color: var(--body);
+  font-size: clamp(1.02rem, 1.5vw, 1.2rem);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.lp-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.lp-hero .download-note,
+.lp-cta .download-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.lp-hero__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+}
+
+.lp-hero__stage > .mascot {
+  filter: drop-shadow(0 30px 60px var(--hero-shadow));
+}
+
+.lp-tag {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.lp-tag b {
+  display: block;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.lp-tag--1 {
+  top: 6%;
+  inset-inline-start: 0;
+}
+
+.lp-tag--2 {
+  top: 30%;
+  inset-inline-end: -2%;
+}
+
+.lp-tag--3 {
+  bottom: 8%;
+  inset-inline-start: 6%;
+}
+
+/* The live product */
+.lp-live {
+  padding-top: clamp(72px, 11vw, 150px);
+}
+
+.lp-live__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.6fr);
+  align-items: end;
+  gap: 24px 48px;
+  margin-bottom: clamp(28px, 4vw, 48px);
+}
+
+.lp-live__head p {
+  margin: 0;
+  color: var(--body);
+  line-height: 1.55;
+}
+
+/* What they do */
+.lp-works {
+  padding-top: clamp(80px, 12vw, 160px);
+}
+
+.lp-bento {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: clamp(28px, 4vw, 48px);
+}
+
+.lp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+}
+
+.lp-card h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.lp-card p {
+  margin: 0;
+  color: var(--muted-2);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.lp-card--routines {
+  grid-column: span 4;
+}
+
+.lp-card--computer,
+.lp-card--models,
+.lp-card--usage,
+.lp-card--apps {
+  grid-column: span 2;
+}
+
+.lp-card--reach {
+  grid-column: span 6;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px 48px;
+}
+
+.lp-card--reach > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 30em;
+}
+
+.lp-routines {
+  display: flex;
+  flex-direction: column;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-routines li {
+  display: grid;
+  grid-template-columns: 8.5em minmax(0, 1fr);
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+.lp-routines time {
+  color: var(--blue);
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.82rem;
+}
+
+.lp-routines span {
+  color: var(--body);
+}
+
+.lp-term,
+.lp-usage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding: 14px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: var(--page);
+  font-size: 0.88rem;
+}
+
+.lp-card > :nth-last-child(1):is(.lp-term, .lp-usage) {
+  margin-top: 22px;
+}
+
+.lp-pill {
+  padding: 4px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  color: var(--body);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.lp-pill--solid {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: var(--on-primary);
+}
+
+.lp-term code {
+  color: var(--body);
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
+.lp-models {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.lp-models svg {
+  flex: none;
+  width: 84px;
+  height: 84px;
+}
+
+.lp-ring__track {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 5;
+}
+
+.lp-ring__fill {
+  fill: none;
+  stroke: var(--ink);
+  stroke-linecap: round;
+  stroke-width: 5;
+}
+
+.lp-models ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.lp-models li span {
+  color: var(--muted);
+}
+
+.lp-models__reset {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.lp-models__local {
+  margin-top: 20px;
+}
+
+.lp-usage__row {
+  display: grid;
+  grid-template-columns: 24px 3.4em minmax(0, 1fr) 2.6em;
+  align-items: center;
+  gap: 8px;
+  color: var(--body);
+}
+
+.lp-usage__bar {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line-2);
+}
+
+.lp-usage__bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ink);
+}
+
+.lp-usage__pct {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: end;
+}
+
+/* Open source */
+.lp-open {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 80px);
+  padding-top: clamp(80px, 12vw, 160px);
+}
+
+.lp-open__intro p {
+  max-width: 30em;
+  margin: 22px 0 0;
+  color: var(--body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.lp-open__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.lp-license {
+  padding: 6px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  color: var(--muted-2);
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
+.lp-open__points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-open__points li {
+  padding: 22px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.lp-open__points li:last-child {
+  border-bottom: 1px solid var(--line-2);
+}
+
+.lp-open__points h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.lp-open__points p {
+  margin: 6px 0 0;
+  color: var(--muted-2);
+  line-height: 1.5;
+}
+
+/* FAQ */
+.lp-faq {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  gap: 24px clamp(28px, 5vw, 80px);
+  padding-top: clamp(80px, 12vw, 160px);
+}
+
+/* Closing */
+.lp-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 32px;
+  margin-top: clamp(80px, 12vw, 160px);
+  padding: clamp(32px, 6vw, 72px);
+  border: 1px solid var(--blue-line);
+  border-radius: 28px;
+  background: var(--blue-soft);
+}
+
+.lp-cta p:not(.download-note) {
+  max-width: 28em;
+  margin: 16px 0 0;
+  color: var(--body);
+  line-height: 1.5;
+}
+
+.lp-cta__flock {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+@media (max-width: 960px) {
+  .lp-hero,
+  .lp-live__head,
+  .lp-open,
+  .lp-faq,
+  .lp-cta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-hero__stage {
+    min-height: 330px;
+  }
+
+  .lp-bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lp-card--routines,
+  .lp-card--reach {
+    grid-column: span 2;
+  }
+
+  .lp-card--computer,
+  .lp-card--models,
+  .lp-card--usage,
+  .lp-card--apps {
+    grid-column: span 1;
+  }
+
+  .lp-cta__flock {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 620px) {
+  .lp-bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-card--computer,
+  .lp-card--models,
+  .lp-card--usage,
+  .lp-card--apps,
+  .lp-card--routines,
+  .lp-card--reach {
+    grid-column: span 1;
+  }
+
+  .lp-tag {
+    display: none;
+  }
+
+  .lp-hero__stage {
+    min-height: 280px;
+  }
+
+  .lp-routines li {
+    grid-template-columns: 7em minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+}
+
+.site-header__cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Chinese and Japanese glyphs are taller and wider: less size, more line, no negative tracking. */
+:root:lang(ja) .lp-hero h1,
+:root:lang(zh-CN) .lp-hero h1 {
+  font-size: clamp(2.1rem, 4.6vw, 3.9rem);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+:root:lang(ja) .lp-underline,
+:root:lang(zh-CN) .lp-underline {
+  background-position: 0 100%;
+  padding-bottom: 0.14em;
+}
+
+:root:lang(ja) .lp-title,
+:root:lang(zh-CN) .lp-title {
+  font-size: clamp(1.8rem, 4vw, 3.1rem);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+:root:lang(ja) .lp-title--small,
+:root:lang(zh-CN) .lp-title--small {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+}
+
+/* What an agent is */
+.lp-agent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 80px);
+  padding-top: clamp(80px, 12vw, 150px);
+}
+
+.lp-agent__intro p {
+  max-width: 30em;
+  margin: 22px 0 0;
+  color: var(--body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.lp-agent__traits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-agent__traits li {
+  padding: 22px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.lp-agent__traits li:last-child {
+  border-bottom: 1px solid var(--line-2);
+}
+
+.lp-agent__traits h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.lp-agent__traits p {
+  margin: 6px 0 0;
+  color: var(--muted-2);
+  line-height: 1.5;
+}
+
+/* The Store */
+.lp-store {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(28px, 5vw, 80px);
+  padding-top: clamp(80px, 12vw, 150px);
+}
+
+.lp-store__intro p {
+  max-width: 28em;
+  margin: 22px 0 0;
+  color: var(--body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.lp-store__intro .lp-store__count {
+  color: var(--blue);
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.86rem;
+}
+
+.lp-store__groups {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.lp-store__groups > div {
+  display: grid;
+  grid-template-columns: 8.5em minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.lp-store__groups > div:last-child {
+  border-bottom: 1px solid var(--line-2);
+}
+
+.lp-store__groups dt {
+  color: var(--muted-2);
+  font-size: 0.86rem;
+}
+
+.lp-store__groups dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.lp-store__groups dd span {
+  padding: 3px 11px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+
+.lp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-chips li {
+  padding: 4px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: var(--page);
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+
+.lp-chips--big {
+  margin: 0;
+}
+
+.lp-chips--big li {
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Install */
+.lp-install-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(28px, 5vw, 80px);
+  padding-top: clamp(80px, 12vw, 150px);
+}
+
+.lp-install-section__intro p {
+  max-width: 26em;
+  margin: 22px 0 28px;
+  color: var(--body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.lp-install-section__also {
+  margin: 0 0 14px;
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.lp-command {
+  margin-bottom: 14px;
+}
+
+.lp-command > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.lp-command > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.lp-command code {
+  min-width: 0;
+  flex: 1;
+  overflow-x: auto;
+  color: var(--body);
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.lp-command button {
+  flex: none;
+  padding: 6px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.lp-command button:hover {
+  background: var(--surface-soft);
+}
+
+.lp-install-section .download-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 960px) {
+  .lp-agent,
+  .lp-store,
+  .lp-install-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .lp-store__groups > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}

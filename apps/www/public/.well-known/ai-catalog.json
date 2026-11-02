@@ -1,0 +1,23 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Corvo",
+    "documentationUrl": "https://bots.corvo.tech/"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:bots.corvo.tech:docs:llms",
+      "displayName": "Corvo agent guide",
+      "type": "text/plain",
+      "url": "https://bots.corvo.tech/llms.txt",
+      "description": "Product overview and canonical resources."
+    },
+    {
+      "identifier": "urn:air:bots.corvo.tech:docs:overview",
+      "displayName": "Corvo overview",
+      "type": "text/markdown",
+      "url": "https://bots.corvo.tech/index.md",
+      "description": "What Corvo bots do and common questions."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+import { describe, expect, it } from "vitest";
+import { railSection } from "../lib/rail-section";
+
+describe("railSection", () => {
+  it("marks the screen each address belongs to", () => {
+    expect(railSection("/app", "")).toBe("agents");
+    expect(railSection("/app/bot-1", "")).toBe("agents");
+    expect(railSection("/app/g/group-1", "")).toBe("agents");
+    expect(railSection("/app/routines", "")).toBe("routines");
+    expect(railSection("/app/workflows", "")).toBe("workflows");
+    expect(railSection("/app/artifacts/artifact-1", "")).toBe("artifacts");
+    expect(railSection("/app/usage", "")).toBe("usage");
+    expect(railSection("/app", "?settings=usage")).toBe("usage");
+  });
+
+  it("leaves the rail unmarked on screens reached from the account menu", () => {
+    expect(railSection("/app/board", "")).toBeNull();
+    expect(railSection("/app/x/link-1", "")).toBeNull();
+  });
+});

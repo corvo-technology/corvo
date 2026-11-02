@@ -1,0 +1,1 @@
+ALTER TABLE "bots" ADD COLUMN "squadRouting" BOOLEAN NOT NULL DEFAULT false;

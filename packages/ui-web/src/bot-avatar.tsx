@@ -1,0 +1,157 @@
+import type { BotColorDef } from "@corvo/core";
+import {
+  ACTIVE_RUN_STATUSES,
+  BOT_AVATAR_COLORS,
+  BOT_COLOR_LIST,
+  DEFAULT_BOT_AVATAR_COLOR,
+  mascotForColorDef,
+  mascotMood,
+  resolvePersonaColorDef,
+} from "@corvo/core";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { cn } from "./lib/utils.js";
+import "./styles.css";
+import { MascotFace } from "./mascot-face.js";
+import { useMascotGaze } from "./use-mascot-gaze.js";
+
+/** How long the mascot smiles after the work it was doing finished. */
+const HAPPY_MS = 1_600;
+
+/** A small steady number from a name, so each mascot blinks on its own beat and never in step. */
+function blinkBeat(identity: string): { every: string; delay: string } {
+  let hash = 0;
+  for (let i = 0; i < identity.length; i += 1) hash = (hash * 31 + identity.charCodeAt(i)) >>> 0;
+  return {
+    every: `${(4.2 + (hash % 30) / 10).toFixed(1)}s`,
+    delay: `-${((hash >> 5) % 47) / 10}s`,
+  };
+}
+
+export type { BotColorDef };
+export { BOT_AVATAR_COLORS, BOT_COLOR_LIST, DEFAULT_BOT_AVATAR_COLOR, resolvePersonaColorDef };
+
+/** A bot's saved look: a color (its mascot) or an uploaded picture. A `::shape_N` suffix from older bots is ignored. */
+export function parseBotAvatar(
+  rawColor: string,
+  _identity?: string,
+): {
+  color: string;
+  isImage: boolean;
+  imageUrl?: string;
+} {
+  if (!rawColor) return { color: "#F97316", isImage: false };
+  // Only data: image URLs are rendered. Arbitrary http(s)/blob values in `color`
+  // must not become <img src> (SSRF / tracking when other members view the bot).
+  if (rawColor.startsWith("data:image/")) {
+    return { color: "#F97316", isImage: true, imageUrl: rawColor };
+  }
+  const color = rawColor.split("::shape_")[0] || "#F97316";
+  return { color, isImage: false };
+}
+
+const AVATAR_HEX = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+export function defaultBotAvatarValue(rawColor: string): string {
+  const parsed = parseBotAvatar(rawColor);
+  if (rawColor && !parsed.isImage && AVATAR_HEX.test(parsed.color)) return parsed.color;
+  return DEFAULT_BOT_AVATAR_COLOR;
+}
+
+export interface BotAvatarProps {
+  color: string;
+  size?: number;
+  status?: string;
+  identity?: string;
+  className?: string;
+}
+
+/** The working ring drawn around a bot that is running. */
+function WorkingRing({ size }: { size: number }) {
+  return (
+    <svg
+      className="corvo-bot-avatar-ring corvo-bot-avatar-ring-working absolute z-10 pointer-events-none"
+      style={{ inset: -4, width: size + 8, height: size + 8 }}
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="24"
+        cy="24"
+        r="22"
+        className="stroke-status-working"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeDasharray="45 80"
+      />
+    </svg>
+  );
+}
+
+export const BotAvatar = memo(function BotAvatar({
+  color,
+  size = 36,
+  status,
+  identity = "",
+  className,
+}: BotAvatarProps) {
+  const isWorking = ACTIVE_RUN_STATUSES.some((s) => s === status);
+  const avatarRef = useRef<HTMLDivElement>(null);
+  // Smiles for a moment when work ends well; the timer is kept apart so a later status change
+  // cannot leave the smile stuck.
+  const [happy, setHappy] = useState(false);
+  const wasWorking = useRef(false);
+  const happyTimer = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (wasWorking.current && !isWorking && status !== "failed") {
+      setHappy(true);
+      window.clearTimeout(happyTimer.current);
+      happyTimer.current = window.setTimeout(() => setHappy(false), HAPPY_MS);
+    }
+    wasWorking.current = isWorking;
+  }, [isWorking, status]);
+  useEffect(() => () => window.clearTimeout(happyTimer.current), []);
+  const mood = mascotMood(status, happy);
+  useMascotGaze(avatarRef, size >= 24 && (mood === "idle" || mood === "alert"));
+  const parsed = useMemo(() => parseBotAvatar(color, identity), [color, identity]);
+  const mascot = useMemo(
+    () =>
+      mascotForColorDef(resolvePersonaColorDef(identity || parsed.color || "agent", parsed.color)),
+    [identity, parsed.color],
+  );
+
+  if (parsed.isImage && parsed.imageUrl) {
+    return (
+      <div
+        className={cn("corvo-bot-avatar relative shrink-0 select-none", className)}
+        data-working={isWorking}
+        style={{ width: size, height: size }}
+      >
+        <div className="corvo-bot-avatar-picture relative flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-border bg-secondary">
+          <img src={parsed.imageUrl} alt="" className="h-full w-full object-cover" />
+        </div>
+        {isWorking ? <WorkingRing size={size} /> : null}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={avatarRef}
+      className={cn("corvo-mascot-avatar relative shrink-0 select-none", className)}
+      data-working={isWorking}
+      data-mascot={mascot}
+      style={{ width: size, height: size }}
+    >
+      <span className="corvo-mascot-avatar-image relative block h-full w-full">
+        <MascotFace
+          mascot={mascot}
+          mood={mood}
+          blink={blinkBeat(identity || mascot)}
+          detailed={size >= 30}
+        />
+      </span>
+      {isWorking ? <WorkingRing size={size} /> : null}
+    </div>
+  );
+});
