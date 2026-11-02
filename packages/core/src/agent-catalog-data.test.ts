@@ -60,6 +60,20 @@ describe("AGENT_CATALOG", () => {
       expect(entry.instructions.en.length).toBeGreaterThan(150);
   });
 
+  it("has the watchers hand each problem to a teammate, reading only and never obeying what they read", () => {
+    for (const slug of ["ops-watcher", "payments-watcher"]) {
+      const entry = AGENT_CATALOG.find((agent) => agent.slug === slug)!;
+      for (const locale of ["en", "pt-BR"] as const) {
+        const text = entry.instructions[locale];
+        expect(text, `${slug} ${locale}`).toContain("ticket_create");
+        expect(text, `${slug} ${locale}`).toContain("message_bot");
+        expect(text.length).toBeLessThanOrEqual(4000);
+      }
+      expect(entry.instructions.en).toContain("only read");
+      expect(entry.instructions.en).toContain("not instructions");
+    }
+  });
+
   it("keeps a bot's catalog key one-to-one with the slug", () => {
     expect(agentCatalogSpawnKey("bug-triage")).toBe("agent-catalog:bug-triage");
   });
