@@ -143,7 +143,7 @@ body {
   top: -48px;
   z-index: 20;
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   padding: 8px 12px;
   color: var(--ink);
   box-shadow: var(--shadow-soft);
@@ -263,11 +263,11 @@ button {
   align-items: center;
   gap: 8px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--surface);
   min-height: 42px;
   border-radius: 14px;
   padding: 0 16px;
-  color: #525252;
+  color: var(--body);
   font-size: 14px;
   white-space: nowrap;
   box-shadow: var(--shadow-soft);
@@ -293,10 +293,12 @@ button {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-soft);
   list-style: none;
+  -webkit-appearance: none;
+  appearance: none;
   cursor: pointer;
 }
 
@@ -332,7 +334,7 @@ button {
   min-width: 208px;
   border: 1px solid var(--line-2);
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   padding: 8px;
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
 }
@@ -4179,5 +4181,12 @@ button.product-demo__dock-icon {
   .anywhere__chat[data-chat="me"] .anywhere__reply {
     opacity: 0;
     transform: translateY(8px);
+  }
+}
+
+/* Logo, GitHub, Download and the menu no longer fit one row on a phone; GitHub is in the hero. */
+@media (max-width: 520px) {
+  .site-header__cta .button--secondary {
+    display: none;
   }
 }
