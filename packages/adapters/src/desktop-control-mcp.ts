@@ -6,6 +6,8 @@ import { z } from "zod";
 export type DesktopRun = (args: string[]) => Promise<{ stdout: string }>;
 
 const MAX_ANSWER_CHARS = 60_000;
+/** A picture is passed on as base64, so this keeps one from filling the model's context. */
+const MAX_IMAGE_BASE64_CHARS = 4_000_000;
 
 const name = z.string().min(1).max(200);
 const ref = z
@@ -36,6 +38,37 @@ function answer(stdout: string) {
   return parsed.ok === true
     ? { content: [{ type: "text" as const, text }] }
     : { isError: true, content: [{ type: "text" as const, text }] };
+}
+
+function pictureAnswer(stdout: string) {
+  let parsed: {
+    ok?: unknown;
+    data?: { data?: unknown; format?: unknown; width?: unknown; height?: unknown };
+  };
+  try {
+    parsed = JSON.parse(stdout);
+  } catch {
+    return answer(stdout);
+  }
+  const picture = parsed.data;
+  if (parsed.ok !== true || typeof picture?.data !== "string") return answer(stdout);
+  if (picture.data.length > MAX_IMAGE_BASE64_CHARS) {
+    return {
+      isError: true,
+      content: [
+        { type: "text" as const, text: "The window is too large to capture as one picture." },
+      ],
+    };
+  }
+  return {
+    content: [
+      { type: "image" as const, data: picture.data, mimeType: "image/png" },
+      {
+        type: "text" as const,
+        text: `Window screenshot, ${Number(picture.width)} by ${Number(picture.height)} pixels.`,
+      },
+    ],
+  };
 }
 
 /**
@@ -125,6 +158,18 @@ export function createDesktopControlServer(run: DesktopRun): McpServer {
           ])
         ).stdout,
       ),
+  );
+
+  server.registerTool(
+    "desktop_screenshot",
+    {
+      description:
+        "Take a picture of one window. Use a window id from desktop_list_windows. The picture can show private information.",
+      inputSchema: { window_id: name.describe("A window id from desktop_list_windows") },
+      annotations: reading,
+    },
+    async ({ window_id }) =>
+      pictureAnswer((await run(["screenshot", ...flag("window-id", window_id)])).stdout),
   );
 
   server.registerTool(

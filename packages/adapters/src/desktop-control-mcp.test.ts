@@ -41,6 +41,7 @@ describe("desktop control server", () => {
       "desktop_list_apps",
       "desktop_list_windows",
       "desktop_press",
+      "desktop_screenshot",
       "desktop_snapshot",
       "desktop_type",
     ]);
@@ -135,5 +136,40 @@ describe("desktop control server", () => {
   it("treats output that is not the tool's JSON as an error", async () => {
     const { result } = await call("desktop_snapshot", {}, "segfault");
     expect(result.isError).toBe(true);
+  });
+
+  it("captures one window by id and hands the picture to the agent as an image", async () => {
+    const shot = JSON.stringify({
+      ok: true,
+      data: { data: "iVBORw0KGgo=", format: "png", width: 640, height: 480, scale_factor: 2 },
+    });
+    const { result, run } = await call("desktop_screenshot", { window_id: "w-12" }, shot);
+    expect(run).toHaveBeenCalledWith(["screenshot", "--window-id=w-12"]);
+    expect(result.content).toEqual([
+      { type: "image", data: "iVBORw0KGgo=", mimeType: "image/png" },
+      { type: "text", text: "Window screenshot, 640 by 480 pixels." },
+    ]);
+  });
+
+  it("needs a window id and passes no file path to write to", async () => {
+    const { result, run } = await call("desktop_screenshot", {});
+    expect(result.isError).toBe(true);
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it("refuses a picture too large to hand over", async () => {
+    const huge = JSON.stringify({
+      ok: true,
+      data: { data: "A".repeat(6_000_000), format: "png", width: 9000, height: 9000 },
+    });
+    const { result } = await call("desktop_screenshot", { window_id: "w-1" }, huge);
+    expect(result.isError).toBe(true);
+  });
+
+  it("passes the tool's own error for an ambiguous or missing window along", async () => {
+    const failure = JSON.stringify({ ok: false, error: { code: "AMBIGUOUS_TARGET" } });
+    const { result } = await call("desktop_screenshot", { window_id: "w-1" }, failure);
+    expect(result.isError).toBe(true);
+    expect(JSON.stringify(result.content)).toContain("AMBIGUOUS_TARGET");
   });
 });

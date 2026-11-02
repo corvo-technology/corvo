@@ -750,6 +750,10 @@ msgstr "Todo el tiempo"
 msgid "Allow"
 msgstr "Permitir"
 
+#: src/components/DesktopControlSettings.tsx
+msgid "Allow Corvo under Accessibility in your system's privacy settings."
+msgstr "Autoriza a Corvo en Accesibilidad, en los ajustes de privacidad del sistema."
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Allow cross-space bot communication"
 msgstr "Permitir la comunicación de bots entre espacios"
@@ -1292,6 +1296,7 @@ msgid "Chats"
 msgstr "Chats"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/DesktopControlSettings.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr "Comprobar de nuevo"
@@ -1843,6 +1848,10 @@ msgstr "No se pudo aprobar este servidor"
 #: src/pages/shell/message-cards.tsx
 msgid "Could not authorize this app"
 msgstr "No se pudo autorizar esta app"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Could not change desktop control"
+msgstr "No se pudo cambiar el control del escritorio"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Could not change password"
@@ -2574,6 +2583,10 @@ msgstr "Diseño"
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop app"
 msgstr "App de escritorio"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Desktop control"
+msgstr "Control del escritorio"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop update"
@@ -3469,6 +3482,10 @@ msgstr "Última ejecución"
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
 msgstr "Más tarde"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Let bots see and use your apps. Actions ask first."
+msgstr "Deja que los bots vean y usen tus apps. Las acciones piden permiso antes."
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Lets bots save and recall facts by meaning, alongside MEMORY.md."
@@ -4380,6 +4397,10 @@ msgstr "Abrir en ventana completa"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Abrir navegación"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Open privacy settings"
+msgstr "Abrir ajustes de privacidad"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"

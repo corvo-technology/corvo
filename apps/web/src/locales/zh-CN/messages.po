@@ -750,6 +750,10 @@ msgstr "全部时间"
 msgid "Allow"
 msgstr "允许"
 
+#: src/components/DesktopControlSettings.tsx
+msgid "Allow Corvo under Accessibility in your system's privacy settings."
+msgstr "请在系统隐私设置的“辅助功能”中允许 Corvo。"
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Allow cross-space bot communication"
 msgstr "允许跨空间机器人通信"
@@ -1292,6 +1296,7 @@ msgid "Chats"
 msgstr "聊天"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/DesktopControlSettings.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr "重新检查"
@@ -1843,6 +1848,10 @@ msgstr "无法批准此服务器"
 #: src/pages/shell/message-cards.tsx
 msgid "Could not authorize this app"
 msgstr "无法授权此应用"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Could not change desktop control"
+msgstr "无法更改桌面控制"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Could not change password"
@@ -2574,6 +2583,10 @@ msgstr "设计"
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop app"
 msgstr "桌面应用"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Desktop control"
+msgstr "桌面控制"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop update"
@@ -3469,6 +3482,10 @@ msgstr "上次运行"
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
 msgstr "稍后"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Let bots see and use your apps. Actions ask first."
+msgstr "让机器人查看并使用你的应用。操作前会先询问。"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Lets bots save and recall facts by meaning, alongside MEMORY.md."
@@ -4380,6 +4397,10 @@ msgstr "在完整窗口中打开"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "打开导航"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Open privacy settings"
+msgstr "打开隐私设置"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"

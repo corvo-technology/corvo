@@ -28,6 +28,7 @@ import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { AccountAccess } from "../components/AccountAccess";
 import { SuccessPop } from "../components/ai/primitives";
 import { ComputersUnavailableHint } from "../components/ComputersUnavailableHint";
+import { DesktopControlSettings } from "../components/DesktopControlSettings";
 import { DesktopUpdateSection } from "../components/DesktopUpdates";
 import { PasskeySettings } from "../components/PasskeySettings";
 import { SettingsGroup, SettingsRow } from "../components/SettingsRows";
@@ -552,19 +553,22 @@ export function ComputerSettingsPanel({
   onRecoveryDismissed?: () => void;
 }) {
   return (
-    <div
-      data-testid="computers-setup-settings"
-      className="rounded-xl border border-border px-4 py-4"
-    >
-      <h3 className="text-heading3 font-medium text-foreground">
-        <Trans>Computers</Trans>
-      </h3>
-      <ComputersUnavailableHint
-        className="mt-3 text-[13px] leading-relaxed text-muted-foreground"
-        sandboxProvider={sandboxProvider}
-        onRecovered={onSandboxProviderChange}
-        onRecoveryDismissed={onRecoveryDismissed}
-      />
+    <div className="space-y-4">
+      <div
+        data-testid="computers-setup-settings"
+        className="rounded-xl border border-border px-4 py-4"
+      >
+        <h3 className="text-heading3 font-medium text-foreground">
+          <Trans>Computers</Trans>
+        </h3>
+        <ComputersUnavailableHint
+          className="mt-3 text-[13px] leading-relaxed text-muted-foreground"
+          sandboxProvider={sandboxProvider}
+          onRecovered={onSandboxProviderChange}
+          onRecoveryDismissed={onRecoveryDismissed}
+        />
+      </div>
+      <DesktopControlSettings />
     </div>
   );
 }

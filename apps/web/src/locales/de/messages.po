@@ -750,6 +750,10 @@ msgstr "Gesamte Zeit"
 msgid "Allow"
 msgstr "Erlauben"
 
+#: src/components/DesktopControlSettings.tsx
+msgid "Allow Corvo under Accessibility in your system's privacy settings."
+msgstr "Erlaube Corvo unter Bedienungshilfen in den Datenschutzeinstellungen des Systems."
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Allow cross-space bot communication"
 msgstr "Kommunikation zwischen Bots in verschiedenen Spaces erlauben"
@@ -1292,6 +1296,7 @@ msgid "Chats"
 msgstr "Chats"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/DesktopControlSettings.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr "Erneut prüfen"
@@ -1843,6 +1848,10 @@ msgstr "Server konnte nicht genehmigt werden"
 #: src/pages/shell/message-cards.tsx
 msgid "Could not authorize this app"
 msgstr "App konnte nicht autorisiert werden"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Could not change desktop control"
+msgstr "Desktop-Steuerung konnte nicht geändert werden"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Could not change password"
@@ -2574,6 +2583,10 @@ msgstr "Design"
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop app"
 msgstr "Desktop-App"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Desktop control"
+msgstr "Desktop-Steuerung"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop update"
@@ -3469,6 +3482,10 @@ msgstr "Letzte Ausführung"
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
 msgstr "Später"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Let bots see and use your apps. Actions ask first."
+msgstr "Lass Bots deine Apps sehen und bedienen. Aktionen fragen vorher nach."
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Lets bots save and recall facts by meaning, alongside MEMORY.md."
@@ -4380,6 +4397,10 @@ msgstr "In vollständigem Fenster öffnen"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Navigation öffnen"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Open privacy settings"
+msgstr "Datenschutzeinstellungen öffnen"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
