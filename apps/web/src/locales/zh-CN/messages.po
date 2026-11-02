@@ -6654,6 +6654,10 @@ msgstr "你已拒绝"
 msgid "You have control"
 msgstr "你已接管"
 
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "你的智能体和对话都在这里。名称可以随时修改。"
+
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Your Anthropic"

@@ -6654,6 +6654,10 @@ msgstr "You declined"
 msgid "You have control"
 msgstr "You have control"
 
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "Your agents and chats live here. You can rename it any time."
+
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Your Anthropic"

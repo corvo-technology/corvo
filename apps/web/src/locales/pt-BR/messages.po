@@ -6654,6 +6654,10 @@ msgstr "Você recusou"
 msgid "You have control"
 msgstr "Você tem o controle"
 
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "Seus agentes e conversas ficam aqui. Você pode renomear quando quiser."
+
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
