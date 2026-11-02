@@ -27,7 +27,10 @@ import type { RefObject } from "react";
 import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { AccountAccess } from "../components/AccountAccess";
 import { SuccessPop } from "../components/ai/primitives";
-import { ComputersUnavailableHint } from "../components/ComputersUnavailableHint";
+import {
+  CHOOSE_COMPUTER_EVENT,
+  ComputersUnavailableHint,
+} from "../components/ComputersUnavailableHint";
 import { DesktopControlSettings } from "../components/DesktopControlSettings";
 import { DesktopUpdateSection } from "../components/DesktopUpdates";
 import { PasskeySettings } from "../components/PasskeySettings";
@@ -545,10 +548,13 @@ export function UsageSettingsPanel({
 
 export function ComputerSettingsPanel({
   sandboxProvider,
+  showHint = true,
   onSandboxProviderChange,
   onRecoveryDismissed,
 }: {
   sandboxProvider?: string | null;
+  /** True while computers are off or just came back; false when they work and only the choice is shown. */
+  showHint?: boolean;
   onSandboxProviderChange?: (sandboxProvider: string) => void;
   onRecoveryDismissed?: () => void;
 }) {
@@ -561,15 +567,44 @@ export function ComputerSettingsPanel({
         <h3 className="text-heading3 font-medium text-foreground">
           <Trans>Computers</Trans>
         </h3>
-        <ComputersUnavailableHint
-          className="mt-3 text-[13px] leading-relaxed text-muted-foreground"
-          sandboxProvider={sandboxProvider}
-          onRecovered={onSandboxProviderChange}
-          onRecoveryDismissed={onRecoveryDismissed}
-        />
+        {showHint ? (
+          <ComputersUnavailableHint
+            className="mt-3 text-[13px] leading-relaxed text-muted-foreground"
+            sandboxProvider={sandboxProvider}
+            onRecovered={onSandboxProviderChange}
+            onRecoveryDismissed={onRecoveryDismissed}
+          />
+        ) : (
+          <WhereBotsRun provider={sandboxProvider} />
+        )}
       </div>
       <DesktopControlSettings />
     </div>
+  );
+}
+
+/** Where bots run now, with the way to change it, for the desktop app's own engine. */
+function WhereBotsRun({ provider }: { provider?: string | null }) {
+  return (
+    <>
+      <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+        {provider === "docker" ? (
+          <Trans>Bots run on isolated computers in Docker.</Trans>
+        ) : (
+          <Trans>Bots run on this computer.</Trans>
+        )}
+      </p>
+      <div className="mt-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => window.dispatchEvent(new Event(CHOOSE_COMPUTER_EVENT))}
+        >
+          <Trans>Choose where bots run</Trans>
+        </Button>
+      </div>
+    </>
   );
 }
 

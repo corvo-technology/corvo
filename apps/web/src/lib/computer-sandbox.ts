@@ -7,6 +7,18 @@ export function computersAreUnavailable(sandboxProvider: string | null | undefin
   return sandboxProvider === "none" || sandboxProvider === "";
 }
 
+/**
+ * Whether Settings has a Computer section. It is a place to recover while computers are off or just
+ * came back, and in the desktop app's own engine it always holds where bots run and desktop control.
+ */
+export function showsComputerSettings(input: {
+  provider: string | null | undefined;
+  recovering: boolean;
+  managedLocal: boolean;
+}): boolean {
+  return input.recovering || input.managedLocal || computersAreUnavailable(input.provider);
+}
+
 export type SandboxAvailabilityPhase = "idle" | "loading" | "recovered" | "unavailable" | "failure";
 
 /** Lines to paste into `.env` — placeholders only, never real secrets. */

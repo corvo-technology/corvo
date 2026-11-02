@@ -5,6 +5,7 @@ import {
   sandboxCheckFailureMessage,
   sandboxEnvGuidanceLines,
   sandboxEnvGuidanceText,
+  showsComputerSettings,
 } from "./computer-sandbox.js";
 
 describe("computersAreUnavailable", () => {
@@ -47,5 +48,31 @@ describe("sandboxCheckFailureMessage", () => {
   it("returns error message or fallback", () => {
     expect(sandboxCheckFailureMessage(new Error("offline"))).toBe("offline");
     expect(sandboxCheckFailureMessage(null)).toBe("Could not reach the server");
+  });
+});
+
+describe("showsComputerSettings", () => {
+  it("shows the section while computers are off or just recovered", () => {
+    expect(
+      showsComputerSettings({ provider: "none", recovering: false, managedLocal: false }),
+    ).toBe(true);
+    expect(
+      showsComputerSettings({ provider: "docker", recovering: true, managedLocal: false }),
+    ).toBe(true);
+  });
+
+  it("hides it on a server whose computers work, where there is nothing to set up here", () => {
+    expect(
+      showsComputerSettings({ provider: "docker", recovering: false, managedLocal: false }),
+    ).toBe(false);
+    expect(showsComputerSettings({ provider: "e2b", recovering: false, managedLocal: false })).toBe(
+      false,
+    );
+  });
+
+  it("keeps it in the desktop app's own engine, where it holds where bots run and desktop control", () => {
+    for (const provider of ["none", "docker", "desktop"]) {
+      expect(showsComputerSettings({ provider, recovering: false, managedLocal: true })).toBe(true);
+    }
   });
 });

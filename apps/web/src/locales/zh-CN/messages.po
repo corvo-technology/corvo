@@ -1147,6 +1147,14 @@ msgstr "机器人和浏览器自动化"
 msgid "Bots can work on {hostLabel} with your local files and tools."
 msgstr "机器人可以在{hostLabel}上使用你的本地文件和工具。"
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Bots run on isolated computers in Docker."
+msgstr "机器人在 Docker 的隔离电脑上运行。"
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Bots run on this computer."
+msgstr "机器人在这台电脑上运行。"
+
 #: src/components/AuthFrame.tsx
 msgid "Bots that handle your inbox and invoices, and ask before they act"
 msgstr "处理你的收件箱和发票、行动前先询问你的机器人"
@@ -1397,6 +1405,7 @@ msgid "Choose how to use Corvo"
 msgstr "选择如何使用 Corvo"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/pages/AccountSettingsOverlay.tsx
 msgid "Choose where bots run"
 msgstr "选择机器人的运行位置"
 

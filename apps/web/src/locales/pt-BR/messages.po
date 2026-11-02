@@ -1147,6 +1147,14 @@ msgstr "Bots e automação de navegador"
 msgid "Bots can work on {hostLabel} with your local files and tools."
 msgstr "Os bots podem trabalhar em {hostLabel} com os seus arquivos e ferramentas locais."
 
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Bots run on isolated computers in Docker."
+msgstr "Os bots rodam em computadores isolados no Docker."
+
+#: src/pages/AccountSettingsOverlay.tsx
+msgid "Bots run on this computer."
+msgstr "Os bots rodam neste computador."
+
 #: src/components/AuthFrame.tsx
 msgid "Bots that handle your inbox and invoices, and ask before they act"
 msgstr "Bots que cuidam do seu e-mail e das faturas e perguntam antes de agir"
@@ -1397,6 +1405,7 @@ msgid "Choose how to use Corvo"
 msgstr "Escolha como usar o Corvo"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/pages/AccountSettingsOverlay.tsx
 msgid "Choose where bots run"
 msgstr "Escolher onde os bots rodam"
 
