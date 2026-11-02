@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { bootstrapUserSpace } from "./bootstrap-user.js";
 import type { PrismaClient } from "./client.js";
+import { currentDbContext } from "./row-security.js";
 
 function makePrisma(settings: { id: string; ownerUserId: string | null } | null) {
   const create = () => vi.fn(async (_input: { data: Record<string, unknown> }) => ({}));
@@ -33,6 +34,25 @@ function makePrisma(settings: { id: string; ownerUserId: string | null } | null)
 const env = { signupsEnabled: "false", signupAllowlist: "a@example.com, b@example.com" };
 
 describe("bootstrapUserSpace", () => {
+  it("provisions the workspace as the system, for a database role that enforces row-level security", async () => {
+    const prisma = makePrisma({ id: "default", ownerUserId: "user-1" });
+    const onlySystem = (inner: (...args: never[]) => unknown) =>
+      vi.fn(async (...args: never[]) => {
+        if (currentDbContext()?.kind !== "system") {
+          throw new Error(
+            'new row violates row-level security policy for table "memory_documents"',
+          );
+        }
+        return inner(...args);
+      });
+    prisma.memoryDocument.findFirst = onlySystem(async () => null) as never;
+    prisma.memoryDocument.create = onlySystem(async () => ({})) as never;
+
+    await expect(
+      bootstrapUserSpace(prisma as unknown as PrismaClient, { id: "user-1" }, env),
+    ).resolves.toMatchObject({ spaceId: expect.any(String) });
+  });
+
   it("creates a personal organization with a default workspace", async () => {
     const prisma = makePrisma({ id: "default", ownerUserId: "user-1" });
     const result = await bootstrapUserSpace(
