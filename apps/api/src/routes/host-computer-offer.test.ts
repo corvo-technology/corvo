@@ -21,6 +21,25 @@ describe("hostComputerOffer", () => {
     ).toEqual({ computerHost: "this-mac", canChoose: true, provider: "docker" });
   });
 
+  it("starts the desktop app's engine on the isolated Docker computer, with nothing to answer first", () => {
+    expect(
+      hostComputerOffer({
+        provider: "docker",
+        hostConnected: true,
+        choiceEnabled: true,
+        stored: null,
+      }),
+    ).toEqual({ computerHost: "docker", canChoose: true, provider: "docker" });
+    expect(
+      hostComputerOffer({
+        provider: "docker",
+        hostConnected: true,
+        choiceEnabled: true,
+        stored: "this-mac",
+      }),
+    ).toEqual({ computerHost: "this-mac", canChoose: true, provider: "docker" });
+  });
+
   it("lets the desktop app's engine, which has no isolated computer, offer this Mac", () => {
     expect(
       hostComputerOffer({

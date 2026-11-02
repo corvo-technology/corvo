@@ -32,6 +32,7 @@ import type { ElectronAutoUpdater } from "./auto-update.js";
 import { DesktopUpdateController, LAUNCH_CHECK_DELAY_MS, updaterSupport } from "./auto-update.js";
 import { createBadgeHandler } from "./badge.js";
 import { openBrowserAuth } from "./browser-auth.js";
+import { detectDockerHere } from "./docker-detect.js";
 import {
   EmbeddedEngineController,
   engineDir,
@@ -1152,6 +1153,16 @@ app.whenReady().then(async () => {
       (await readEngineWebUrl(engineDir(userDataDir), LOCAL_WEB_URL)),
     hostComputer: hostComputer?.connection,
     desktopControlLauncher,
+    // With Docker here, bots get isolated computers; without it they have none until the person
+    // allows this computer.
+    ...((await detectDockerHere())
+      ? {
+          docker: {
+            computerContext: enginePaths.computerContextDir,
+            controlViaLoopback: process.platform !== "linux",
+          },
+        }
+      : {}),
     ...(openCodeModels
       ? { localModels: { url: openCodeModels.url, models: openCodeModels.models } }
       : {}),
