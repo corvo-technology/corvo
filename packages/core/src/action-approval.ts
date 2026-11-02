@@ -462,9 +462,10 @@ export type AutoReviewJudgeDecision = "pass" | "ask" | "error";
 /**
  * The gate after rule resolution. A block refuses in every mode. An approval a person must give
  * asks, except in Never ask, which never waits: there it runs when the owner started the run and no
- * outside content entered it, and is refused otherwise, since outside text could have asked for
- * it. Otherwise Never ask runs it, an ask rule asks, and anything that would ask goes to the approval
- * model in Auto, falling back to asking when no model is set up.
+ * outside content entered it. Otherwise outside text could have asked for it, so it asks the owner
+ * when they started the run and is refused when nobody is there to answer. Otherwise Never ask
+ * runs it, an ask rule asks, and anything that would ask goes to the approval model in Auto,
+ * falling back to asking when no model is set up.
  */
 export function planActionGate(input: {
   resolved: ActionApprovalResolved;
@@ -473,6 +474,8 @@ export function planActionGate(input: {
   mandatory?: boolean;
   /** The owner did not start this run, or outside content entered it. */
   steerable?: boolean;
+  /** The owner started this run and no outside message reached it, so a card can go to them. */
+  ownerPresent?: boolean;
   consequential: boolean;
   /**
    * A read whose arguments outside content may have chosen (see connectorReadRequiresApproval).
@@ -486,7 +489,8 @@ export function planActionGate(input: {
   if (input.resolved.decision === "deny") return "deny";
   if (input.mandatory) {
     if (input.mode !== "never") return "ask";
-    return input.steerable ? "deny" : "allow";
+    if (!input.steerable) return "allow";
+    return input.ownerPresent ? "ask" : "deny";
   }
   if (input.mode === "never") return "allow";
   if (input.resolved.decision === "ask") return "ask";

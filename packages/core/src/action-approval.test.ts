@@ -410,6 +410,8 @@ describe("planActionGate", () => {
   it("in Never ask runs it for the owner's own run and refuses it when outside text could steer it", () => {
     expect(gate("never", { mandatory: true, steerable: false })).toBe("allow");
     expect(gate("never", { mandatory: true, steerable: true })).toBe("deny");
+    // The owner is in the chat and can answer a card, so a retried run asks instead of failing.
+    expect(gate("never", { mandatory: true, steerable: true, ownerPresent: true })).toBe("ask");
   });
 
   it("only lets the approval model check a read outside content may have chosen", () => {

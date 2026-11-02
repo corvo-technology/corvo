@@ -279,6 +279,7 @@ export async function gateToolCall(
       requiresMandatoryApproval && mode === "never"
         ? !ctx.source.ownerStartedRun || (await isRunTainted(ctx))
         : undefined,
+    ownerPresent: ctx.source.ownerStartedRun && !(await ctx.trust.receivedOutsideMessage()),
     consequential: requiresApprovalByDefault,
     reviewOnly: connectorReadGated,
     checkerConfigured,
