@@ -51,6 +51,15 @@
       {
         "from": "../web/dist",
         "to": "web"
+      },
+      {
+        "from": "../../infra/sandboxes/computer",
+        "to": "computer",
+        "filter": [
+          "**/*",
+          "!test_*.py",
+          "!*.d.ts"
+        ]
       }
     ],
     "extraMetadata": {

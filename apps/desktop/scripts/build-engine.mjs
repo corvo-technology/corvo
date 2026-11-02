@@ -22,6 +22,7 @@ const entryPoints = {
   worker: path.join(root, "apps/worker/src/index.ts"),
   migrate: path.join(root, "apps/api/src/cli/migrate-database.ts"),
   "desktop-control-mcp": path.join(root, "packages/adapters/src/desktop-control-mcp-main.ts"),
+  supervisor: path.join(root, "infra/sandboxes/supervisor/src/index.ts"),
 };
 
 rmSync(out, { recursive: true, force: true });
@@ -43,11 +44,20 @@ await build({
   mainFields: ["module", "main"],
   logLevel: "warning",
   banner: {
-    js: 'import { createRequire as __createRequire } from "node:module"; const require = __createRequire(import.meta.url);',
+    // Bundled CommonJS packages (ssh2, through dockerode) still read __dirname and __filename.
+    js: 'import { createRequire as __createRequire } from "node:module"; import { fileURLToPath as __fileURLToPath } from "node:url"; import { dirname as __dirnameOf } from "node:path"; const require = __createRequire(import.meta.url); const __filename = __fileURLToPath(import.meta.url); const __dirname = __dirnameOf(__filename);',
   },
   // pi-ai loads its sign-in flows with variable imports that esbuild cannot follow.
   inject: [path.join(root, "packages/adapters/src/pi-bundled-oauth.ts")],
-  external: [...EXTERNAL_PACKAGES, ...builtins, ...builtins.map((name) => `node:${name}`)],
+  // ssh2, which dockerode loads for ssh connections, tries optional native add-ons and falls back to
+  // plain JavaScript without them. The supervisor reaches Docker over a socket and needs neither.
+  external: [
+    ...EXTERNAL_PACKAGES,
+    "*.node",
+    "cpu-features",
+    ...builtins,
+    ...builtins.map((name) => `node:${name}`),
+  ],
 });
 
 cpSync(path.join(root, "packages/db/prisma/migrations"), path.join(out, "migrations"), {

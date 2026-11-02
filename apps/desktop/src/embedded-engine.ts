@@ -66,6 +66,16 @@ export interface EngineDeps {
    * stay off without it, and with it nothing else on this computer can be started that way.
    */
   desktopControlLauncher?: string;
+  /**
+   * Present when Docker is on this computer: the engine then runs the computer supervisor beside the
+   * API, and bots get isolated Docker computers. Absent, bots have no isolated computer.
+   */
+  docker?: {
+    /** The folder holding the computer image's files, which the supervisor builds the image from. */
+    computerContext: string;
+    /** Docker Desktop on macOS and Windows publishes a loopback port instead of a container address. */
+    controlViaLoopback: boolean;
+  };
   spawn: SpawnEngineProcess;
   /** Resolves true when the engine's own web address answers its health check. */
   probe: (url: string, signal: AbortSignal) => Promise<boolean>;
@@ -101,8 +111,12 @@ export function engineResourcePaths(input: {
   appPath: string;
   platform?: NodeJS.Platform;
   arch?: string;
-}): { engineDir: string; postgresBinDir: string } {
+}): { engineDir: string; postgresBinDir: string; computerContextDir: string } {
   return {
+    // The files the supervisor builds the isolated computer's image from.
+    computerContextDir: input.packaged
+      ? path.join(input.resourcesPath, "computer")
+      : path.resolve(input.appPath, "..", "..", "infra", "sandboxes", "computer"),
     engineDir: path.join(input.appPath, "dist", "engine"),
     postgresBinDir: input.packaged
       ? path.join(input.resourcesPath, "postgres", "bin")
@@ -265,6 +279,7 @@ export class EmbeddedEngineController {
   private database: EngineProcess | null = null;
   private api: EngineProcess | null = null;
   private worker: EngineProcess | null = null;
+  private supervisor: EngineProcess | null = null;
   private serving = false;
   /** Set while the engine's programs are being stopped on purpose. */
   private tearingDown = false;
@@ -331,9 +346,10 @@ export class EmbeddedEngineController {
     await Promise.all([
       this.terminate(this.api, "SIGTERM"),
       this.terminate(this.worker, "SIGTERM"),
+      this.terminate(this.supervisor, "SIGTERM"),
     ]);
     await this.terminate(this.database, "SIGINT");
-    this.api = this.worker = this.database = null;
+    this.api = this.worker = this.supervisor = this.database = null;
     this.tearingDown = false;
     this.setState(initialEngineState());
     return this.current;
@@ -408,9 +424,10 @@ export class EmbeddedEngineController {
     await Promise.all([
       this.terminate(this.api, "SIGTERM"),
       this.terminate(this.worker, "SIGTERM"),
+      this.terminate(this.supervisor, "SIGTERM"),
     ]);
     await this.terminate(this.database, "SIGINT");
-    this.api = this.worker = this.database = null;
+    this.api = this.worker = this.supervisor = this.database = null;
     this.tearingDown = false;
   }
 
@@ -480,6 +497,18 @@ export class EmbeddedEngineController {
 
     const urls = databaseUrls(pgPort, secrets);
     const web = new URL(this.currentWebUrl);
+    // Docker computers need a supervisor that the API and worker can reach with a shared token.
+    const supervisorEnv = this.deps.docker
+      ? {
+          NODE_ENV: "production",
+          SUPERVISOR_HOST: "127.0.0.1",
+          SUPERVISOR_PORT: String(await (this.deps.allocatePort ?? allocateLoopbackPort)()),
+          SANDBOX_SUPERVISOR_TOKEN: this.deps.randomHex(32),
+          DATA_DIR: appData,
+          CORVO_COMPUTER_CONTEXT: this.deps.docker.computerContext,
+          SANDBOX_CONTROL_VIA_LOOPBACK: String(this.deps.docker.controlViaLoopback),
+        }
+      : null;
     const engineEnv: Record<string, string> = {
       ...this.baseEnv(),
       ELECTRON_RUN_AS_NODE: "1",
@@ -493,7 +522,13 @@ export class EmbeddedEngineController {
       // otherwise lose every conversation. Existing ciphertext still reads.
       CONTENT_ENCRYPTION: "off",
       // Docker is not part of the app; computers come from "this Mac" through the host credentials.
-      SANDBOX_PROVIDER: "none",
+      SANDBOX_PROVIDER: supervisorEnv ? "docker" : "none",
+      ...(supervisorEnv
+        ? {
+            SANDBOX_SUPERVISOR_URL: `http://127.0.0.1:${supervisorEnv.SUPERVISOR_PORT}`,
+            SANDBOX_SUPERVISOR_TOKEN: supervisorEnv.SANDBOX_SUPERVISOR_TOKEN,
+          }
+        : {}),
       SANDBOX_HOST_URL: this.deps.hostComputer?.url ?? "",
       SANDBOX_HOST_TOKEN: this.deps.hostComputer?.token ?? "",
       ...(this.deps.localModels
@@ -537,6 +572,14 @@ export class EmbeddedEngineController {
       MIGRATE_TIMEOUT_MS,
     );
 
+    if (supervisorEnv) {
+      this.supervisor = this.spawnLogged(path.join(bundleDir, "supervisor.mjs"), dataDir, {
+        ...this.baseEnv(),
+        ELECTRON_RUN_AS_NODE: "1",
+        ...supervisorEnv,
+      });
+      this.watchUnexpectedExit(this.supervisor, "computer supervisor");
+    }
     this.api = this.spawnLogged(path.join(bundleDir, "api.mjs"), dataDir, engineEnv);
     this.worker = this.spawnLogged(path.join(bundleDir, "worker.mjs"), dataDir, engineEnv);
     this.watchUnexpectedExit(this.api, "api");
@@ -548,9 +591,7 @@ export class EmbeddedEngineController {
     while (!signal.aborted && this.current.phase !== "failed") {
       if (await this.deps.probe(this.currentWebUrl, signal).catch(() => false)) {
         const identity = engineConfigIdentity(this.deps);
-        if (identity !== null) {
-          await writePrivateFile(path.join(dataDir, ENGINE_HOST_CONFIG_FILE), identity);
-        }
+        await writePrivateFile(path.join(dataDir, ENGINE_HOST_CONFIG_FILE), identity ?? "");
         this.serving = true;
         this.pushPhase("ready");
         return;
@@ -565,11 +606,12 @@ export class EmbeddedEngineController {
   /** True when the engine's host-computer and local-model settings match what the running engine was given. */
   async hostConfigMatches(): Promise<boolean> {
     const identity = engineConfigIdentity(this.deps);
-    if (identity === null) return true;
-    return (
-      (await readPrivateFile(path.join(this.deps.dataDir, ENGINE_HOST_CONFIG_FILE), 4096)) ===
-      identity
+    const saved = await readPrivateFile(
+      path.join(this.deps.dataDir, ENGINE_HOST_CONFIG_FILE),
+      4096,
     );
+    // No settings now matches an engine that was given none, not one that was given some.
+    return (saved ?? "") === (identity ?? "");
   }
 
   private async ensureSecrets(): Promise<EngineSecrets> {
@@ -694,7 +736,7 @@ export class EmbeddedEngineController {
   /** After the engine is up, a program that stops on its own ends the session honestly. */
   private watchUnexpectedExit(child: EngineProcess, name: string) {
     child.on("exit", () => {
-      if (this.api !== child && this.worker !== child) return;
+      if (this.api !== child && this.worker !== child && this.supervisor !== child) return;
       if (this.stopping !== null || this.tearingDown) return;
       this.serving = false;
       this.fail(`The Corvo ${name} stopped unexpectedly. Retry.`);
@@ -764,12 +806,20 @@ function databaseUrls(port: number, secrets: EngineSecrets) {
  * engine started before these settings existed is not restarted for them.
  */
 function engineConfigIdentity(
-  deps: Pick<EngineDeps, "hostComputer" | "localModels">,
+  deps: Pick<EngineDeps, "hostComputer" | "localModels" | "docker">,
 ): string | null {
   const { hostComputer, localModels } = deps;
-  if (!hostComputer && !localModels) return null;
-  // Without local models the identity is the host computer alone, as it was before they existed.
-  return localModels ? JSON.stringify({ hostComputer, localModels }) : JSON.stringify(hostComputer);
+  const docker = Boolean(deps.docker);
+  if (!hostComputer && !localModels && !docker) return null;
+  // Each setting joins the identity only once it exists, so an engine started before it keeps matching.
+  if (docker || localModels) {
+    return JSON.stringify({
+      hostComputer,
+      ...(localModels ? { localModels } : {}),
+      ...(docker ? { docker } : {}),
+    });
+  }
+  return JSON.stringify(hostComputer);
 }
 
 function isProcessAlive(pid: number): boolean {

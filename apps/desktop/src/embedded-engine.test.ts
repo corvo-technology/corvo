@@ -60,6 +60,9 @@ afterEach(async () => {
   await rm(dir, { recursive: true, force: true });
 });
 
+/** The supervisor takes the first port the engine allocates after the database's. */
+const supervisorPort = () => 54_002;
+
 const base = (child: FakeChild) => path.basename(child.args[0] ?? child.command);
 
 function deps(overrides: Partial<EngineDeps> = {}): EngineDeps {
@@ -81,7 +84,7 @@ function deps(overrides: Partial<EngineDeps> = {}): EngineDeps {
       queueMicrotask(() => {
         if (name === "postgres" && !args.includes("--single")) {
           child.stderr.emit("data", "LOG:  database system is ready to accept connections\n");
-        } else if (name === "api.mjs" || name === "worker.mjs") {
+        } else if (name === "api.mjs" || name === "worker.mjs" || name === "supervisor.mjs") {
           child.stdout.emit("data", `${name} started\n`);
         } else {
           child.exit(failScript === name ? 1 : 0);
@@ -156,6 +159,57 @@ describe("EmbeddedEngineController", () => {
       MCP_STDIO_ENABLED: "true",
       MCP_STDIO_ALLOWED_COMMANDS: launcher,
     });
+  });
+
+  it("runs isolated Docker computers when Docker is there, and gives the API the supervisor's address", async () => {
+    const docker = { computerContext: "/app/computer", controlViaLoopback: true };
+    const engine = new EmbeddedEngineController(deps({ docker }));
+    await engine.start();
+    const supervisor = children.find((child) => base(child) === "supervisor.mjs");
+    expect(supervisor?.env).toMatchObject({
+      NODE_ENV: "production",
+      SUPERVISOR_HOST: "127.0.0.1",
+      SUPERVISOR_PORT: String(supervisorPort()),
+      SANDBOX_SUPERVISOR_TOKEN: "ab".repeat(32),
+      CORVO_COMPUTER_CONTEXT: "/app/computer",
+      SANDBOX_CONTROL_VIA_LOOPBACK: "true",
+    });
+    expect(supervisor?.env.DATA_DIR).toBe(path.join(dir, "engine", "data"));
+    expect(supervisor?.env.SECRET_TOKEN).toBeUndefined();
+    for (const name of ["api.mjs", "worker.mjs"]) {
+      const child = children.find((c) => base(c) === name);
+      expect(child?.env).toMatchObject({
+        SANDBOX_PROVIDER: "docker",
+        SANDBOX_SUPERVISOR_URL: `http://127.0.0.1:${supervisorPort()}`,
+        SANDBOX_SUPERVISOR_TOKEN: "ab".repeat(32),
+      });
+    }
+    // The supervisor is up before the programs that call it.
+    expect(children.findIndex((c) => base(c) === "supervisor.mjs")).toBeLessThan(
+      children.findIndex((c) => base(c) === "api.mjs"),
+    );
+  });
+
+  it("keeps no computer, rather than a half set up one, when Docker is not there", async () => {
+    const engine = new EmbeddedEngineController(deps());
+    await engine.start();
+    expect(children.some((child) => base(child) === "supervisor.mjs")).toBe(false);
+    const api = children.find((child) => base(child) === "api.mjs");
+    expect(api?.env.SANDBOX_PROVIDER).toBe("none");
+    expect(api?.env.SANDBOX_SUPERVISOR_URL).toBeUndefined();
+  });
+
+  it("stops the supervisor with the rest and starts again when Docker appears or goes away", async () => {
+    const withDocker = deps({
+      docker: { computerContext: "/app/computer", controlViaLoopback: false },
+    });
+    const engine = new EmbeddedEngineController(withDocker);
+    await engine.start();
+    await engine.stop();
+    expect(killLog.some((entry) => entry.startsWith("supervisor.mjs:"))).toBe(true);
+    // The settings the running engine was given no longer match once Docker is gone.
+    const without = new EmbeddedEngineController(deps());
+    expect(await without.hostConfigMatches()).toBe(false);
   });
 
   it("keeps stdio MCP servers off when there is no launcher", async () => {
@@ -304,6 +358,7 @@ describe("engineResourcePaths", () => {
     ).toEqual({
       engineDir: "/R/app.asar/dist/engine",
       postgresBinDir: "/R/postgres/bin",
+      computerContextDir: "/R/computer",
     });
   });
 
@@ -319,6 +374,7 @@ describe("engineResourcePaths", () => {
     ).toEqual({
       engineDir: "/A/dist/engine",
       postgresBinDir: "/A/node_modules/@embedded-postgres/darwin-arm64/native/bin",
+      computerContextDir: "/infra/sandboxes/computer",
     });
   });
 });

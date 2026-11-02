@@ -113,8 +113,10 @@ export function hostComputerOffer(input: {
   const { provider, stored } = input;
   if (provider === "desktop") return { computerHost: "this-mac", canChoose: false, provider };
   if (provider === "docker") {
+    const chosen = stored === "this-mac" || stored === "docker" ? stored : null;
     return {
-      computerHost: stored === "this-mac" || stored === "docker" ? stored : null,
+      // The desktop app's engine starts on the isolated computer, so it has nothing to ask first.
+      computerHost: chosen ?? (input.hostConnected ? "docker" : null),
       canChoose: input.choiceEnabled,
       provider,
     };
