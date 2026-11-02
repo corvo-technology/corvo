@@ -11,8 +11,9 @@ const SERVER_SLUG = "desktop-control";
 
 /**
  * The switch that lets bots see and use the apps on this computer. It exists only in the desktop
- * app. Turning it on adds the desktop control tools as an MCP server in this Space, and a bot gets
- * them like any other connection; every action still asks first.
+ * app. Turning it on adds the desktop control tools as an MCP server in this Space and gives them to
+ * every bot, so nothing else needs setting up; every action still asks first. Turning it off removes
+ * the server, and with it every bot's access.
  */
 export function DesktopControlSettings() {
   const { t } = useLingui();
@@ -51,6 +52,26 @@ export function DesktopControlSettings() {
       args: [],
       env: {},
     });
+    // One switch, nothing more to set up: every bot gets the tools. replace() overwrites a bot's
+    // whole list, so each keeps what it already has.
+    const [bots, assigned] = await Promise.all([rpc.bots.list(), rpc.mcp.assignments.all()]);
+    await Promise.all(
+      bots.map((bot) =>
+        rpc.mcp.assignments.replace({
+          botId: bot.id,
+          assignments: [
+            ...assigned
+              .filter((entry) => entry.botId === bot.id && entry.serverId !== created.id)
+              .map(({ serverId, allowAllTools, allowedTools }) => ({
+                serverId,
+                allowAllTools,
+                allowedTools,
+              })),
+            { serverId: created.id, allowAllTools: true, allowedTools: [] },
+          ],
+        }),
+      ),
+    );
     setServerId(created.id);
     setStatus(prepared.status);
   }

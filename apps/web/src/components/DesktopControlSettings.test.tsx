@@ -7,7 +7,11 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const rpcMock = vi.hoisted(() => ({
-  mcp: { servers: { list: vi.fn(), create: vi.fn(), remove: vi.fn() } },
+  bots: { list: vi.fn() },
+  mcp: {
+    servers: { list: vi.fn(), create: vi.fn(), remove: vi.fn() },
+    assignments: { all: vi.fn(), replace: vi.fn() },
+  },
 }));
 vi.mock("../lib/rpc", () => ({ rpc: rpcMock }));
 vi.mock("@lingui/react/macro", () => {
@@ -51,6 +55,13 @@ beforeEach(() => {
   rpcMock.mcp.servers.list.mockReset().mockResolvedValue([]);
   rpcMock.mcp.servers.create.mockReset().mockResolvedValue(server);
   rpcMock.mcp.servers.remove.mockReset().mockResolvedValue({ ok: true });
+  rpcMock.bots.list.mockReset().mockResolvedValue([{ id: "chief" }, { id: "bento" }]);
+  rpcMock.mcp.assignments.all
+    .mockReset()
+    .mockResolvedValue([
+      { botId: "bento", serverId: "stripe", allowAllTools: false, allowedTools: ["list_invoices"] },
+    ]);
+  rpcMock.mcp.assignments.replace.mockReset().mockResolvedValue([]);
   (window as { corvoDesktop?: unknown }).corvoDesktop = { desktopControl: bridge };
   container = document.createElement("div");
   document.body.append(container);
@@ -97,6 +108,24 @@ describe("DesktopControlSettings", () => {
       }),
     );
     expect(toggle().getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("gives every bot the tools at once, keeping what each already has", async () => {
+    await render();
+    await act(async () => toggle().click());
+    const everything = { serverId: "srv1", allowAllTools: true, allowedTools: [] };
+    expect(rpcMock.mcp.assignments.replace).toHaveBeenCalledTimes(2);
+    expect(rpcMock.mcp.assignments.replace).toHaveBeenCalledWith({
+      botId: "chief",
+      assignments: [everything],
+    });
+    expect(rpcMock.mcp.assignments.replace).toHaveBeenCalledWith({
+      botId: "bento",
+      assignments: [
+        { serverId: "stripe", allowAllTools: false, allowedTools: ["list_invoices"] },
+        everything,
+      ],
+    });
   });
 
   it("stays off when the person declines the app's question", async () => {
