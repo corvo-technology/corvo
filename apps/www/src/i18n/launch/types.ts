@@ -42,6 +42,7 @@ export type LaunchCopy = {
     title: string;
     description: string;
     ogImageAlt: string;
+    ogTagline: string;
     availableLanguage: string;
     skipToContent: string;
   };

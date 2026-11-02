@@ -38,7 +38,7 @@ const structuredData = homeStructuredData({
 });
 
 // Social images exist for these languages; the others borrow the English one until theirs is drawn.
-const OG_LOCALES: readonly Locale[] = ["pt", "de", "ja", "zh"];
+const OG_LOCALES: readonly Locale[] = ["pt", "es", "fr", "de", "ja", "zh"];
 const ogImage = OG_LOCALES.includes(locale) ? `/og-image-${locale}.png` : "/og-image.png";
 
 const { works } = copy;
