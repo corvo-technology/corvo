@@ -13,6 +13,10 @@ export const GITHUB_URL = "https://github.com/corvo-technology/corvo";
 export const DESKTOP_VERSION = "0.1.0";
 export const DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v${DESKTOP_VERSION}/corvo-mac-arm64.dmg`;
 
+/** Direct installers with stable names, so the links never need a version. */
+export const DOWNLOAD_URL_WINDOWS = `${GITHUB_URL}/releases/latest/download/corvo-win-x64.exe`;
+export const DOWNLOAD_URL_LINUX = `${GITHUB_URL}/releases/latest/download/corvo-linux-x86_64.AppImage`;
+
 /**
  * The one-line installs. They download from the latest release, so they only work once a release
  * with the install scripts and the app files is published as the latest one.

@@ -68,6 +68,18 @@
   font-size: 0.86rem;
 }
 
+.lp-hero .download-note a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lp-hero__command {
+  max-width: 34rem;
+  margin: 14px 0 0;
+}
+
 .lp-hero__stage {
   position: relative;
   display: grid;

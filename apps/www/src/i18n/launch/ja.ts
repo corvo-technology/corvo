@@ -51,7 +51,7 @@ const COPY: LaunchCopy = {
     line2: "動く前に、必ず確認します。",
     lead: "Corvo は、オープンソースの AI エージェントのチームです。それぞれに仕事と専用のツール、専用の会話があります。あなたのコンピューター上のチャンネルで協力して働き、本物に触れる前にあなたに確認します。",
     githubLabel: "GitHub でスターを付ける",
-    note: "macOS、Windows、Linux に対応。",
+    note: "{windows} と {linux} にも",
     tags: [
       { name: "Davi", role: "メールエージェント", hue: "rosa" },
       { name: "Bento", role: "支払い監視", hue: "azul" },
