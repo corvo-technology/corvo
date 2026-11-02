@@ -18,10 +18,12 @@ import {
 } from "electron";
 import {
   agentDesktopBinary,
+  desktopControlLauncherPath,
   desktopControlStatus,
   extractWithTar,
   installAgentDesktop,
   openDesktopPermissionGuide,
+  writeDesktopControlLauncher,
 } from "./agent-desktop.js";
 import type { AppDocumentState } from "./app-document-state.js";
 import { APP_DOCUMENT_STATE_SCRIPT } from "./app-document-state.js";
@@ -134,6 +136,10 @@ const desktopUpdater = new DesktopUpdateController(
 );
 let launchUpdateCheckScheduled = false;
 let localStack: EmbeddedEngineController;
+/** The program the engine may start as the desktop control server, and the server script it runs. */
+let desktopControlLauncher: string | undefined;
+let desktopControlScript = "";
+const toolsDir = () => path.join(app.getPath("userData"), "tools");
 let hostComputer: Awaited<ReturnType<typeof prepareHostComputer>> | undefined;
 let openCodeModels: Awaited<ReturnType<typeof prepareOpenCodeModels>>;
 let requestingComputerAccess = false;
@@ -1123,6 +1129,12 @@ app.whenReady().then(async () => {
     resourcesPath: process.resourcesPath,
     appPath: app.getAppPath(),
   });
+  desktopControlScript = path.join(enginePaths.engineDir, "desktop-control-mcp.mjs");
+  // Windows keeps stdio MCP servers off until its launcher has run there.
+  desktopControlLauncher =
+    process.platform === "win32"
+      ? undefined
+      : desktopControlLauncherPath(toolsDir(), process.platform);
   localStack = new EmbeddedEngineController({
     dataDir: engineDir(userDataDir),
     engineDir: enginePaths.engineDir,
@@ -1134,6 +1146,7 @@ app.whenReady().then(async () => {
       process.env.CORVO_LOCAL_WEB_URL?.trim() ||
       (await readEngineWebUrl(engineDir(userDataDir), LOCAL_WEB_URL)),
     hostComputer: hostComputer?.connection,
+    desktopControlLauncher,
     ...(openCodeModels
       ? { localModels: { url: openCodeModels.url, models: openCodeModels.models } }
       : {}),
@@ -1302,11 +1315,32 @@ app.whenReady().then(async () => {
   ipcMain.handle("desktop.platform", () => process.platform);
   ipcMain.handle("desktop.passkeys.rpIds", () => passkeyRpIds);
   ipcMain.handle("desktop.tools.detect", () => detectInstalledTools());
-  const toolsDir = () => path.join(app.getPath("userData"), "tools");
-  const controlStatus = () => desktopControlStatus(toolsDir(), process.platform, process.arch);
+  const controlStatus = (event: Electron.IpcMainInvokeEvent) =>
+    isManagedComputerRequest(event)
+      ? desktopControlStatus(toolsDir(), process.platform, process.arch)
+      : Promise.resolve({
+          supported: false,
+          installed: false,
+          permissions: { accessibility: "unknown", screenRecording: "unknown" },
+        } as const);
   ipcMain.handle("desktop.control.status", controlStatus);
-  ipcMain.handle("desktop.control.prepare", async () => {
-    await installAgentDesktop({
+  ipcMain.handle("desktop.control.prepare", async (event) => {
+    if (!isManagedComputerRequest(event) || desktopControlLauncher === undefined)
+      throw new Error("Desktop control requires an app-managed local instance.");
+    // Only the person, not a page, turns this on: the app asks natively before installing anything.
+    const answer = await dialog.showMessageBox(mainWindow!, {
+      type: "warning",
+      title: "Allow desktop control?",
+      message: "Allow bots to see and use your apps?",
+      detail:
+        "Bots you give this tool to can read what is on screen in your apps and click or type in them. Actions ask you first. You can turn it off in Settings.",
+      buttons: ["Cancel", "Allow"],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    });
+    if (answer.response !== 1) return null;
+    const { binary } = await installAgentDesktop({
       dir: toolsDir(),
       platform: process.platform,
       arch: process.arch,
@@ -1317,10 +1351,19 @@ app.whenReady().then(async () => {
       },
       extract: extractWithTar,
     });
-    return controlStatus();
+    const command = await writeDesktopControlLauncher({
+      dir: toolsDir(),
+      platform: process.platform,
+      node: process.execPath,
+      script: desktopControlScript,
+      binary,
+    });
+    return { command, status: await controlStatus(event) };
   });
-  ipcMain.handle("desktop.control.openPermissionGuide", () =>
-    openDesktopPermissionGuide(agentDesktopBinary(toolsDir(), process.platform)),
+  ipcMain.handle("desktop.control.openPermissionGuide", (event) =>
+    isManagedComputerRequest(event)
+      ? openDesktopPermissionGuide(agentDesktopBinary(toolsDir(), process.platform))
+      : undefined,
   );
   ipcMain.handle("desktop.window.close", (event) => {
     windowFrom(event)?.close();

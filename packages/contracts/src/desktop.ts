@@ -50,8 +50,11 @@ export interface CorvoDesktop {
   /** Optional for compatibility with older desktop releases. */
   desktopControl?: {
     status: () => Promise<CorvoDesktopControlStatus>;
-    /** Downloads the pinned build if needed, then reports the status. */
-    prepare: () => Promise<CorvoDesktopControlStatus>;
+    /**
+     * Asks the person natively, then installs the pinned build if needed. Resolves null when they
+     * decline, and otherwise with the one command the local engine may run as an MCP server.
+     */
+    prepare: () => Promise<{ command: string; status: CorvoDesktopControlStatus } | null>;
     /** Opens the system page where the permissions are granted. */
     openPermissionGuide: () => Promise<void>;
   };

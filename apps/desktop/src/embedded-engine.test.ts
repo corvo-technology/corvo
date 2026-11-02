@@ -147,6 +147,25 @@ describe("EmbeddedEngineController", () => {
     expect(await moved.hostConfigMatches()).toBe(false);
   });
 
+  it("lets the API start the desktop control launcher and nothing else as an MCP server", async () => {
+    const launcher = "/data/tools/desktop-control/launch.sh";
+    const engine = new EmbeddedEngineController(deps({ desktopControlLauncher: launcher }));
+    await engine.start();
+    const api = children.find((child) => base(child) === "api.mjs");
+    expect(api?.env).toMatchObject({
+      MCP_STDIO_ENABLED: "true",
+      MCP_STDIO_ALLOWED_COMMANDS: launcher,
+    });
+  });
+
+  it("keeps stdio MCP servers off when there is no launcher", async () => {
+    const engine = new EmbeddedEngineController(deps());
+    await engine.start();
+    const api = children.find((child) => base(child) === "api.mjs");
+    expect(api?.env.MCP_STDIO_ENABLED).toBeUndefined();
+    expect(api?.env.MCP_STDIO_ALLOWED_COMMANDS).toBeUndefined();
+  });
+
   it("gives the API its own address, secrets and no Docker, and leaks nothing from the app's environment", async () => {
     const engine = new EmbeddedEngineController(
       deps({ hostComputer: { url: "http://127.0.0.1:9000", token: "t".repeat(64) } }),

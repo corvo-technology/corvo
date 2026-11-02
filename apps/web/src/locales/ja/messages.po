@@ -750,6 +750,10 @@ msgstr "全期間"
 msgid "Allow"
 msgstr "許可"
 
+#: src/components/DesktopControlSettings.tsx
+msgid "Allow Corvo under Accessibility in your system's privacy settings."
+msgstr "システムのプライバシー設定の「アクセシビリティ」で Corvo を許可してください。"
+
 #: src/pages/shell/bot-panel.tsx
 msgid "Allow cross-space bot communication"
 msgstr "スペース間のボット通信を許可"
@@ -1292,6 +1296,7 @@ msgid "Chats"
 msgstr "チャット"
 
 #: src/components/ComputersUnavailableHint.tsx
+#: src/components/DesktopControlSettings.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
 msgstr "再確認"
@@ -1843,6 +1848,10 @@ msgstr "このサーバーを承認できませんでした"
 #: src/pages/shell/message-cards.tsx
 msgid "Could not authorize this app"
 msgstr "このアプリを承認できませんでした"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Could not change desktop control"
+msgstr "デスクトップ操作を変更できませんでした"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Could not change password"
@@ -2574,6 +2583,10 @@ msgstr "デザイン"
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop app"
 msgstr "デスクトップアプリ"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Desktop control"
+msgstr "デスクトップ操作"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Desktop update"
@@ -3469,6 +3482,10 @@ msgstr "前回の実行"
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
 msgstr "後で"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Let bots see and use your apps. Actions ask first."
+msgstr "ボットがアプリを見て操作できるようにします。操作の前に確認します。"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Lets bots save and recall facts by meaning, alongside MEMORY.md."
@@ -4380,6 +4397,10 @@ msgstr "フルウィンドウで開く"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "ナビゲーションを開く"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Open privacy settings"
+msgstr "プライバシー設定を開く"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"

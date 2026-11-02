@@ -48,6 +48,7 @@ const NOT_PASSED: Record<string, string> = {
   PARTNER_API_KEY: "input of the partner demo commands, passed on their own command line",
   PARTNER_API_URL: "input of the partner demo commands, passed on their own command line",
   MIGRATIONS_DIR: "set by the migration command for the bundled engine only",
+  CORVO_AGENT_DESKTOP_BIN: "set by the desktop app for the local desktop control server only",
   PATH: "the process's own search path, which the container image sets",
   PORT: "listen port of the partner embed demo command only; the servers use API_PORT",
   OWNER_EMAIL: "bootstrap-owner CLI input, passed on its own command line",

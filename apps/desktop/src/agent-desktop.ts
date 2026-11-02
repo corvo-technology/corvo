@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { mkdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { chmod, mkdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 
@@ -118,6 +118,77 @@ export async function installAgentDesktop(options: Install): Promise<{ binary: s
   return { binary };
 }
 
+/** The one command the local engine is allowed to run as an MCP server, at a path that never changes. */
+export function desktopControlLauncherPath(dir: string, platform: NodeJS.Platform): string {
+  return path.join(dir, "desktop-control", platform === "win32" ? "launch.cmd" : "launch.sh");
+}
+
+const shQuote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
+
+/**
+ * Writes the launcher for the desktop control server. It runs one fixed program and ignores the
+ * arguments and environment it is called with, so allowing the engine to start this path allows
+ * nothing else: a server record cannot pass options to the program or smuggle in node options.
+ */
+export async function writeDesktopControlLauncher(input: {
+  dir: string;
+  platform: NodeJS.Platform;
+  node: string;
+  script: string;
+  binary: string;
+}): Promise<string> {
+  const file = desktopControlLauncherPath(input.dir, input.platform);
+  await mkdir(path.dirname(file), { recursive: true });
+  // The tool refuses a temporary folder that is not private to the user, and the engine passes none.
+  // It also keeps unix sockets there, so the folder must be short: the system's own is both.
+  const tmp =
+    input.platform === "darwin"
+      ? "$(/usr/bin/getconf DARWIN_USER_TEMP_DIR)"
+      : "/run/user/$(/usr/bin/id -u)";
+  const body =
+    input.platform === "win32"
+      ? [
+          "@echo off",
+          "set NODE_OPTIONS=",
+          "set ELECTRON_RUN_AS_NODE=1",
+          `set "CORVO_AGENT_DESKTOP_BIN=${input.binary}"`,
+          `"${input.node}" "${input.script}"`,
+          "",
+        ].join("\r\n")
+      : [
+          "#!/bin/sh",
+          "# Runs the desktop control server. Arguments and the caller's environment are ignored.",
+          `exec /usr/bin/env -i HOME="$HOME" USER="$USER" PATH=/usr/bin:/bin TMPDIR=${tmp} \\`,
+          `  ELECTRON_RUN_AS_NODE=1 CORVO_AGENT_DESKTOP_BIN=${shQuote(input.binary)} \\`,
+          `  ${shQuote(input.node)} ${shQuote(input.script)}`,
+          "",
+        ].join("\n");
+  await writeFile(file, body, { mode: 0o700 });
+  await chmod(file, 0o700);
+  return file;
+}
+
+/** Whether a listing of windows worked: it needs Accessibility, so this is the real test of the grant. */
+export function parseAccessibilityProbe(output: string): PermissionState {
+  try {
+    const parsed = JSON.parse(output) as { ok?: unknown; error?: { code?: unknown } };
+    if (parsed.ok === true) return "granted";
+    return parsed.error?.code === "PERM_DENIED" ? "denied" : "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+async function probeAccessibility(binary: string): Promise<PermissionState> {
+  try {
+    const { stdout } = await run(binary, ["list-windows"], { timeout: 10_000 });
+    return parseAccessibilityProbe(stdout);
+  } catch (error) {
+    const stdout = (error as { stdout?: unknown }).stdout;
+    return typeof stdout === "string" ? parseAccessibilityProbe(stdout) : "unknown";
+  }
+}
+
 export type DesktopControlStatus = {
   supported: boolean;
   installed: boolean;
@@ -133,11 +204,13 @@ export async function desktopControlStatus(
   const supported = agentDesktopAsset(platform, arch) !== null;
   const binary = agentDesktopBinary(dir, platform);
   const installed = supported && (await exists(binary));
-  return {
-    supported,
-    installed,
-    permissions: installed ? await readDesktopPermissions(binary) : UNKNOWN,
-  };
+  if (!installed) return { supported, installed, permissions: UNKNOWN };
+  // `permissions` reports Accessibility as denied after it was granted, so the grant is tested by use.
+  const [accessibility, reported] = await Promise.all([
+    probeAccessibility(binary),
+    readDesktopPermissions(binary),
+  ]);
+  return { supported, installed, permissions: { ...reported, accessibility } };
 }
 
 /** Opens the system page where the person grants the permissions, with the tool's own guide. */

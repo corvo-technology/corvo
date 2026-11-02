@@ -61,6 +61,11 @@ export interface EngineDeps {
   hostComputer?: { url: string; token: string };
   /** An OpenAI-compatible server on this computer, offered to the API as its local models. */
   localModels?: { url: string; models: readonly string[] };
+  /**
+   * The one program the API may start as an MCP server: the desktop control launcher. Stdio servers
+   * stay off without it, and with it nothing else on this computer can be started that way.
+   */
+  desktopControlLauncher?: string;
   spawn: SpawnEngineProcess;
   /** Resolves true when the engine's own web address answers its health check. */
   probe: (url: string, signal: AbortSignal) => Promise<boolean>;
@@ -495,6 +500,12 @@ export class EmbeddedEngineController {
         ? {
             CORVO_LOCAL_MODELS: this.deps.localModels.models.join(","),
             CORVO_LOCAL_MODELS_URL: this.deps.localModels.url,
+          }
+        : {}),
+      ...(this.deps.desktopControlLauncher
+        ? {
+            MCP_STDIO_ENABLED: "true",
+            MCP_STDIO_ALLOWED_COMMANDS: this.deps.desktopControlLauncher,
           }
         : {}),
       CORVO_DESKTOP_STACK_TOKEN: stackToken,
