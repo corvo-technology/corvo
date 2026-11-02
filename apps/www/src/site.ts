@@ -10,7 +10,7 @@ export const SECURITY_EMAIL = "security@corvo.tech";
 export const GITHUB_URL = "https://github.com/corvo-technology/corvo";
 
 /** The macOS beta installer (Apple silicon), attached to the release it was built for. */
-export const DESKTOP_VERSION = "0.1.0";
+export const DESKTOP_VERSION = "0.1.1";
 export const DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v${DESKTOP_VERSION}/corvo-mac-arm64.dmg`;
 
 /** Direct installers with stable names, so the links never need a version. */
