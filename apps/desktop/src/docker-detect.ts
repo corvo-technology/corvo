@@ -42,20 +42,20 @@ function candidates(probe: Probe): string[] {
   return [...onPath, ...known];
 }
 
-/** Whether Docker is installed here and its engine answers, so isolated computers can run. */
-export async function detectDocker(probe: Probe): Promise<boolean> {
+/** The Docker program when it is installed here and its engine answers, so isolated computers can run. */
+export async function detectDocker(probe: Probe): Promise<string | null> {
   const program = candidates(probe).find((file) => probe.exists(file));
-  if (!program) return false;
+  if (!program) return null;
   try {
     await probe.run(program, ["info", "--format", "{{.ServerVersion}}"]);
-    return true;
+    return program;
   } catch {
-    return false;
+    return null;
   }
 }
 
 /** The check for this machine, bounded so a stuck Docker cannot hold the app's start. */
-export function detectDockerHere(): Promise<boolean> {
+export function detectDockerHere(): Promise<string | null> {
   return detectDocker({
     platform: process.platform,
     env: process.env,

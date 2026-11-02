@@ -40,6 +40,15 @@ export const COMPUTER_IMAGE_CONTEXT_FILES = [
   "fluxbox.apps",
   "fluxbox.menu",
 ] as const;
+/**
+ * Whether the supervisor may build a missing computer image itself. A program that builds the image
+ * beforehand, as the desktop app does, turns this off so that a computer asked for while the image
+ * is still being built fails at once with a clear reason instead of starting a build that cannot work.
+ */
+export function localImageBuildAllowed(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.SANDBOX_COMPUTER_IMAGE_BUILD !== "off";
+}
+
 export const COMPUTER_UID = 1000;
 export const COMPUTER_GID = 1000;
 export const COMPUTER_USER = `${COMPUTER_UID}:${COMPUTER_GID}`;

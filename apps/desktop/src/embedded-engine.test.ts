@@ -162,7 +162,11 @@ describe("EmbeddedEngineController", () => {
   });
 
   it("runs isolated Docker computers when Docker is there, and gives the API the supervisor's address", async () => {
-    const docker = { computerContext: "/app/computer", controlViaLoopback: true };
+    const docker = {
+      computerContext: "/app/computer",
+      controlViaLoopback: true,
+      image: "corvo/computer:app-abc123",
+    };
     const engine = new EmbeddedEngineController(deps({ docker }));
     await engine.start();
     const supervisor = children.find((child) => base(child) === "supervisor.mjs");
@@ -173,6 +177,9 @@ describe("EmbeddedEngineController", () => {
       SANDBOX_SUPERVISOR_TOKEN: "ab".repeat(32),
       CORVO_COMPUTER_CONTEXT: "/app/computer",
       SANDBOX_CONTROL_VIA_LOOPBACK: "true",
+      // The app builds the image itself; the supervisor must not try, and say so when it is not ready.
+      CORVO_COMPUTER_IMAGE: "corvo/computer:app-abc123",
+      SANDBOX_COMPUTER_IMAGE_BUILD: "off",
     });
     expect(supervisor?.env.DATA_DIR).toBe(path.join(dir, "engine", "data"));
     expect(supervisor?.env.SECRET_TOKEN).toBeUndefined();
@@ -201,7 +208,11 @@ describe("EmbeddedEngineController", () => {
 
   it("stops the supervisor with the rest and starts again when Docker appears or goes away", async () => {
     const withDocker = deps({
-      docker: { computerContext: "/app/computer", controlViaLoopback: false },
+      docker: {
+        computerContext: "/app/computer",
+        controlViaLoopback: false,
+        image: "corvo/computer:app-abc123",
+      },
     });
     const engine = new EmbeddedEngineController(withDocker);
     await engine.start();

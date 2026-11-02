@@ -75,6 +75,8 @@ export interface EngineDeps {
     computerContext: string;
     /** Docker Desktop on macOS and Windows publishes a loopback port instead of a container address. */
     controlViaLoopback: boolean;
+    /** The computer image, which the app builds before the supervisor is asked for a computer. */
+    image: string;
   };
   spawn: SpawnEngineProcess;
   /** Resolves true when the engine's own web address answers its health check. */
@@ -507,6 +509,8 @@ export class EmbeddedEngineController {
           DATA_DIR: appData,
           CORVO_COMPUTER_CONTEXT: this.deps.docker.computerContext,
           SANDBOX_CONTROL_VIA_LOOPBACK: String(this.deps.docker.controlViaLoopback),
+          CORVO_COMPUTER_IMAGE: this.deps.docker.image,
+          SANDBOX_COMPUTER_IMAGE_BUILD: "off",
         }
       : null;
     const engineEnv: Record<string, string> = {

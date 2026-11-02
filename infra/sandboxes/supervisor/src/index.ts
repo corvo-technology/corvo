@@ -43,6 +43,7 @@ import {
   homeVolumeMatches,
   hostComputerUser,
   legacyNetworkOwnedSolelyBy,
+  localImageBuildAllowed,
   publishedLoopbackControlHostPort,
   resolveComputerControlEndpoint,
   resolveComputerDns,
@@ -1159,6 +1160,9 @@ async function ensureComputerImage() {
         return;
       } catch {
         // build below
+      }
+      if (!localImageBuildAllowed()) {
+        throw new Error("The computer image is still being prepared. Try again in a few minutes.");
       }
       const dockerfile = path.join(computerContext, "Dockerfile");
       if (!existsSync(dockerfile)) {
