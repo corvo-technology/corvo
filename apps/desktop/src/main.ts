@@ -1,6 +1,6 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync } from "node:fs";
+import { accessSync, constants, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { DesktopReachability, DesktopSetup } from "@corvo/contracts";
@@ -44,6 +44,13 @@ import { prepareHostComputer } from "./host-computer.js";
 import { enterLocalOwner } from "./local-entry.js";
 import { saveLocalComputerHost } from "./local-settings.js";
 import { detectInstalledTools } from "./local-tools.js";
+import {
+  isAdHocSigned,
+  macBundleFromExecutable,
+  readPendingUpdate,
+  startMacUpdate,
+  updateScript,
+} from "./mac-update.js";
 import {
   configureDesktopMonitoring,
   disableDesktopMonitoring,
@@ -118,6 +125,45 @@ let warmWindowTimer: NodeJS.Timeout | undefined;
 let liveProbeWindows = 0;
 const WARM_WINDOW_TTL_MS = warmWindowTtlMs(process.env.CORVO_WARM_WINDOW_TTL_MS);
 
+/**
+ * An update to a macOS app signed without a developer identity is refused by the system's updater
+ * without a word, so for such a build the downloaded and verified update is installed here instead.
+ */
+function withUnsignedMacInstall(updater: ElectronAutoUpdater): ElectronAutoUpdater {
+  const native = updater.quitAndInstall.bind(updater);
+  updater.quitAndInstall = () => {
+    const bundle =
+      process.platform === "darwin" ? macBundleFromExecutable(app.getPath("exe")) : null;
+    if (bundle === null) return native();
+    const signature = spawnSync("codesign", ["-dv", "--verbose=4", bundle], { encoding: "utf8" });
+    if (!isAdHocSigned(`${signature.stdout}${signature.stderr}`)) return native();
+
+    const cacheName =
+      /^updaterCacheDirName:\s*(\S+)/m.exec(
+        readFileSync(path.join(process.resourcesPath, "app-update.yml"), "utf8"),
+      )?.[1] ?? "corvo-updater";
+    const pending = readPendingUpdate(
+      path.join(app.getPath("home"), "Library", "Caches", cacheName),
+    );
+    if (pending === null)
+      throw new Error("The downloaded update could not be verified. Try again.");
+    try {
+      accessSync(path.dirname(bundle), constants.W_OK);
+    } catch {
+      throw new Error(
+        "Corvo cannot replace itself where it is. Move it to Applications and try again.",
+      );
+    }
+    const log = path.join(app.getPath("home"), "Library", "Logs", "Corvo", "update.log");
+    mkdirSync(path.dirname(log), { recursive: true });
+    startMacUpdate(
+      updateScript({ pid: process.pid, zip: pending.zip, bundle, log, relaunch: true }),
+    );
+    app.quit();
+  };
+  return updater;
+}
+
 const updaterEnvironment = {
   packaged: app.isPackaged,
   version: app.getVersion(),
@@ -128,7 +174,8 @@ const desktopUpdater = new DesktopUpdateController(
   // Loaded only when a packaged build actually checks for updates.
   async () => {
     const module = await import("electron-updater");
-    return (module.default ?? module).autoUpdater as unknown as ElectronAutoUpdater;
+    const updater = (module.default ?? module).autoUpdater as unknown as ElectronAutoUpdater;
+    return withUnsignedMacInstall(updater);
   },
   undefined,
   () => {
