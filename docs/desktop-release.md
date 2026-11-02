@@ -54,6 +54,14 @@ git push origin v0.1.1
 The workflow refuses tags that do not match the desktop version, are not on
 `main`, or are not newer than the latest published release.
 
+## Releases happen on their own
+
+Bump `version` in `apps/desktop/package.json` (and `DESKTOP_VERSION` in `apps/www/src/site.ts`, which a
+test keeps in step) in a pull request. When it is merged and the `checks` on `main` pass, the
+`release-on-version-bump` workflow tags that commit `v<version>` and starts the `desktop-apps` build,
+which publishes the release. Nothing needs running by hand. A version whose tag already exists is
+left alone, so pushing the tag yourself is still fine.
+
 ## The first releases
 
 Until there are signing certificates, push a `vX.Y.Z` tag that matches `version` in
