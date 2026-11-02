@@ -1,13 +1,13 @@
 import type { IncomingHttpHeaders } from "node:http";
 import { connect } from "node:net";
-import type { ScreenProxyTarget } from "@corvo/core/node/screen-capability";
+import { SCREEN_PROBE_PARAM } from "../screen-reconnect.js";
+import type { ScreenProxyTarget } from "./screen-capability.js";
 import {
   isScreenProxyTarget,
   SCREEN_RECHECK_MS,
   SCREEN_TARGET_ENDPOINT,
   SCREEN_UNCONFIRMED_MAX_MS,
-} from "@corvo/core/node/screen-capability";
-import { SCREEN_PROBE_PARAM } from "@corvo/core/screen-reconnect";
+} from "./screen-capability.js";
 
 const SENSITIVE_FORWARD_HEADERS = new Set([
   "authorization",
