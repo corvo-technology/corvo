@@ -169,6 +169,10 @@ msgstr "{commandVariable}は予約済みのため、コマンド変数として�
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 行} other {# 行}}"
 
+#: src/pages/shell/channel-header.tsx
+msgid "{count} agents"
+msgstr "{count} 件のエージェント"
+
 #: src/lib/billing.ts
 msgid "{count} days"
 msgstr "{count}日"
@@ -176,6 +180,14 @@ msgstr "{count}日"
 #: src/lib/billing.ts
 msgid "{count} months"
 msgstr "{count}か月"
+
+#: src/pages/Usage.tsx
+msgid "{count} replies"
+msgstr "{count} 件の返信"
+
+#: src/pages/Usage.tsx
+msgid "{count} tokens"
+msgstr "{count} トークン"
 
 #: src/lib/billing.ts
 msgid "{count} weeks"
@@ -217,6 +229,10 @@ msgstr "{hours}時間前"
 msgid "{label}, empty"
 msgstr "{label}、空"
 
+#: src/components/SubscriptionRings.tsx
+msgid "{label}: {percent}% used"
+msgstr "{label}: {percent}% 使用"
+
 #: src/lib/relative-time.ts
 msgid "{minutes}m ago"
 msgstr "{minutes}分前"
@@ -251,6 +267,14 @@ msgstr "{name} のオプション"
 #: src/lib/browser-notifications.ts
 msgid "{name} stopped"
 msgstr "{name}が停止しました"
+
+#: src/components/SubscriptionRings.tsx
+msgid "{percent}% used"
+msgstr "{percent}% 使用"
+
+#: src/pages/shell/context-meter.tsx
+msgid "{percent}% used · {used} of {windowLabel} tokens"
+msgstr "{percent}% 使用中 · {windowLabel} 中 {used} トークン"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
@@ -393,6 +417,10 @@ msgstr "{title}（{savedAs} として保存）"
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
 msgstr "{toolCount, plural, one {#個のツール} other {#個のツール}}"
 
+#: src/pages/shell/context-meter.tsx
+msgid "{used} tokens"
+msgstr "{used} トークン"
+
 #. placeholder {0}: mention.name
 #: src/pages/shell/composer.tsx
 msgid "@{0}"
@@ -403,6 +431,10 @@ msgstr "@{0}"
 #: src/components/ModelCredits.tsx
 msgid "${0} / month"
 msgstr "${0} / 月"
+
+#: src/components/SubscriptionRings.tsx
+msgid "5-hour window"
+msgstr "5時間枠"
 
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
@@ -535,6 +567,10 @@ msgstr "このルーティンを実行するトリガーを追加してくださ
 
 #: src/pages/PartnerTemplateEditor.tsx
 msgid "Add agent"
+msgstr "エージェントを追加"
+
+#: src/pages/shell/channel-header.tsx
+msgid "Add agents"
 msgstr "エージェントを追加"
 
 #: src/pages/McpServersOverlay.tsx
@@ -854,6 +890,7 @@ msgstr "承認の範囲"
 msgid "Approval model"
 msgstr "承認モデル"
 
+#: src/components/AppRail.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
@@ -1122,6 +1159,10 @@ msgstr "MCPサーバーを探す"
 msgid "Built-in"
 msgstr "組み込み"
 
+#: src/pages/Usage.tsx
+msgid "By agent"
+msgstr "エージェント別"
+
 #: src/pages/shell/chat-header.tsx
 msgid "Call"
 msgstr "通話"
@@ -1229,6 +1270,10 @@ msgstr "パスワードを変更"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
 msgstr "変更中…"
+
+#: src/pages/Shell.tsx
+msgid "Channels"
+msgstr "チャンネル"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Chart failed to render: {error}"
@@ -1340,10 +1385,6 @@ msgstr "フォルダを選択"
 #: src/components/SubscriptionGate.tsx
 msgid "Choose how to use Corvo"
 msgstr "Corvoの使い方を選択"
-
-#: src/pages/onboarding/FirstBotStep.tsx
-msgid "Choose your first bot"
-msgstr "最初のボットを選択"
 
 #: src/lib/localized-provider-hint.ts
 msgid "Claude subscription"
@@ -1515,6 +1556,14 @@ msgstr "完了"
 msgid "Completed"
 msgstr "完了"
 
+#: src/pages/shell/context-meter.tsx
+msgid "Compress context"
+msgstr "コンテキストを圧縮"
+
+#: src/pages/shell/context-meter.tsx
+msgid "Compressing…"
+msgstr "圧縮中…"
+
 #: src/pages/Onboarding.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -1685,6 +1734,10 @@ msgstr "コネクター名"
 msgid "Contains code to run"
 msgstr "実行するコードを含みます"
 
+#: src/pages/shell/context-meter.tsx
+msgid "Context"
+msgstr "コンテキスト"
+
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Context limit"
@@ -1759,6 +1812,7 @@ msgid "corvo-shared and IDs starting with bot- are reserved for Corvo."
 msgstr "corvo-sharedおよびbot-で始まるIDはCorvo用に予約されています。"
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/Usage.tsx
 msgid "Cost"
 msgstr "コスト"
 
@@ -1865,10 +1919,6 @@ msgstr "セクションを作成できませんでした"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
 msgstr "スペースを作成できませんでした"
-
-#: src/pages/onboarding/FirstBotStep.tsx
-msgid "Could not create your bot"
-msgstr "ボットを作成できませんでした"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete bot"
@@ -2271,10 +2321,6 @@ msgstr "セクションを作成して{0}を移動します。"
 msgid "Create account"
 msgstr "アカウントを作成"
 
-#: src/pages/onboarding/FirstBotStep.tsx
-msgid "Create bot"
-msgstr "ボットを作成"
-
 #: src/pages/GroupPanel.tsx
 msgid "Create group"
 msgstr "グループを作成"
@@ -2484,6 +2530,10 @@ msgstr "スペースを削除"
 msgid "deleted"
 msgstr "削除済み"
 
+#: src/pages/Usage.tsx
+msgid "Deleted agent"
+msgstr "削除されたエージェント"
+
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2530,6 +2580,11 @@ msgstr "詳細"
 #: src/pages/StoreCategoryChips.tsx
 msgid "Development"
 msgstr "開発"
+
+#: src/pages/BotContextMenu.tsx
+#: src/pages/Shell.tsx
+msgid "Direct messages"
+msgstr "ダイレクトメッセージ"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Disable a tool"
@@ -3377,6 +3432,10 @@ msgstr "キーを認識できません。プロバイダーを選択してくだ
 msgid "Language"
 msgstr "言語"
 
+#: src/pages/Usage.tsx
+msgid "Last 30 days"
+msgstr "過去30日間"
+
 #. placeholder {0}: new Date(state.checkedAt).toLocaleString()
 #: src/pages/RoutineEditor.tsx
 msgid "Last check {0}: changed"
@@ -3386,6 +3445,10 @@ msgstr "前回の確認 {0}: 変更あり"
 #: src/pages/RoutineEditor.tsx
 msgid "Last check {0}: no changes"
 msgstr "前回の確認 {0}: 変更なし"
+
+#: src/pages/Usage.tsx
+msgid "Last month"
+msgstr "先月"
 
 #: src/pages/Workflows.tsx
 msgid "Last run"
@@ -3652,6 +3715,7 @@ msgstr "メンバー"
 msgid "Members ({0})"
 msgstr "メンバー（{0}）"
 
+#: src/components/AppRail.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -3840,6 +3904,7 @@ msgstr "月間クレジット"
 msgid "Monthly credits expire at renewal. Top-ups do not expire."
 msgstr "月間クレジットは更新時に失効します。追加購入分は失効しません。"
 
+#: src/components/RailMore.tsx
 #: src/pages/shell/message-hover-actions.tsx
 msgid "More"
 msgstr "その他"
@@ -4126,6 +4191,10 @@ msgstr "チケットはまだありません"
 msgid "No trigger"
 msgstr "トリガーなし"
 
+#: src/pages/Usage.tsx
+msgid "No use in this period."
+msgstr "この期間の利用はありません。"
+
 #: src/pages/Workflows.tsx
 msgid "No workflows yet"
 msgstr "まだワークフローがありません"
@@ -4291,6 +4360,7 @@ msgstr "外部リンクを開きますか？"
 msgid "Open in full window"
 msgstr "フルウィンドウで開く"
 
+#: src/pages/shell/channel-header.tsx
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "ナビゲーションを開く"
@@ -4498,10 +4568,6 @@ msgstr "確認するツールを選択"
 #: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "ピン留め"
-
-#: src/pages/Shell.tsx
-msgid "Channels"
-msgstr "チャンネル"
 
 #: src/pages/Shell.tsx
 msgid "Pinned"
@@ -4864,6 +4930,10 @@ msgstr "キーを置き換え"
 msgid "Replace value"
 msgstr "値を置き換え"
 
+#: src/pages/Usage.tsx
+msgid "Replies"
+msgstr "返信"
+
 #: src/pages/shell/message-hover-actions.tsx
 #: src/pages/shell/quote-selection-button.tsx
 msgid "Reply"
@@ -4914,6 +4984,10 @@ msgstr "パスワードをリセット"
 #: src/pages/Auth.tsx
 msgid "Reset your password"
 msgstr "パスワードをリセット"
+
+#: src/components/SubscriptionRings.tsx
+msgid "Resets {when}"
+msgstr "{when}にリセット"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Resetting…"
@@ -5463,7 +5537,6 @@ msgstr "スキル"
 msgid "Skills join the library all your bots share."
 msgstr "スキルはすべてのボットで共有するライブラリに追加されます。"
 
-#: src/pages/onboarding/FirstBotStep.tsx
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Skip"
 msgstr "スキップ"
@@ -5565,6 +5638,7 @@ msgstr "話しています"
 msgid "Speech model"
 msgstr "音声モデル"
 
+#: src/pages/shell/channel-header.tsx
 #: src/pages/shell/chat-header.tsx
 msgid "Squad"
 msgstr "スクワッド"
@@ -5580,6 +5654,10 @@ msgstr "開始"
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "録画を開始"
+
+#: src/components/SubscriptionRings.tsx
+msgid "Started over"
+msgstr "リセット済み"
 
 #: src/pages/ActivityList.tsx
 msgid "Starting"
@@ -5928,6 +6006,7 @@ msgid "This model's context window is too small. Choose another model."
 msgstr "このモデルのコンテキストウィンドウは小さすぎます。別のモデルを選択してください。"
 
 #: src/pages/Artifacts.tsx
+#: src/pages/Usage.tsx
 msgid "This month"
 msgstr "今月"
 
@@ -6019,6 +6098,10 @@ msgstr "宛先:"
 msgid "Today"
 msgstr "今日"
 
+#: src/pages/Usage.tsx
+msgid "tokens"
+msgstr "トークン"
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Tokens"
 msgstr "トークン"
@@ -6109,11 +6192,6 @@ msgstr "録画せずに入力"
 msgid "Type your answer"
 msgstr "回答を入力"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Direct messages"
-msgstr "ダイレクトメッセージ"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "元に戻す"
@@ -6185,6 +6263,7 @@ msgstr "指示を更新しますか？"
 msgid "Update progress"
 msgstr "更新の進行状況"
 
+#: src/components/SubscriptionRings.tsx
 #: src/pages/shell/bot-credentials.tsx
 msgid "Updated {updated}"
 msgstr "更新日: {updated}"
@@ -6351,6 +6430,18 @@ msgstr "バージョン"
 msgid "Voice"
 msgstr "音声"
 
+#: src/pages/Usage.tsx
+msgid "vs. the 30 days before"
+msgstr "その前の30日間との比較"
+
+#: src/pages/Usage.tsx
+msgid "vs. the month before"
+msgstr "その前の月との比較"
+
+#: src/pages/Usage.tsx
+msgid "vs. the same days last month"
+msgstr "先月の同じ日数との比較"
+
 #: src/lib/model-connection-preflight.ts
 msgid "Wait a moment and test again."
 msgstr "しばらく待ってから再度テストしてください。"
@@ -6392,6 +6483,7 @@ msgstr "水曜日"
 msgid "week"
 msgstr "週"
 
+#: src/components/SubscriptionRings.tsx
 #: src/pages/Routines.tsx
 msgid "Week"
 msgstr "週"
@@ -6558,6 +6650,10 @@ msgstr "辞退しました"
 msgid "You have control"
 msgstr "あなたが操作中"
 
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "エージェントとチャットはここに保存されます。名前はいつでも変更できます。"
+
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
@@ -6605,99 +6701,3 @@ msgstr "音声プロバイダーのクレジットが不足しています。"
 #: src/lib/user-error.ts
 msgid "Your voice provider key was rejected."
 msgstr "音声プロバイダーのキーが拒否されました。"
-
-#: src/pages/shell/context-meter.tsx
-msgid "Context"
-msgstr "コンテキスト"
-
-#: src/pages/shell/context-meter.tsx
-msgid "{used} tokens"
-msgstr "{used} トークン"
-
-#: src/pages/shell/context-meter.tsx
-msgid "{percent}% used · {used} of {windowLabel} tokens"
-msgstr "{percent}% 使用中 · {windowLabel} 中 {used} トークン"
-
-#: src/pages/shell/context-meter.tsx
-msgid "Compress context"
-msgstr "コンテキストを圧縮"
-
-#: src/pages/shell/context-meter.tsx
-msgid "Compressing…"
-msgstr "圧縮中…"
-
-#: src/pages/Usage.tsx
-msgid "Last month"
-msgstr "先月"
-
-#: src/pages/Usage.tsx
-msgid "Last 30 days"
-msgstr "過去30日間"
-
-#: src/pages/Usage.tsx
-msgid "vs. the same days last month"
-msgstr "先月の同じ日数との比較"
-
-#: src/pages/Usage.tsx
-msgid "vs. the month before"
-msgstr "その前の月との比較"
-
-#: src/pages/Usage.tsx
-msgid "vs. the 30 days before"
-msgstr "その前の30日間との比較"
-
-#: src/pages/Usage.tsx
-msgid "tokens"
-msgstr "トークン"
-
-#: src/pages/Usage.tsx
-msgid "Replies"
-msgstr "返信"
-
-#: src/pages/Usage.tsx
-msgid "No use in this period."
-msgstr "この期間の利用はありません。"
-
-#: src/pages/Usage.tsx
-msgid "By agent"
-msgstr "エージェント別"
-
-#: src/pages/Usage.tsx
-msgid "Deleted agent"
-msgstr "削除されたエージェント"
-
-#: src/pages/Usage.tsx
-msgid "{count} tokens"
-msgstr "{count} トークン"
-
-#: src/pages/Usage.tsx
-msgid "{count} replies"
-msgstr "{count} 件の返信"
-
-#: src/components/SubscriptionRings.tsx
-msgid "5-hour window"
-msgstr "5時間枠"
-
-#: src/components/SubscriptionRings.tsx
-msgid "{percent}% used"
-msgstr "{percent}% 使用"
-
-#: src/components/SubscriptionRings.tsx
-msgid "Resets {when}"
-msgstr "{when}にリセット"
-
-#: src/components/SubscriptionRings.tsx
-msgid "Started over"
-msgstr "リセット済み"
-
-#: src/components/SubscriptionRings.tsx
-msgid "{label}: {percent}% used"
-msgstr "{label}: {percent}% 使用"
-
-#: src/pages/shell/channel-header.tsx
-msgid "{count} agents"
-msgstr "{count} 件のエージェント"
-
-#: src/pages/shell/channel-header.tsx
-msgid "Add agents"
-msgstr "エージェントを追加"

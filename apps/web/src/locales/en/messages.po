@@ -169,6 +169,10 @@ msgstr "{commandVariable} is reserved and cannot be used as a command variable. 
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# row} other {# rows}}"
 
+#: src/pages/shell/channel-header.tsx
+msgid "{count} agents"
+msgstr ""
+
 #: src/lib/billing.ts
 msgid "{count} days"
 msgstr "{count} days"
@@ -176,6 +180,14 @@ msgstr "{count} days"
 #: src/lib/billing.ts
 msgid "{count} months"
 msgstr "{count} months"
+
+#: src/pages/Usage.tsx
+msgid "{count} replies"
+msgstr ""
+
+#: src/pages/Usage.tsx
+msgid "{count} tokens"
+msgstr ""
 
 #: src/lib/billing.ts
 msgid "{count} weeks"
@@ -217,6 +229,10 @@ msgstr "{hours}h ago"
 msgid "{label}, empty"
 msgstr "{label}, empty"
 
+#: src/components/SubscriptionRings.tsx
+msgid "{label}: {percent}% used"
+msgstr ""
+
 #: src/lib/relative-time.ts
 msgid "{minutes}m ago"
 msgstr "{minutes}m ago"
@@ -251,6 +267,14 @@ msgstr "{name} options"
 #: src/lib/browser-notifications.ts
 msgid "{name} stopped"
 msgstr "{name} stopped"
+
+#: src/components/SubscriptionRings.tsx
+msgid "{percent}% used"
+msgstr ""
+
+#: src/pages/shell/context-meter.tsx
+msgid "{percent}% used · {used} of {windowLabel} tokens"
+msgstr "{percent}% used · {used} of {windowLabel} tokens"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
@@ -393,6 +417,10 @@ msgstr "{title}, saved as {savedAs}"
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
 msgstr "{toolCount, plural, one {# tool} other {# tools}}"
 
+#: src/pages/shell/context-meter.tsx
+msgid "{used} tokens"
+msgstr "{used} tokens"
+
 #. placeholder {0}: mention.name
 #: src/pages/shell/composer.tsx
 msgid "@{0}"
@@ -403,6 +431,10 @@ msgstr "@{0}"
 #: src/components/ModelCredits.tsx
 msgid "${0} / month"
 msgstr "${0} / month"
+
+#: src/components/SubscriptionRings.tsx
+msgid "5-hour window"
+msgstr ""
 
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
@@ -536,6 +568,10 @@ msgstr "Add a trigger to run this routine."
 #: src/pages/PartnerTemplateEditor.tsx
 msgid "Add agent"
 msgstr "Add agent"
+
+#: src/pages/shell/channel-header.tsx
+msgid "Add agents"
+msgstr ""
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Add an HTTPS server URL."
@@ -854,6 +890,7 @@ msgstr "Approval boundaries"
 msgid "Approval model"
 msgstr "Approval model"
 
+#: src/components/AppRail.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
@@ -1122,6 +1159,10 @@ msgstr "Browse MCP servers"
 msgid "Built-in"
 msgstr "Built-in"
 
+#: src/pages/Usage.tsx
+msgid "By agent"
+msgstr ""
+
 #: src/pages/shell/chat-header.tsx
 msgid "Call"
 msgstr "Call"
@@ -1229,6 +1270,10 @@ msgstr "Change password"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Changing…"
 msgstr "Changing…"
+
+#: src/pages/Shell.tsx
+msgid "Channels"
+msgstr ""
 
 #: src/pages/shell/message-cards.tsx
 msgid "Chart failed to render: {error}"
@@ -1340,10 +1385,6 @@ msgstr "Choose folder"
 #: src/components/SubscriptionGate.tsx
 msgid "Choose how to use Corvo"
 msgstr "Choose how to use Corvo"
-
-#: src/pages/onboarding/FirstBotStep.tsx
-msgid "Choose your first bot"
-msgstr "Choose your first bot"
 
 #: src/lib/localized-provider-hint.ts
 msgid "Claude subscription"
@@ -1515,6 +1556,14 @@ msgstr "Complete"
 msgid "Completed"
 msgstr "Completed"
 
+#: src/pages/shell/context-meter.tsx
+msgid "Compress context"
+msgstr "Compress context"
+
+#: src/pages/shell/context-meter.tsx
+msgid "Compressing…"
+msgstr "Compressing…"
+
 #: src/pages/Onboarding.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -1685,6 +1734,10 @@ msgstr "Connector name"
 msgid "Contains code to run"
 msgstr "Contains code to run"
 
+#: src/pages/shell/context-meter.tsx
+msgid "Context"
+msgstr "Context"
+
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Context limit"
@@ -1759,6 +1812,7 @@ msgid "corvo-shared and IDs starting with bot- are reserved for Corvo."
 msgstr "corvo-shared and IDs starting with bot- are reserved for Corvo."
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/Usage.tsx
 msgid "Cost"
 msgstr "Cost"
 
@@ -1865,10 +1919,6 @@ msgstr "Could not create section"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
 msgstr "Could not create space"
-
-#: src/pages/onboarding/FirstBotStep.tsx
-msgid "Could not create your bot"
-msgstr "Could not create your bot"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete bot"
@@ -2271,10 +2321,6 @@ msgstr "Create a section and move {0} into it."
 msgid "Create account"
 msgstr "Create account"
 
-#: src/pages/onboarding/FirstBotStep.tsx
-msgid "Create bot"
-msgstr "Create bot"
-
 #: src/pages/GroupPanel.tsx
 msgid "Create group"
 msgstr "Create group"
@@ -2484,6 +2530,10 @@ msgstr "Delete space"
 msgid "deleted"
 msgstr "deleted"
 
+#: src/pages/Usage.tsx
+msgid "Deleted agent"
+msgstr ""
+
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2530,6 +2580,11 @@ msgstr "Details"
 #: src/pages/StoreCategoryChips.tsx
 msgid "Development"
 msgstr "Development"
+
+#: src/pages/BotContextMenu.tsx
+#: src/pages/Shell.tsx
+msgid "Direct messages"
+msgstr ""
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Disable a tool"
@@ -3377,6 +3432,10 @@ msgstr "Key not recognized. Choose a provider."
 msgid "Language"
 msgstr "Language"
 
+#: src/pages/Usage.tsx
+msgid "Last 30 days"
+msgstr ""
+
 #. placeholder {0}: new Date(state.checkedAt).toLocaleString()
 #: src/pages/RoutineEditor.tsx
 msgid "Last check {0}: changed"
@@ -3386,6 +3445,10 @@ msgstr "Last check {0}: changed"
 #: src/pages/RoutineEditor.tsx
 msgid "Last check {0}: no changes"
 msgstr "Last check {0}: no changes"
+
+#: src/pages/Usage.tsx
+msgid "Last month"
+msgstr ""
 
 #: src/pages/Workflows.tsx
 msgid "Last run"
@@ -3652,6 +3715,7 @@ msgstr "Member"
 msgid "Members ({0})"
 msgstr "Members ({0})"
 
+#: src/components/AppRail.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -3840,6 +3904,7 @@ msgstr "Monthly credits"
 msgid "Monthly credits expire at renewal. Top-ups do not expire."
 msgstr "Monthly credits expire at renewal. Top-ups do not expire."
 
+#: src/components/RailMore.tsx
 #: src/pages/shell/message-hover-actions.tsx
 msgid "More"
 msgstr "More"
@@ -4126,6 +4191,10 @@ msgstr "No tickets yet"
 msgid "No trigger"
 msgstr "No trigger"
 
+#: src/pages/Usage.tsx
+msgid "No use in this period."
+msgstr ""
+
 #: src/pages/Workflows.tsx
 msgid "No workflows yet"
 msgstr "No workflows yet"
@@ -4291,6 +4360,7 @@ msgstr "Open external link?"
 msgid "Open in full window"
 msgstr "Open in full window"
 
+#: src/pages/shell/channel-header.tsx
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Open navigation"
@@ -4498,10 +4568,6 @@ msgstr "Pick a tool to check"
 #: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "Pin"
-
-#: src/pages/Shell.tsx
-msgid "Channels"
-msgstr ""
 
 #: src/pages/Shell.tsx
 msgid "Pinned"
@@ -4864,6 +4930,10 @@ msgstr "Replace key"
 msgid "Replace value"
 msgstr "Replace value"
 
+#: src/pages/Usage.tsx
+msgid "Replies"
+msgstr ""
+
 #: src/pages/shell/message-hover-actions.tsx
 #: src/pages/shell/quote-selection-button.tsx
 msgid "Reply"
@@ -4914,6 +4984,10 @@ msgstr "Reset password"
 #: src/pages/Auth.tsx
 msgid "Reset your password"
 msgstr "Reset your password"
+
+#: src/components/SubscriptionRings.tsx
+msgid "Resets {when}"
+msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Resetting…"
@@ -5463,7 +5537,6 @@ msgstr "Skills"
 msgid "Skills join the library all your bots share."
 msgstr "Skills join the library all your bots share."
 
-#: src/pages/onboarding/FirstBotStep.tsx
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Skip"
 msgstr "Skip"
@@ -5565,6 +5638,7 @@ msgstr "Speaking"
 msgid "Speech model"
 msgstr "Speech model"
 
+#: src/pages/shell/channel-header.tsx
 #: src/pages/shell/chat-header.tsx
 msgid "Squad"
 msgstr "Squad"
@@ -5580,6 +5654,10 @@ msgstr "Start"
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "Start recording"
+
+#: src/components/SubscriptionRings.tsx
+msgid "Started over"
+msgstr ""
 
 #: src/pages/ActivityList.tsx
 msgid "Starting"
@@ -5928,6 +6006,7 @@ msgid "This model's context window is too small. Choose another model."
 msgstr "This model's context window is too small. Choose another model."
 
 #: src/pages/Artifacts.tsx
+#: src/pages/Usage.tsx
 msgid "This month"
 msgstr "This month"
 
@@ -6019,6 +6098,10 @@ msgstr "To:"
 msgid "Today"
 msgstr "Today"
 
+#: src/pages/Usage.tsx
+msgid "tokens"
+msgstr ""
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Tokens"
 msgstr "Tokens"
@@ -6109,11 +6192,6 @@ msgstr "Type without recording"
 msgid "Type your answer"
 msgstr "Type your answer"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Direct messages"
-msgstr ""
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "Undo"
@@ -6185,6 +6263,7 @@ msgstr "Update instructions?"
 msgid "Update progress"
 msgstr "Update progress"
 
+#: src/components/SubscriptionRings.tsx
 #: src/pages/shell/bot-credentials.tsx
 msgid "Updated {updated}"
 msgstr "Updated {updated}"
@@ -6351,6 +6430,18 @@ msgstr "Version"
 msgid "Voice"
 msgstr "Voice"
 
+#: src/pages/Usage.tsx
+msgid "vs. the 30 days before"
+msgstr ""
+
+#: src/pages/Usage.tsx
+msgid "vs. the month before"
+msgstr ""
+
+#: src/pages/Usage.tsx
+msgid "vs. the same days last month"
+msgstr ""
+
 #: src/lib/model-connection-preflight.ts
 msgid "Wait a moment and test again."
 msgstr "Wait a moment and test again."
@@ -6392,6 +6483,7 @@ msgstr "Wednesday"
 msgid "week"
 msgstr "week"
 
+#: src/components/SubscriptionRings.tsx
 #: src/pages/Routines.tsx
 msgid "Week"
 msgstr "Week"
@@ -6558,6 +6650,10 @@ msgstr "You declined"
 msgid "You have control"
 msgstr "You have control"
 
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "Your agents and chats live here. You can rename it any time."
+
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
@@ -6605,98 +6701,3 @@ msgstr "Your voice provider is out of credit."
 #: src/lib/user-error.ts
 msgid "Your voice provider key was rejected."
 msgstr "Your voice provider key was rejected."
-
-#: src/pages/shell/context-meter.tsx
-msgid "Context"
-msgstr "Context"
-
-#: src/pages/shell/context-meter.tsx
-msgid "{used} tokens"
-msgstr "{used} tokens"
-
-#: src/pages/shell/context-meter.tsx
-msgid "{percent}% used · {used} of {windowLabel} tokens"
-msgstr "{percent}% used · {used} of {windowLabel} tokens"
-
-#: src/pages/shell/context-meter.tsx
-msgid "Compress context"
-msgstr "Compress context"
-
-#: src/pages/shell/context-meter.tsx
-msgid "Compressing…"
-msgstr "Compressing…"
-
-#: src/pages/Usage.tsx
-msgid "Last month"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "Last 30 days"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "vs. the same days last month"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "vs. the month before"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "vs. the 30 days before"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "tokens"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "Replies"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "No use in this period."
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "By agent"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "Deleted agent"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "{count} tokens"
-msgstr ""
-
-#: src/pages/Usage.tsx
-msgid "{count} replies"
-
-#: src/components/SubscriptionRings.tsx
-msgid "5-hour window"
-msgstr ""
-
-#: src/components/SubscriptionRings.tsx
-msgid "{percent}% used"
-msgstr ""
-
-#: src/components/SubscriptionRings.tsx
-msgid "Resets {when}"
-msgstr ""
-
-#: src/components/SubscriptionRings.tsx
-msgid "Started over"
-msgstr ""
-
-#: src/components/SubscriptionRings.tsx
-msgid "{label}: {percent}% used"
-msgstr ""
-
-#: src/pages/shell/channel-header.tsx
-msgid "{count} agents"
-msgstr ""
-
-#: src/pages/shell/channel-header.tsx
-msgid "Add agents"
-msgstr ""

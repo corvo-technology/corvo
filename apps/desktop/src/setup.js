@@ -66,6 +66,8 @@
   let detailsOpenedByFailure = false;
   /** Resolves the poll wait early when the main process pushes a new state. */
   let wakePoll = null;
+  /** Only a press of Continue moves on; a start found already running waits for the person. */
+  let continuePressed = false;
 
   function selectedMode() {
     const checked = form.querySelector('input[name="mode"]:checked');
@@ -172,6 +174,7 @@
     } finally {
       lockMode(false);
       setBusy(false);
+      continuePressed = false;
     }
   }
 
@@ -206,7 +209,7 @@
         if (selectedMode() !== "new") return;
         renderStack(stack);
         if (TERMINAL_PHASES.has(stack.phase)) {
-          if (stack.phase === "ready" && selectedMode() === "new") {
+          if (stack.phase === "ready" && selectedMode() === "new" && continuePressed) {
             const current = await bridge.state();
             if (selectedMode() !== "new") return;
             defaultLocalUrl = current.defaultLocalUrl;
@@ -225,6 +228,7 @@
   }
 
   async function runStack() {
+    continuePressed = true;
     setStatus("");
     setBusy(true);
     try {
@@ -317,9 +321,12 @@
   const languageForm = document.getElementById("language-form");
   const languageList = languageForm.querySelector(".languages");
 
+  const changeLanguage = document.getElementById("change-language");
+
   function showStep(step) {
     languageStep.hidden = step !== "language";
     setupStep.hidden = step !== "setup";
+    changeLanguage.hidden = step !== "setup";
   }
 
   function buildLanguageList(selected) {
@@ -340,6 +347,10 @@
     languageList.querySelector("input:checked")?.scrollIntoView({ block: "center" });
   }
 
+  changeLanguage.addEventListener("click", () => {
+    if (languageList.childElementCount === 0) buildLanguageList(locale);
+    showStep("language");
+  });
   languageForm.addEventListener("change", (event) => {
     if (event.target instanceof HTMLInputElement && event.target.name === "language") {
       // The window switches to the language as it is picked, so the choice is understood.
@@ -381,7 +392,8 @@
       cloudUrl = state.cloudUrl;
       if (state.saved !== null) {
         const savedCloud = state.saved.mode === "existing" && state.saved.serverUrl === cloudUrl;
-        const mode = savedCloud ? "cloud" : state.saved.mode;
+        // Cloud is not open yet, so a saved Cloud choice falls back to this computer.
+        const mode = savedCloud ? "new" : state.saved.mode;
         const modeInput = document.querySelector(`input[name="mode"][value="${mode}"]`);
         if (modeInput !== null) modeInput.checked = true;
         if (mode === "existing") serverUrl.value = state.saved.serverUrl;
