@@ -1,7 +1,8 @@
-export type Section = "agents" | "routines" | "workflows" | "usage" | "artifacts";
+export type Section = "agents" | "team" | "routines" | "workflows" | "usage" | "artifacts";
 
 /** The section a path belongs to; the board and custom links are reached from the account menu. */
 export function railSection(pathname: string, search: string): Section | null {
+  if (pathname.startsWith("/app/team")) return "team";
   if (pathname.startsWith("/app/routines")) return "routines";
   if (pathname.startsWith("/app/workflows")) return "workflows";
   if (pathname.startsWith("/app/artifacts")) return "artifacts";

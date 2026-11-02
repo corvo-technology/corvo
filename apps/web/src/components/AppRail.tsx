@@ -9,6 +9,7 @@ import {
   Gauge,
   ShieldCheck,
   Store,
+  Users,
   Workflow,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -58,6 +59,7 @@ export function AppRail({ ticketBoardEnabled }: { ticketBoardEnabled: boolean })
     Icon: ComponentType<{ className?: string }>;
   }> = [
     { section: "agents", label: t`Agents`, to: "/app", Icon: Bot },
+    { section: "team", label: t`Team`, to: "/app/team", Icon: Users },
     { section: "routines", label: t`Routines`, to: "/app/routines", Icon: CalendarClock },
     { section: "workflows", label: t`Workflows`, to: "/app/workflows", Icon: Workflow },
   ];

@@ -421,6 +421,10 @@ msgstr "{toolCount, plural, other {#个工具}}"
 msgid "{used} tokens"
 msgstr "{used} 个令牌"
 
+#: src/pages/TeamPage.tsx
+msgid "{working} working"
+msgstr "{working} 个正在工作"
+
 #. placeholder {0}: mention.name
 #: src/pages/shell/composer.tsx
 msgid "@{0}"
@@ -4258,6 +4262,10 @@ msgstr "尚未检查"
 msgid "Not imported"
 msgstr "未导入"
 
+#: src/pages/TeamPage.tsx
+msgid "Not in a team"
+msgstr "未加入团队"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
 msgstr "不在插件目录中"
@@ -5865,7 +5873,9 @@ msgstr "示范任务"
 msgid "Teaching in progress. Stop teaching before sending a new message."
 msgstr "正在示范，发送新消息前请先停止示范。"
 
+#: src/components/AppRail.tsx
 #: src/pages/shell/bot-panel.tsx
+#: src/pages/TeamPage.tsx
 msgid "Team"
 msgstr "团队"
 

@@ -61,6 +61,7 @@ const WorkflowsPage = lazyComponent(loadWorkflows);
 const RoutinesPage = lazyComponent(loadRoutines);
 /** The areas the bar moves between; fetched once the app is idle so moving to one never waits. */
 const AREA_LOADERS = [loadUsage, loadWorkflows, loadRoutines, loadArtifacts];
+const TeamPage = lazyComponent(() => import("./pages/TeamPage").then((module) => module.TeamPage));
 const SquadPage = lazyComponent(() =>
   import("./pages/SquadPage").then((module) => module.SquadPage),
 );
@@ -222,6 +223,7 @@ function SessionApp() {
                 <Route path="/app" element={<ShellPage />} />
                 <Route path="/app/g/:groupId" element={<ShellPage />} />
                 <Route path="/app/g/:groupId/squad" element={<SquadPage />} />
+                <Route path="/app/team" element={<TeamPage />} />
                 <Route path="/app/usage" element={<UsagePage />} />
                 <Route path="/app/workflows" element={<WorkflowsPage />} />
                 <Route path="/app/routines" element={<RoutinesPage />} />

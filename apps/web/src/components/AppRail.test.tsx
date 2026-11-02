@@ -101,18 +101,19 @@ it("shows the links a screen beside it has already loaded", async () => {
   await cleanup();
 });
 
-it("keeps three areas in sight and the rest behind three dots", async () => {
+it("keeps four areas in sight and the rest behind three dots", async () => {
   const { container, cleanup } = await renderRail();
   const buttons = [...container.querySelectorAll("nav button")];
   expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
     "Agents",
+    "Team",
     "Routines",
     "Workflows",
     "More",
     "Store",
   ]);
   expect(buttons[0]?.getAttribute("aria-current")).toBe("page");
-  expect(buttons[3]?.getAttribute("aria-current")).toBeNull();
+  expect(buttons[4]?.getAttribute("aria-current")).toBeNull();
   await cleanup();
 });
 
@@ -145,6 +146,7 @@ it("leaves out what a partner hides from its customers, never the agents", async
   const buttons = [...container.querySelectorAll("nav button")];
   expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
     "Agents",
+    "Team",
     "Routines",
     "Workflows",
     "More",
