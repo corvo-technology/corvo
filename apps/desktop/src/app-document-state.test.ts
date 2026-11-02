@@ -30,6 +30,14 @@ describe("app document state", () => {
     ).toBe("ready");
   });
 
+  it("is ready on the onboarding screen, which has no shell", () => {
+    expect(
+      stateOf(
+        '<div id="root"><div data-corvo-app-state="ready"><div data-corvo-surface="onboarding"><h1>Name your workspace</h1></div></div></div>',
+      ),
+    ).toBe("ready");
+  });
+
   it("reports the web app's error screen so launch keeps its Refresh", () => {
     expect(
       stateOf(

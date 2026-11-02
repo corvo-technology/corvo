@@ -29,7 +29,10 @@ export function OnboardingLayout({
   const currentLabel = steps.find((step) => step.id === current)?.label;
 
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
+    <div
+      data-corvo-surface="onboarding"
+      className="flex min-h-svh flex-col bg-background text-foreground"
+    >
       <header className="mx-auto w-full max-w-xl px-6 pt-8">
         <BrandMascot size={36} className="mb-6" />
         <div
