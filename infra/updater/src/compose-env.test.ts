@@ -59,6 +59,7 @@ const NOT_PASSED: Record<string, string> = {
   CORVO_CENTRAL_AUTH_URL: "set by the desktop shell for its embedded engine only",
   EMAIL_EMULATOR: "ignored when NODE_ENV=production",
   GIT_SHA: "baked into the image at build time; a pass-through entry would unset it",
+  SCREEN_PROXY_IN_API: "set by the desktop app so its engine serves the computer screen itself",
   SHELL: "host shell for the desktop computer, which only the Electron app runs",
   CLOUDFLARE_ACCOUNT_ID: "written into Pi's environment from stored gateway settings",
   CLOUDFLARE_GATEWAY_ID: "written into Pi's environment from stored gateway settings",

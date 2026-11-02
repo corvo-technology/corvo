@@ -522,6 +522,8 @@ export class EmbeddedEngineController {
       BETTER_AUTH_SECRET: secrets.authSecret,
       ENCRYPTION_KEY: secrets.encryptionKey,
       SCREEN_PROXY_SECRET: secrets.screenProxySecret,
+      // No web server runs in this app, so the API also serves the computer screen.
+      SCREEN_PROXY_IN_API: "1",
       // Content stays on this computer, under its own disk encryption; a lost key would
       // otherwise lose every conversation. Existing ciphertext still reads.
       CONTENT_ENCRYPTION: "off",
