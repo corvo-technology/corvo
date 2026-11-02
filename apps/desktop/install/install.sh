@@ -2,7 +2,7 @@
 # Installs or updates Corvo:
 #   curl -fsSL https://github.com/corvo-technology/corvo/releases/latest/download/install.sh | sh
 #
-# On a Mac: the signed and notarized app goes into Applications (or ~/Applications when that is
+# On a Mac (Apple silicon): the app goes into Applications (or ~/Applications when that is
 # not writable) and opens.
 # On Linux: the AppImage goes into ~/.local/bin with an entry in the applications menu.
 # On Windows: use install.ps1 in PowerShell.
@@ -32,8 +32,12 @@ install_mac() {
   mkdir -p "$DEST"
   APP="$DEST/Corvo.app"
 
+  case "$(uname -m)" in
+    arm64) ARCH=arm64 ;;
+    *) fail "O Corvo para Mac roda em Apple silicon, não em $(uname -m)." "Corvo for Mac runs on Apple silicon, not on $(uname -m)." ;;
+  esac
   say "Baixando o Corvo…" "Downloading Corvo…"
-  fetch "$LATEST/corvo-mac-universal.zip" "$TMP/corvo.zip"
+  fetch "$LATEST/corvo-mac-$ARCH.zip" "$TMP/corvo.zip"
   ditto -x -k "$TMP/corvo.zip" "$TMP/app"
   [ -d "$TMP/app/Corvo.app" ] || fail "O arquivo baixado não tem o Corvo.app." "The download doesn't contain Corvo.app."
 

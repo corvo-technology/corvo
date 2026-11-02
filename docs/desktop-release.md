@@ -54,10 +54,18 @@ git push origin v0.1.1
 The workflow refuses tags that do not match the desktop version, are not on
 `main`, or are not newer than the latest published release.
 
+## The first releases
+
+Until there are signing certificates, push a `vX.Y.Z` tag that matches `version` in
+`apps/desktop/package.json` and the `desktop-apps` workflow builds macOS (Apple silicon), Windows and
+Linux, then publishes them as the latest release with the install scripts and checksums. The builds
+are unsigned, so macOS and Windows warn the first time the app opens. `release-desktop` is the
+signed, notarized path for when the certificates exist.
+
 ## Install in one line
 
 Each release also carries `install.sh` (macOS and Linux) and `install.ps1` (Windows),
-and the installers have stable names (`corvo-mac-universal.zip`,
+and the installers have stable names (`corvo-mac-arm64.zip`,
 `corvo-linux-x86_64.AppImage`, `corvo-win-x64.exe`) so the scripts never need a version:
 
 ```sh
