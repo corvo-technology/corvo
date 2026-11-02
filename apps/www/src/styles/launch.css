@@ -448,6 +448,17 @@
   display: flex;
   align-items: flex-end;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Each chick keeps its size when there is room and shrinks together with the others when there is not. */
+.lp-cta__flock .mascot {
+  flex: 0 1 var(--s);
+  width: auto;
+  height: auto;
+  min-width: 0;
+  aspect-ratio: 1;
 }
 
 @media (max-width: 960px) {
