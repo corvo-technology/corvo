@@ -5,9 +5,10 @@ import { expect, it } from "vitest";
 const root = path.resolve(import.meta.dirname, "../../..");
 const read = (file: string) => readFileSync(path.join(root, file), "utf8");
 
-it("links the landing page to the installer of the version the desktop app declares", () => {
-  const { version } = JSON.parse(read("apps/desktop/package.json")) as { version: string };
-  expect(read("apps/www/src/site.ts")).toContain(`DESKTOP_VERSION = "${version}"`);
+it("links the landing page to the latest release, so a version bump needs no change to the site", () => {
+  const site = read("apps/www/src/site.ts");
+  expect(site).toContain("/releases/latest/download/corvo-mac-arm64.dmg");
+  expect(site).not.toContain("DESKTOP_VERSION");
 });
 
 it("publishes the macOS installer under the name the landing page and install script use", () => {

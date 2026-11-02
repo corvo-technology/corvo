@@ -9,9 +9,11 @@ export const SECURITY_EMAIL = "security@corvo.tech";
 /** The open source repository. */
 export const GITHUB_URL = "https://github.com/corvo-technology/corvo";
 
-/** The macOS installer (Apple silicon), attached to the release it was built for. */
-export const DESKTOP_VERSION = "0.1.1";
-export const DOWNLOAD_URL = `${GITHUB_URL}/releases/download/v${DESKTOP_VERSION}/corvo-mac-arm64.dmg`;
+/**
+ * The macOS installer (Apple silicon) of the latest release. Its file name carries no version, so
+ * a new release needs no change here and the link never points at a release that is not out yet.
+ */
+export const DOWNLOAD_URL = `${GITHUB_URL}/releases/latest/download/corvo-mac-arm64.dmg`;
 
 /** Direct installers with stable names, so the links never need a version. */
 export const DOWNLOAD_URL_WINDOWS = `${GITHUB_URL}/releases/latest/download/corvo-win-x64.exe`;

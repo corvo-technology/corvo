@@ -56,8 +56,8 @@ The workflow refuses tags that do not match the desktop version, are not on
 
 ## Releases happen on their own
 
-Bump `version` in `apps/desktop/package.json` (and `DESKTOP_VERSION` in `apps/www/src/site.ts`, which a
-test keeps in step) in a pull request. When it is merged and the `checks` on `main` pass, the
+Bump `version` in `apps/desktop/package.json` in a pull request. The website needs no change: it links to
+the latest release. When it is merged and the `checks` on `main` pass, the
 `release-on-version-bump` workflow tags that commit `v<version>` and starts the `desktop-apps` build,
 which publishes the release. Nothing needs running by hand. A version whose tag already exists is
 left alone, so pushing the tag yourself is still fine.
