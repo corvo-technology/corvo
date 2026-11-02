@@ -136,6 +136,8 @@ export interface RouterDeps {
     integrationsCatalogUrl?: string;
     mcpAllowPrivateEndpoint?: boolean;
     desktopHostChoiceEnabled?: boolean;
+    /** Whether the app that started this engine gave it a connection to its own computer. */
+    sandboxHostComputer?: boolean;
     /** Whether MCP stdio servers can run, and the commands they may launch. */
     mcpStdioEnabled?: boolean;
     mcpStdioAllowedCommands?: string[];

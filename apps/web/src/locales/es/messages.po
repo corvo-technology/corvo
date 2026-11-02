@@ -1142,6 +1142,11 @@ msgstr "Bots"
 msgid "Bots and browser automation"
 msgstr "Bots y automatización del navegador"
 
+#: src/pages/HostComputerPrompt.tsx
+#: src/pages/onboarding/ComputerStep.tsx
+msgid "Bots can work on {hostLabel} with your local files and tools."
+msgstr "Los bots pueden trabajar en {hostLabel} con tus archivos y herramientas locales."
+
 #: src/components/AuthFrame.tsx
 msgid "Bots that handle your inbox and invoices, and ask before they act"
 msgstr "Bots que se ocupan de tu correo y tus facturas, y preguntan antes de actuar"
@@ -4248,6 +4253,8 @@ msgstr "No importado"
 msgid "Not in the plugin catalog"
 msgstr "No está en el catálogo de plugins"
 
+#: src/pages/HostComputerPrompt.tsx
+#: src/pages/onboarding/ComputerStep.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "Ahora no"

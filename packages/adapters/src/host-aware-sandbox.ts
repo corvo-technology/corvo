@@ -39,7 +39,10 @@ export function createRunSandbox(
     });
   }
   const primary = createSandboxProvider(kind, opts);
-  if (kind !== "docker" || !opts.prisma) return primary;
+  // The desktop app's own engine has no isolated computer, but it is given a connection to this
+  // computer: with that, "this Mac" is the one computer the person can allow.
+  const hostable = kind === "docker" || (kind === "none" && Boolean(opts.hostComputerUrl?.trim()));
+  if (!hostable || !opts.prisma) return primary;
   return new HostAwareSandbox(
     primary,
     new HostComputerSandbox(opts.hostComputerUrl ?? "", opts.hostComputerToken ?? ""),

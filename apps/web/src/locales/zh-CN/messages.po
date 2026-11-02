@@ -1142,6 +1142,11 @@ msgstr "机器人"
 msgid "Bots and browser automation"
 msgstr "机器人和浏览器自动化"
 
+#: src/pages/HostComputerPrompt.tsx
+#: src/pages/onboarding/ComputerStep.tsx
+msgid "Bots can work on {hostLabel} with your local files and tools."
+msgstr "机器人可以在{hostLabel}上使用你的本地文件和工具。"
+
 #: src/components/AuthFrame.tsx
 msgid "Bots that handle your inbox and invoices, and ask before they act"
 msgstr "处理你的收件箱和发票、行动前先询问你的机器人"
@@ -4248,6 +4253,8 @@ msgstr "未导入"
 msgid "Not in the plugin catalog"
 msgstr "不在插件目录中"
 
+#: src/pages/HostComputerPrompt.tsx
+#: src/pages/onboarding/ComputerStep.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "暂不"

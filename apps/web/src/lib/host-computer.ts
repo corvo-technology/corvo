@@ -16,3 +16,22 @@ export async function chooseHostComputer(
   await desktop.computer.revokeAccess();
   return true;
 }
+
+const DECLINED_KEY = "corvo.hostComputerDeclined";
+
+/** Whether the person already said not now to allowing this computer, so it is not asked again at once. */
+export function hostComputerDeclined(): boolean {
+  try {
+    return window.localStorage.getItem(DECLINED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function declineHostComputer(): void {
+  try {
+    window.localStorage.setItem(DECLINED_KEY, "1");
+  } catch {
+    /* Without storage the question simply returns next time. */
+  }
+}

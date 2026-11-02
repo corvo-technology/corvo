@@ -104,6 +104,8 @@ export function OnboardingPage() {
   const flowRef = useRef<OnboardingContext | null>(null);
   const [space, setSpace] = useState<{ id: string; name: string } | null>(null);
   const [done, setDone] = useState<ReadonlySet<OnboardingStepId>>(new Set());
+  // The desktop app's own engine has no Docker, so its computer step is this computer or nothing.
+  const [dockerOffered, setDockerOffered] = useState(true);
   const chosenBotRef = useRef<string | null>(null);
   const userIdRef = useRef("");
   const step: OnboardingStepId | "loading" = flow ? resolveStep(flow, routeStep, done) : "loading";
@@ -183,6 +185,7 @@ export function OnboardingPage() {
         const canRename = spaces?.spaces.find((row) => row.id === current?.id)?.canRename === true;
         if (current) setSpace({ id: current.id, name: current.name });
         userIdRef.current = me.userId;
+        setDockerOffered(me.sandboxProvider === "docker");
         setDone(loadDoneSteps(me.userId));
         begin({
           canRenameSpace: canRename,
@@ -1083,6 +1086,7 @@ export function OnboardingPage() {
       {step === "computer" ? (
         <ComputerStep
           hostLabel={mac ? t`this Mac` : t`this computer`}
+          dockerOffered={dockerOffered}
           onDone={() => advance("computer")}
         />
       ) : null}
