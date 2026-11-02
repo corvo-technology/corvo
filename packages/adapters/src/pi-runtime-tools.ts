@@ -374,14 +374,7 @@ function toAgentTool(
         };
       }
       if (tool.name === "spawn_bot") {
-        return {
-          name: String(raw.name ?? ""),
-          title: raw.title ? String(raw.title) : "",
-          description: raw.description ? String(raw.description) : "",
-          instructions: raw.instructions ? String(raw.instructions) : "",
-          prompt: raw.prompt ? String(raw.prompt) : "",
-          computer_mode: raw.computer_mode ? String(raw.computer_mode) : "",
-        };
+        return spawnBotArguments(raw);
       }
       if (tool.name === "update_bot" || FLEET_TOOL_NAMES.some((name) => name === tool.name)) {
         return prepareFleetArguments(tool.name, raw);
@@ -759,4 +752,16 @@ function beginToolCall(host: ToolHost): boolean {
 function endToolCall(host: ToolHost) {
   host.toolCallBudget.inFlight = Math.max(0, host.toolCallBudget.inFlight - 1);
   maybeAbortToolCallBudget(host);
+}
+
+/** Text fields default to empty; computer_mode is an enum, so it is left out unless given. */
+export function spawnBotArguments(raw: Record<string, unknown>): Record<string, unknown> {
+  return {
+    name: String(raw.name ?? ""),
+    title: raw.title ? String(raw.title) : "",
+    description: raw.description ? String(raw.description) : "",
+    instructions: raw.instructions ? String(raw.instructions) : "",
+    prompt: raw.prompt ? String(raw.prompt) : "",
+    ...(raw.computer_mode ? { computer_mode: String(raw.computer_mode) } : {}),
+  };
 }
