@@ -13,8 +13,8 @@ import {
   novncPageRequestHeaders,
   rewrittenNovncHeaders,
   shouldInjectNovncStorageShim,
-} from "./novnc-html.js";
-import type { ScreenTargetFailure } from "./screen-proxy.js";
+} from "@corvo/core/node/novnc-html";
+import type { ScreenTargetFailure } from "@corvo/core/node/screen-proxy";
 import {
   checkScreenAuthorization,
   novncRequestPath,
@@ -26,11 +26,11 @@ import {
   screenRefusal,
   screenUpstreamReachable,
   watchScreenAuthorization,
-} from "./screen-proxy.js";
+} from "@corvo/core/node/screen-proxy";
 import {
   safeScreenProxyResponseHeaders,
   stripSensitiveHandshakeHeaders,
-} from "./screen-proxy-response.js";
+} from "@corvo/core/node/screen-proxy-response";
 
 const SCREEN_UPSTREAM_TIMEOUT_MS = 20_000;
 
