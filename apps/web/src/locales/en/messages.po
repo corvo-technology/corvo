@@ -3059,6 +3059,10 @@ msgstr "First messages, one per line"
 msgid "Forgot password?"
 msgstr "Forgot password?"
 
+#: src/pages/onboarding-quick-connect.tsx
+msgid "Found on this computer"
+msgstr "Found on this computer"
+
 #: src/components/ModelCredits.tsx
 #: src/pages/model-settings/model-picker.tsx
 msgid "Free"
@@ -4313,6 +4317,10 @@ msgstr "One-time"
 #: src/components/ModelCredits.tsx
 msgid "One-time purchase. Credits do not expire."
 msgstr "One-time purchase. Credits do not expire."
+
+#: src/pages/Auth.tsx
+msgid "Only identifies you on this computer. Your data stays here."
+msgstr "Only identifies you on this computer. Your data stays here."
 
 #: src/components/markdown-link-prompt.tsx
 #: src/pages/shell/computer-panel.tsx
@@ -6657,6 +6665,10 @@ msgstr "You declined"
 #: src/pages/shell/computer-overlay.tsx
 msgid "You have control"
 msgstr "You have control"
+
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "Your agents and chats live here. You can rename it any time."
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts

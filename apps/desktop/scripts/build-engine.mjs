@@ -44,6 +44,8 @@ await build({
   banner: {
     js: 'import { createRequire as __createRequire } from "node:module"; const require = __createRequire(import.meta.url);',
   },
+  // pi-ai loads its sign-in flows with variable imports that esbuild cannot follow.
+  inject: [path.join(root, "packages/adapters/src/pi-bundled-oauth.ts")],
   external: [...EXTERNAL_PACKAGES, ...builtins, ...builtins.map((name) => `node:${name}`)],
 });
 

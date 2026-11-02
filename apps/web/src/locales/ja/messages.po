@@ -3059,6 +3059,10 @@ msgstr "最初のメッセージ（1行に1つ）"
 msgid "Forgot password?"
 msgstr "パスワードをお忘れですか？"
 
+#: src/pages/onboarding-quick-connect.tsx
+msgid "Found on this computer"
+msgstr "このコンピューターで検出"
+
 #: src/components/ModelCredits.tsx
 #: src/pages/model-settings/model-picker.tsx
 msgid "Free"
@@ -4313,6 +4317,10 @@ msgstr "1回のみ"
 #: src/components/ModelCredits.tsx
 msgid "One-time purchase. Credits do not expire."
 msgstr "1回限りの購入です。クレジットは失効しません。"
+
+#: src/pages/Auth.tsx
+msgid "Only identifies you on this computer. Your data stays here."
+msgstr "このコンピューター上であなたを識別するためだけのものです。データはここに保存されます。"
 
 #: src/components/markdown-link-prompt.tsx
 #: src/pages/shell/computer-panel.tsx
@@ -6657,6 +6665,10 @@ msgstr "辞退しました"
 #: src/pages/shell/computer-overlay.tsx
 msgid "You have control"
 msgstr "あなたが操作中"
+
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "エージェントとチャットはここに保存されます。名前はいつでも変更できます。"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts

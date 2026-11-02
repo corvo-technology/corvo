@@ -348,6 +348,11 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                     maxLength={MAX_PASSWORD_LENGTH}
                     className={fieldClass}
                   />
+                  {reset?.localEdition ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      <Trans>Only identifies you on this computer. Your data stays here.</Trans>
+                    </p>
+                  ) : null}
                   {mode === "in" && reset?.passwordReset ? (
                     <div className="mt-2 text-right text-sm">
                       <Link to="/forgot-password" className="font-medium text-foreground">

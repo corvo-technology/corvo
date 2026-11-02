@@ -29,68 +29,56 @@ export function OnboardingLayout({
   const currentLabel = steps.find((step) => step.id === current)?.label;
 
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground md:flex-row">
-      <aside className="border-b border-border bg-muted/40 px-6 py-5 md:w-[280px] md:shrink-0 md:border-r md:border-b-0 md:py-8">
-        <BrandMascot size={32} className="mb-5 md:mb-8" />
+    <div
+      data-corvo-surface="onboarding"
+      className="flex min-h-svh flex-col bg-linear-to-b from-primary/10 to-background to-60% text-foreground"
+    >
+      <header className="mx-auto w-full max-w-xl px-6 pt-8">
+        <BrandMascot size={44} className="mb-6" />
         <div
           role="progressbar"
           aria-label={t`Progress`}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={percent}
-          className="h-1.5 w-full overflow-hidden rounded-full bg-border"
+          className="flex gap-1.5"
         >
-          <div
-            className="h-full rounded-full bg-foreground motion-safe:transition-[width] motion-safe:duration-300"
-            style={{ width: `${percent}%` }}
-          />
+          {steps.map((step) => (
+            <span
+              key={step.id}
+              aria-hidden
+              className={`h-1 flex-1 rounded-full motion-safe:transition-colors motion-safe:duration-300 ${
+                done.has(step.id) || step.id === current ? "bg-foreground" : "bg-border"
+              }`}
+            />
+          ))}
         </div>
-        <p className="mt-3 text-sm font-medium md:hidden">{currentLabel}</p>
-        <ol className="mt-8 hidden md:block">
-          {steps.map((step, index) => {
+        <p className="mt-3 text-sm font-medium sm:hidden">{currentLabel}</p>
+        <ol className="mt-3 hidden gap-1.5 sm:flex">
+          {steps.map((step) => {
             const isDone = done.has(step.id);
             const isCurrent = step.id === current;
             return (
               <li
                 key={step.id}
                 aria-current={isCurrent ? "step" : undefined}
-                className={`relative flex gap-3 pb-6 ${
-                  index < steps.length - 1
-                    ? "after:absolute after:top-7 after:bottom-0 after:left-[13px] after:w-px after:bg-border"
-                    : ""
+                className={`flex min-w-0 flex-1 items-center gap-1.5 text-xs ${
+                  isCurrent ? "font-medium text-foreground" : "text-muted-foreground"
                 }`}
               >
-                <span
-                  className={`flex size-7 shrink-0 items-center justify-center rounded-full border text-xs ${
-                    isDone
-                      ? "border-foreground bg-foreground text-background"
-                      : isCurrent
-                        ? "border-foreground text-foreground"
-                        : "border-border text-muted-foreground"
-                  }`}
-                >
-                  {isDone ? <Check className="size-3.5" aria-hidden /> : index + 1}
-                  {isDone ? <span className="sr-only">{t`Completed`}</span> : null}
-                </span>
-                <span className="min-w-0 pt-0.5">
-                  <span
-                    className={`block text-sm ${isCurrent ? "font-medium" : "text-muted-foreground"}`}
-                  >
-                    {step.label}
-                  </span>
-                  {step.detail ? (
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {step.detail}
-                    </span>
-                  ) : null}
-                </span>
+                {isDone ? <Check className="size-3.5 shrink-0" aria-hidden /> : null}
+                {isDone ? <span className="sr-only">{t`Completed`}</span> : null}
+                <span className="truncate">{step.label}</span>
+                {step.detail && isDone ? (
+                  <span className="truncate text-muted-foreground">· {step.detail}</span>
+                ) : null}
               </li>
             );
           })}
         </ol>
-      </aside>
-      <main className="flex-1 px-6 py-8 md:px-12">
-        <div className="mx-auto w-full max-w-2xl">
+      </header>
+      <main className="flex flex-1 items-center px-6 py-10">
+        <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg shadow-black/20">
           {onBack ? (
             <Button variant="ghost" size="sm" className="-ml-2 mb-6" onClick={onBack}>
               <ChevronLeft aria-hidden />

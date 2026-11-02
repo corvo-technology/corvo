@@ -3059,6 +3059,10 @@ msgstr "首条消息，每行一条"
 msgid "Forgot password?"
 msgstr "忘记密码？"
 
+#: src/pages/onboarding-quick-connect.tsx
+msgid "Found on this computer"
+msgstr "在这台电脑上找到"
+
 #: src/components/ModelCredits.tsx
 #: src/pages/model-settings/model-picker.tsx
 msgid "Free"
@@ -4313,6 +4317,10 @@ msgstr "一次性"
 #: src/components/ModelCredits.tsx
 msgid "One-time purchase. Credits do not expire."
 msgstr "一次性购买。额度不会失效。"
+
+#: src/pages/Auth.tsx
+msgid "Only identifies you on this computer. Your data stays here."
+msgstr "仅用于在这台电脑上识别你。你的数据都保存在本机。"
 
 #: src/components/markdown-link-prompt.tsx
 #: src/pages/shell/computer-panel.tsx
@@ -6657,6 +6665,10 @@ msgstr "你已拒绝"
 #: src/pages/shell/computer-overlay.tsx
 msgid "You have control"
 msgstr "你已接管"
+
+#: src/pages/onboarding/WorkspaceStep.tsx
+msgid "Your agents and chats live here. You can rename it any time."
+msgstr "你的智能体和对话都在这里。名称可以随时修改。"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts

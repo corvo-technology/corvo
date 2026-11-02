@@ -20,6 +20,7 @@ export const APP_DOCUMENT_STATE_SCRIPT = `(() => {
   );
   const authOrWelcomeSurface = Boolean(
     document.querySelector('[data-corvo-surface="welcome"]') ||
+      document.querySelector('[data-corvo-surface="onboarding"]') ||
       document.querySelector(
         'form input[type="email"], form input[name="email"], form input#email',
       ) ||

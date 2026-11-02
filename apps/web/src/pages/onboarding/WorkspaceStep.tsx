@@ -55,9 +55,13 @@ export function WorkspaceStep({
       <h1 id={headingId} className="text-[32px] font-medium text-foreground">
         {t`Name your workspace`}
       </h1>
+      <p className="mt-2 text-muted-foreground">
+        {t`Your agents and chats live here. You can rename it any time.`}
+      </p>
       <Input
         aria-labelledby={headingId}
-        className="mt-8"
+        autoFocus
+        className="mt-6"
         maxLength={SPACE_NAME_MAX_LENGTH}
         value={name}
         disabled={pending}

@@ -38,6 +38,7 @@ describe("desktop preload bridge", () => {
       "passkeys",
       "platform",
       "settings",
+      "tools",
       "update",
       "window",
     ]);
