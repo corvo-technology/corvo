@@ -688,6 +688,15 @@ async function installUpdate() {
   return state;
 }
 
+/** The first supported language in the person's own order of preference, then the app's locale. */
+function suggestedSetupLocale(): SetupLocale {
+  for (const language of [...app.getPreferredSystemLanguages(), app.getLocale()]) {
+    const match = matchSetupLocale(language);
+    if (match !== null) return match;
+  }
+  return "en";
+}
+
 function installApplicationMenu() {
   const computerAccess: Electron.MenuItemConstructorOptions = {
     label: "Computer Access…",
@@ -1405,7 +1414,7 @@ app.whenReady().then(async () => {
       defaultLocalUrl: localStack.webUrl(),
       cloudUrl: CORVO_CLOUD_URL,
       saved: currentSetup,
-      locale: { saved: savedLocale, suggested: matchSetupLocale(app.getLocale()) ?? "en" },
+      locale: { saved: savedLocale, suggested: suggestedSetupLocale() },
       error: setupError ?? undefined,
     };
   });

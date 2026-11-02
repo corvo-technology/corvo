@@ -16,7 +16,8 @@ export function WorkspaceStep({
 }) {
   const { t } = useLingui();
   const headingId = useId();
-  const [name, setName] = useState(initialName);
+  // A new space is created named in English; show the person its name in their own language.
+  const [name, setName] = useState(initialName === "Personal" ? t`Personal` : initialName);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);

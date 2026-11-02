@@ -4015,7 +4015,7 @@ msgstr "Dê um nome ao seu bot"
 
 #: src/pages/onboarding/WorkspaceStep.tsx
 msgid "Name your workspace"
-msgstr "Dê um nome ao seu workspace"
+msgstr "Dê um nome ao seu espaço"
 
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
@@ -4574,6 +4574,7 @@ msgid "Persona"
 msgstr "Persona"
 
 #: src/pages/onboarding/UseStep.tsx
+#: src/pages/onboarding/WorkspaceStep.tsx
 msgid "Personal"
 msgstr "Pessoal"
 
@@ -5061,7 +5062,7 @@ msgstr "Restaurado"
 
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Restoring your workspace"
-msgstr "Restaurando seu workspace"
+msgstr "Restaurando seu espaço"
 
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Resume"
@@ -5248,7 +5249,7 @@ msgstr "Salvando uma nota na memória"
 
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Saving your workspace"
-msgstr "Salvando seu workspace"
+msgstr "Salvando seu espaço"
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saving..."
@@ -6648,7 +6649,7 @@ msgstr "Funciona com seu plano do ChatGPT ou do Claude."
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/Onboarding.tsx
 msgid "Workspace"
-msgstr "Workspace"
+msgstr "Espaço"
 
 #: src/lib/activity-label.ts
 msgid "Writing {value}"
