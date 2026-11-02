@@ -21,6 +21,7 @@ const entryPoints = {
   api: path.join(root, "apps/api/src/index.ts"),
   worker: path.join(root, "apps/worker/src/index.ts"),
   migrate: path.join(root, "apps/api/src/cli/migrate-database.ts"),
+  "desktop-control-mcp": path.join(root, "packages/adapters/src/desktop-control-mcp-main.ts"),
 };
 
 rmSync(out, { recursive: true, force: true });
