@@ -22,7 +22,7 @@
     </header>
 
     <main id="step-language" class="shell" hidden>
-      <img class="mascot" src="mascot.png" width="72" height="72" alt="" />
+      <img class="mascot" src="mascot.svg" width="84" height="84" alt="" />
       <h1 class="heading" data-i18n="chooseLanguage">Choose your language</h1>
       <form id="language-form" novalidate>
         <fieldset class="choices languages">
@@ -37,7 +37,7 @@
     </main>
 
     <main id="step-setup" class="shell" hidden>
-      <img class="mascot" src="mascot.png" width="72" height="72" alt="" />
+      <img class="mascot" src="mascot.svg" width="84" height="84" alt="" />
       <h1 class="heading" data-i18n="welcome">Welcome to Corvo</h1>
       <p class="subheading" data-i18n="where">Where should Corvo run?</p>
 
@@ -47,18 +47,27 @@
 
           <label class="choice" for="mode-new">
             <input id="mode-new" type="radio" name="mode" value="new" checked />
-            <span class="choice-title" data-i18n="thisComputer">This computer</span>
+            <span class="choice-copy">
+              <span class="choice-title" data-i18n="thisComputer">This computer</span>
+              <span class="choice-desc" data-i18n="thisComputerDesc">Your data stays on this computer.</span>
+            </span>
           </label>
 
           <label class="choice" for="mode-cloud">
             <input id="mode-cloud" type="radio" name="mode" value="cloud" disabled />
-            <span class="choice-title" data-i18n="cloud">Corvo Cloud</span>
+            <span class="choice-copy">
+              <span class="choice-title" data-i18n="cloud">Corvo Cloud</span>
+              <span class="choice-desc" data-i18n="cloudDesc">We host it for you.</span>
+            </span>
             <span class="choice-soon" data-i18n="soon">Soon</span>
           </label>
 
           <label class="choice" for="mode-existing">
             <input id="mode-existing" type="radio" name="mode" value="existing" />
-            <span class="choice-title" data-i18n="existing">Existing server</span>
+            <span class="choice-copy">
+              <span class="choice-title" data-i18n="existing">Existing server</span>
+              <span class="choice-desc" data-i18n="existingDesc">Connect to a server your team runs.</span>
+            </span>
           </label>
         </fieldset>
 

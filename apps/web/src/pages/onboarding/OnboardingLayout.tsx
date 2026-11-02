@@ -31,10 +31,10 @@ export function OnboardingLayout({
   return (
     <div
       data-corvo-surface="onboarding"
-      className="flex min-h-svh flex-col bg-background text-foreground"
+      className="flex min-h-svh flex-col bg-linear-to-b from-primary/10 to-background to-60% text-foreground"
     >
       <header className="mx-auto w-full max-w-xl px-6 pt-8">
-        <BrandMascot size={36} className="mb-6" />
+        <BrandMascot size={44} className="mb-6" />
         <div
           role="progressbar"
           aria-label={t`Progress`}
@@ -78,7 +78,7 @@ export function OnboardingLayout({
         </ol>
       </header>
       <main className="flex flex-1 items-center px-6 py-10">
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg shadow-black/20">
           {onBack ? (
             <Button variant="ghost" size="sm" className="-ml-2 mb-6" onClick={onBack}>
               <ChevronLeft aria-hidden />

@@ -11,7 +11,7 @@ const STATIC_FILES = [
   "setup.css",
   "setup.js",
   "setup-strings.js",
-  "mascot.png",
+  "mascot.svg",
 ];
 const TOKENS_FILE = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
