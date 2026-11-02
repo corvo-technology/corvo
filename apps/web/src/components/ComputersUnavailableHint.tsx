@@ -9,9 +9,13 @@ import {
   sandboxCheckFailureMessage,
   sandboxEnvGuidanceText,
 } from "../lib/computer-sandbox";
+import { useLocalEdition } from "../lib/local-edition";
 import { SuccessPop } from "./ai/primitives";
 
 export { computersAreUnavailable } from "../lib/computer-sandbox";
+
+/** Asks the desktop app to open its "where should bots run" choice. */
+export const CHOOSE_COMPUTER_EVENT = "corvo:choose-computer";
 
 type ComputersUnavailableHintProps = {
   className?: string;
@@ -35,6 +39,7 @@ export function ComputersUnavailableHint({
   showRetry = true,
 }: ComputersUnavailableHintProps) {
   const { t } = useLingui();
+  const localEdition = useLocalEdition();
   const [provider, setProvider] = useState(initialProvider);
   const [phase, setPhase] = useState<SandboxAvailabilityPhase>("idle");
   const [failureMessage, setFailureMessage] = useState<string | null>(null);
@@ -108,7 +113,9 @@ export function ComputersUnavailableHint({
         <SuccessPop label={t`Computers are available. Reload or open a bot to continue.`} />
       ) : null}
 
-      {showUnavailableCopy ? <UnavailableCopy kind={kind} failureMessage={failureMessage} /> : null}
+      {showUnavailableCopy ? (
+        <UnavailableCopy kind={kind} failureMessage={failureMessage} local={localEdition} />
+      ) : null}
 
       {showRetry && (unavailable || phase === "failure") ? (
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -126,9 +133,25 @@ export function ComputersUnavailableHint({
               <Trans>Open computer settings</Trans>
             </Button>
           ) : null}
-          <Button type="button" variant="ghost" size="sm" onClick={() => void handleCopyGuidance()}>
-            {copied ? <Trans>Copied</Trans> : <Trans>Copy .env example</Trans>}
-          </Button>
+          {localEdition ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => window.dispatchEvent(new Event(CHOOSE_COMPUTER_EVENT))}
+            >
+              <Trans>Choose where bots run</Trans>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleCopyGuidance()}
+            >
+              {copied ? <Trans>Copied</Trans> : <Trans>Copy .env example</Trans>}
+            </Button>
+          )}
         </div>
       ) : null}
     </div>
@@ -138,9 +161,11 @@ export function ComputersUnavailableHint({
 function UnavailableCopy({
   kind,
   failureMessage,
+  local,
 }: {
   kind: ReturnType<typeof classifySandboxProvider>;
   failureMessage: string | null;
+  local: boolean;
 }) {
   if (failureMessage) {
     return (
@@ -148,6 +173,15 @@ function UnavailableCopy({
         <Trans>
           Could not verify computer setup ({failureMessage}). Fix the connection, then check again.
         </Trans>
+      </p>
+    );
+  }
+
+  // On their own computer nobody edits a .env or a stack: the app asks where bots run instead.
+  if (local) {
+    return (
+      <p className="text-[13px] leading-relaxed text-muted-foreground">
+        <Trans>Computers are off.</Trans>
       </p>
     );
   }

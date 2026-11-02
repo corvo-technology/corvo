@@ -1386,6 +1386,10 @@ msgstr "フォルダを選択"
 msgid "Choose how to use Corvo"
 msgstr "Corvoの使い方を選択"
 
+#: src/components/ComputersUnavailableHint.tsx
+msgid "Choose where bots run"
+msgstr "ボットの実行場所を選ぶ"
+
 #: src/lib/localized-provider-hint.ts
 msgid "Claude subscription"
 msgstr "Claudeサブスクリプション"
@@ -1596,6 +1600,10 @@ msgstr "コンピューター"
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Computers are available. Reload or open a bot to continue."
 msgstr "コンピューターが利用可能になりました。再読み込みするか、ボットを開いて続行してください。"
+
+#: src/components/ComputersUnavailableHint.tsx
+msgid "Computers are off."
+msgstr "コンピューターはオフです。"
 
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Computers are off. Set SANDBOX_PROVIDER=docker with SANDBOX_SUPERVISOR_TOKEN, or set SANDBOX_PROVIDER to e2b, daytona, or boat with its API key. Recreate the stack after changing .env."

@@ -9,6 +9,7 @@ import {
 } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
+import { CHOOSE_COMPUTER_EVENT } from "../components/ComputersUnavailableHint";
 import { sandboxCheckFailureMessage } from "../lib/computer-sandbox";
 import { desktopBridge } from "../lib/desktop";
 import { chooseHostComputer } from "../lib/host-computer";
@@ -32,21 +33,26 @@ export function HostComputerPrompt({
   const mac = desktop?.platform === "darwin";
   const hostLabel = mac ? t`this Mac` : t`this computer`;
 
-  useEffect(
-    () =>
-      desktop?.computer?.onConfigure(() => {
-        void rpc
-          .me()
-          .then((me) => {
-            if (me.canChooseHostComputer) {
-              setConfiguring(me.computerHost != null);
-              setOpen(true);
-            }
-          })
-          .catch(() => undefined);
-      }),
-    [desktop],
-  );
+  useEffect(() => {
+    if (!desktop?.computer) return;
+    const configure = () => {
+      void rpc
+        .me()
+        .then((me) => {
+          if (me.canChooseHostComputer) {
+            setConfiguring(me.computerHost != null);
+            setOpen(true);
+          }
+        })
+        .catch(() => undefined);
+    };
+    const stopMenu = desktop.computer.onConfigure(configure);
+    window.addEventListener(CHOOSE_COMPUTER_EVENT, configure);
+    return () => {
+      stopMenu();
+      window.removeEventListener(CHOOSE_COMPUTER_EVENT, configure);
+    };
+  }, [desktop]);
 
   useEffect(() => {
     if (!desktop) return;
