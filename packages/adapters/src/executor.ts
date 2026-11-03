@@ -970,8 +970,10 @@ export function createRunExecutor(deps: ExecutorDeps) {
             disabledBuiltinTools: bot.disabledBuiltinTools,
             fleetManagement: bot.fleetManagement,
             followUpFromUser: sourceMessage?.role === "user",
+            // An optional tool: if the steps cannot be counted, the run goes on without it.
             workflowContinues:
-              run.trigger === "routine" && (await workflowContinuesAfter(deps.prisma, run)),
+              run.trigger === "routine" &&
+              (await workflowContinuesAfter(deps.prisma, run).catch(() => false)),
           }),
           // Cross-owner agent connections only exist for chat-linked bots.
           ...(hasMessagingIdentity &&
