@@ -108,7 +108,7 @@ import { parseQuotaHeaders, recordProviderQuota } from "./provider-quota.js";
 import { loadReplyContext, messageToAgentHistoryText } from "./reply-context.js";
 import { backOffRoutineAfterAccountError } from "./routine-backoff.js";
 import { lateRoutineRunInstruction } from "./routine-lateness.js";
-import { startNextRoutineStep } from "./routine-steps.js";
+import { startNextRoutineStep, workflowContinuesAfter } from "./routine-steps.js";
 import { lazyRunComputer } from "./run-computer.js";
 import type {
   RunComputerUseState,
@@ -970,6 +970,8 @@ export function createRunExecutor(deps: ExecutorDeps) {
             disabledBuiltinTools: bot.disabledBuiltinTools,
             fleetManagement: bot.fleetManagement,
             followUpFromUser: sourceMessage?.role === "user",
+            workflowContinues:
+              run.trigger === "routine" && (await workflowContinuesAfter(deps.prisma, run)),
           }),
           // Cross-owner agent connections only exist for chat-linked bots.
           ...(hasMessagingIdentity &&

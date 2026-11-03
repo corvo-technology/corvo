@@ -236,6 +236,12 @@ export const taskTools: ToolHandlers = {
       ...(thread.groupId ? { threadId: thread.id } : {}),
     });
   },
+  async workflow_stop(_ctx, call) {
+    return call.finish({
+      ok: true,
+      note: "The workflow ends after this step. Say why in your answer.",
+    });
+  },
   async schedule_cancel(ctx, call) {
     const { deps, run, bot, thread } = ctx;
     const { args } = call;

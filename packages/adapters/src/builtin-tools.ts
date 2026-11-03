@@ -1041,6 +1041,12 @@ export const builtinAgentTools: ConnectorTool[] = [
     inputSchema: scheduleCreateInputSchema,
   },
   {
+    name: "workflow_stop",
+    description:
+      "Use only when you are a step of a workflow and there is nothing for the steps after you to act on, for example nothing new to report. The next steps will not run. Say in your answer why you stopped. Do not use it when you finished your part and the next step should go on.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
     name: "schedule_list",
     description: "List this bot's active and inactive schedules (routines).",
     inputSchema: { type: "object", properties: {} },
