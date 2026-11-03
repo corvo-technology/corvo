@@ -119,6 +119,18 @@ function builtinParameters(tool: ConnectorTool) {
   if (tool.name === "list_routines") return Type.Object({});
   if (tool.name === "store_agents")
     return Type.Object({ language: Type.Optional(stringEnum(["en", "pt-BR"], {})) });
+  if (tool.name === "store_skills") {
+    return Type.Object({
+      query: Type.Optional(Type.String({ maxLength: 100 })),
+      language: Type.Optional(stringEnum(["en", "pt-BR"], {})),
+    });
+  }
+  if (tool.name === "skill_install") {
+    return Type.Object({
+      slug: Type.String({ minLength: 1 }),
+      language: Type.Optional(stringEnum(["en", "pt-BR"], {})),
+    });
+  }
   if (tool.name === "install_agent") {
     return Type.Object({
       slug: Type.String({ minLength: 1 }),

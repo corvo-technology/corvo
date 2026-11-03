@@ -127,12 +127,21 @@ export function skillCatalogLine(entry: Pick<SkillCatalogEntry, "name" | "descri
 }
 
 export function formatSkillsCatalogInstruction(entries: SkillCatalogEntry[]): string | undefined {
-  if (entries.length === 0) return undefined;
+  const find =
+    "When a multi-step task is not covered, look for a ready-made skill with store_skills (query: words describing the task) and add it with skill_install before improvising; tell the owner which one you added.";
+  if (entries.length === 0) {
+    return [
+      "No Claude Agent Skills are added yet (SKILL.md recipes shared across assistants; generic how-tos, not account-specific routines).",
+      find,
+      "Create a skill with skill_create when a multi-step task is worth repeating (or when asked).",
+    ].join("\n");
+  }
   const lines = entries.slice(0, 50).map(skillCatalogLine).join("\n");
   return [
     "Available Claude Agent Skills (SKILL.md recipes shared across assistants; generic how-tos, not account-specific routines). The Pi runtime already understands this format; we persist and inject them:",
     lines,
     "When a skill matches the user's request, call skill_read for that name and follow it immediately. Prefer matching skills over improvising multi-step recipes.",
+    find,
     "Users can force a skill with /Name in the composer. Routines may mention a skill as @Name — that loads the skill at fire time.",
     "Create a skill with skill_create when a multi-step task is worth repeating (or when asked). After creating one, mention /Name so the user can open it.",
     "Only skill_update / skill_delete user-created skills (not builtin or plugin).",
