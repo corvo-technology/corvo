@@ -11,6 +11,7 @@ const bots = vi.hoisted(() => ({ current: [] as Array<Record<string, unknown>> }
 const skillList = vi.hoisted(() => ({ current: [] as Array<{ name: string }> }));
 const addAgent = vi.hoisted(() => vi.fn());
 const navigate = vi.hoisted(() => vi.fn());
+const emailStatus = vi.hoisted(() => ({ available: true }));
 
 vi.mock("../lib/agent-catalog-install", async () => {
   const actual = await vi.importActual<typeof import("../lib/agent-catalog-install")>(
@@ -28,6 +29,14 @@ vi.mock("../lib/query", () => ({
     agentSkills: {
       list: {
         queryOptions: () => ({ queryKey: ["skills"], queryFn: async () => skillList.current }),
+      },
+    },
+    emailAgent: {
+      status: {
+        queryOptions: () => ({
+          queryKey: ["email-agent"],
+          queryFn: async () => ({ available: emailStatus.available, agent: null }),
+        }),
       },
     },
   }),
@@ -64,6 +73,7 @@ beforeEach(() => {
   locale.current = "en";
   bots.current = [];
   skillList.current = [];
+  emailStatus.available = true;
   addAgent.mockReset().mockResolvedValue({ botId: "bot-1" });
   navigate.mockReset();
   onOpenApp.mockReset();
@@ -149,6 +159,26 @@ it("keeps the email agent's Add off until an inbox service is connected", async 
     false,
   );
   await withService.unmount();
+});
+
+it("can still add the email agent when the server has no public address, and says how it will check mail", async () => {
+  emailStatus.available = false;
+  const { host, unmount } = await mount({
+    servers: [{ id: "srv-m", slug: "millionsend", enabled: true, oauthStatus: "connected" }],
+  });
+  const email = card(host, "email-agent");
+  expect((button(email, "Add") as HTMLButtonElement).disabled).toBe(false);
+  expect(email.textContent).toContain("checks your inbox on a schedule you approve");
+  expect(card(host, "morning-briefing").textContent).not.toContain("on a schedule you approve");
+  await unmount();
+});
+
+it("says nothing about an address when the server has one", async () => {
+  const { host, unmount } = await mount({
+    servers: [{ id: "srv-m", slug: "millionsend", enabled: true, oauthStatus: "connected" }],
+  });
+  expect(card(host, "email-agent").textContent).not.toContain("on a schedule you approve");
+  await unmount();
 });
 
 it("filters by what the person searches for, in the language shown", async () => {

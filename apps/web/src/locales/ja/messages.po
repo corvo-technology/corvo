@@ -4245,6 +4245,10 @@ msgstr "モデルが一覧にありません。"
 msgid "No OpenClaw, Hermes or agent document found."
 msgstr "OpenClaw、Hermes、またはエージェントのドキュメントが見つかりません。"
 
+#: src/pages/AgentsStore.tsx
+msgid "No public address here, so it checks your inbox on a schedule you approve."
+msgstr"ここには公開アドレスがないため、あなたが承認したスケジュールで受信トレイを確認します。"
+
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "No remote MCP servers found"
 msgstr "リモートMCPサーバーが見つかりません"
@@ -4601,7 +4605,7 @@ msgstr "新しいキーを貼り付け"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Paste the key to let your agent use this server's tools."
-msgstr"キーを貼り付けると、エージェントがこのサーバーのツールを使えるようになります。"
+msgstr "キーを貼り付けると、エージェントがこのサーバーのツールを使えるようになります。"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."

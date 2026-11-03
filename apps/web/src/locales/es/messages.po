@@ -4245,6 +4245,10 @@ msgstr "No hay modelos en la lista."
 msgid "No OpenClaw, Hermes or agent document found."
 msgstr "No se encontraron archivos de OpenClaw, Hermes ni un documento de agente."
 
+#: src/pages/AgentsStore.tsx
+msgid "No public address here, so it checks your inbox on a schedule you approve."
+msgstr"Aquí no hay dirección pública, así que revisa tu bandeja de entrada con un horario que tú apruebas."
+
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "No remote MCP servers found"
 msgstr "No se encontraron servidores MCP remotos"
@@ -4601,7 +4605,7 @@ msgstr "Pega una clave de reemplazo"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Paste the key to let your agent use this server's tools."
-msgstr"Pega la clave para que tu agente pueda usar las herramientas de este servidor."
+msgstr "Pega la clave para que tu agente pueda usar las herramientas de este servidor."
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."
