@@ -1,17 +1,17 @@
 appId: tech.corvo.bots.mobile
-name: Corvo mobile smoke
+name: Rook mobile smoke
 ---
 - launchApp:
     clearState: true
 
-- assertVisible: "Sign up for Corvo"
+- assertVisible: "Sign up for Rook"
 - assertVisible: "Name"
 - tapOn: "Sign in"
 - runFlow:
     when:
       true: ${typeof CORVO_MOBILE_API_URL !== "undefined" && CORVO_MOBILE_API_URL != null && CORVO_MOBILE_API_URL.trim() !== ""}
     file: helpers/server.yaml
-- assertVisible: "Sign in to Corvo"
+- assertVisible: "Sign in to Rook"
 - tapOn: "Email"
 - inputText: ${CORVO_E2E_EMAIL}
 - tapOn: "Password"

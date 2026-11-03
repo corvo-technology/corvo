@@ -38,7 +38,7 @@ export function mcpOAuthRedirectUri(): string {
 export async function connectMcpOauth(serverId: string): Promise<McpOauthResult> {
   // The provider's page opens in a tab that has none of the frame's in-memory sign-in, so it
   // would finish as whoever else is signed in to this browser, or as no one.
-  if (isEmbedded()) throw new Error(t`Open Corvo directly to connect this app.`);
+  if (isEmbedded()) throw new Error(t`Open Rook directly to connect this app.`);
   const browser = desktopBridge()?.oauth;
   if (browser?.open) return connectInSystemBrowser(serverId, { ...browser, open: browser.open });
   const started = await rpc.mcp.oauth.begin({ serverId, redirectUri: mcpOAuthRedirectUri() });

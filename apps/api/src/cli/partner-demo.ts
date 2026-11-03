@@ -1,4 +1,4 @@
-// `pnpm partner:demo`: acts as a partner's server against a running Corvo API, for trying the
+// `pnpm partner:demo`: acts as a partner's server against a running Rook API, for trying the
 // pilot by hand. Needs PARTNER_API_URL and PARTNER_API_KEY.
 import { runPartnerDemo } from "./partner-demo-command.js";
 

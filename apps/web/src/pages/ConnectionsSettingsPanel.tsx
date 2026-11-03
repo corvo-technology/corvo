@@ -7,7 +7,7 @@ import { errorText } from "../lib/user-error";
 
 type Key = "composioApiKey" | "telegramBotToken";
 
-/** Keys for the apps this computer's Corvo connects to itself. A saved key is never shown again. */
+/** Keys for the apps this computer's Rook connects to itself. A saved key is never shown again. */
 export function ConnectionsSettingsPanel() {
   const { t } = useLingui();
   const [status, setStatus] = useState<CorvoDesktopConnections | null>(null);

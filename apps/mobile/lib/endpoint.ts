@@ -80,7 +80,7 @@ export async function probeApiBase(
     );
     if (!res.ok) {
       cancelResponseBody(res);
-      return { ok: false, error: t("That URL did not look like a Corvo server") };
+      return { ok: false, error: t("That URL did not look like a Rook server") };
     }
     let body: HealthResponse;
     try {
@@ -94,7 +94,7 @@ export async function probeApiBase(
       body = {};
     }
     if (body.error || body.json?.ok !== true) {
-      return { ok: false, error: t("That URL did not look like a Corvo server") };
+      return { ok: false, error: t("That URL did not look like a Rook server") };
     }
     return parsed;
   } catch {

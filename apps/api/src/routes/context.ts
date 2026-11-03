@@ -189,7 +189,7 @@ export function createRouterContext(deps: RouterDeps) {
               auth.secretIdByModel[entry.provider]?.[entry.id] ||
               auth.secretIdByProvider[entry.provider]
                 ? entry.billing
-                : "Uses Corvo credits",
+                : "Uses Rook credits",
           }
         : // A model the operator listed for the local server is offered without a connection.
           withLocalModelsOffered(entry),

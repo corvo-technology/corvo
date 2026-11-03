@@ -76,7 +76,7 @@ async function message(
                   color: lightTokens.foreground,
                 }}
               >
-                Corvo
+                Rook
               </Text>
             </Column>
           </Row>
@@ -148,10 +148,10 @@ export function verificationEmail(
   return message(
     webOrigin,
     email,
-    "Verify your Corvo email",
+    "Verify your Rook email",
     <>
       <Action href={url}>Verify email</Action>
-      <Text style={text}>Then return to Corvo to sign in.</Text>
+      <Text style={text}>Then return to Rook to sign in.</Text>
       <Text style={note}>
         This link expires in one hour. If you did not register, ignore this email.
       </Text>
@@ -167,9 +167,9 @@ export function signInCodeEmail(
   return message(
     webOrigin,
     email,
-    "Your Corvo sign-in code",
+    "Your Rook sign-in code",
     <>
-      <Text style={text}>Enter this code to sign in to Corvo:</Text>
+      <Text style={text}>Enter this code to sign in to Rook:</Text>
       <Code>{code}</Code>
       <Text style={note}>
         This code expires in ten minutes. If you did not request it, ignore this email.
@@ -186,10 +186,10 @@ export function passwordResetEmail(
   return message(
     webOrigin,
     user.email,
-    "Reset your Corvo password",
+    "Reset your Rook password",
     <>
       <Text style={text}>Hi {displayName(user.name, "there")},</Text>
-      <Text style={text}>Reset your Corvo password:</Text>
+      <Text style={text}>Reset your Rook password:</Text>
       <Action href={resetUrl}>Reset password</Action>
       <Text style={note}>
         This link expires in one hour. If you did not request this, you can ignore this email.
@@ -206,9 +206,9 @@ export function accountDeletionEmail(
   return message(
     webOrigin,
     email,
-    "Confirm Corvo account deletion",
+    "Confirm Rook account deletion",
     <>
-      <Text style={text}>Enter this code in Corvo to delete your account:</Text>
+      <Text style={text}>Enter this code in Rook to delete your account:</Text>
       <Code>{code}</Code>
       <Text style={note}>
         This code expires in ten minutes. If you did not request deletion, ignore this email.

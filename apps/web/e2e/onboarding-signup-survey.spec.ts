@@ -1,9 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { captureScreenshot, signup, signupToOnboarding } from "./helpers";
 
-test("new users say how they will use Corvo before their first chat", async ({
-  page,
-}, testInfo) => {
+test("new users say how they will use Rook before their first chat", async ({ page }, testInfo) => {
   const submitted: unknown[] = [];
   await page.route("**/rpc/onboarding/signupSurvey", async (route) => {
     submitted.push((route.request().postDataJSON() as { json: unknown }).json);
@@ -16,7 +14,7 @@ test("new users say how they will use Corvo before their first chat", async ({
   await captureScreenshot(page, testInfo, "01-workspace");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
-  await expect(page.getByRole("heading", { name: "How will you use Corvo?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How will you use Rook?" })).toBeVisible();
   await expect(page).toHaveURL(/\/onboarding\/survey$/);
   await page.getByRole("button", { name: "Both", exact: true }).click();
   await page.getByRole("button", { name: "Sales", exact: true }).click();
@@ -35,7 +33,7 @@ test("each onboarding step opens directly from its URL while it applies", async 
   await page.waitForURL(/\/app\//, { timeout: 20_000 });
 
   await page.goto("/onboarding/survey");
-  await expect(page.getByRole("heading", { name: "How will you use Corvo?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How will you use Rook?" })).toBeVisible();
 
   // No model is due, so that step is not offered; every step is done, so the last one opens.
   await page.goto("/onboarding/model");

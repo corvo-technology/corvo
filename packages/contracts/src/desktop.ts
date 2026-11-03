@@ -124,7 +124,7 @@ export interface CorvoDesktop {
 }
 
 /**
- * How the desktop app was pointed at a Corvo server during first-run setup.
+ * How the desktop app was pointed at a Rook server during first-run setup.
  * `new` is the Docker Compose stack this app installs and runs on the same computer.
  */
 export type DesktopInstanceMode = "new" | "existing";
@@ -136,7 +136,7 @@ export interface DesktopSetup {
 
 export interface DesktopSetupState {
   defaultLocalUrl: string;
-  /** Hosted Corvo origin, saved as an `existing` server when chosen. */
+  /** Hosted Rook origin, saved as an `existing` server when chosen. */
   cloudUrl: string;
   saved: DesktopSetup | null;
   /** The language the person chose (null before the first choice) and the one to suggest first. */

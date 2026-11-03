@@ -1,13 +1,13 @@
-// Corvo partner SDK: <corvo-assistant session-url="/your/session/route"></corvo-assistant>
+// Rook partner SDK: <corvo-assistant session-url="/your/session/route"></corvo-assistant>
 //
-// Shows the Corvo assistant inside your page, signed in as your customer. Your backend route
-// (session-url) must answer POST with { code }, where the code comes from Corvo's
+// Shows the Rook assistant inside your page, signed in as your customer. Your backend route
+// (session-url) must answer POST with { code }, where the code comes from Rook's
 // POST /api/partner/v1/sessions. The code is single use and lasts 60 seconds; this element asks
 // for a new one whenever the frame needs it. The partner key never reaches the browser.
 //
 // Attributes: session-url (required), theme (light | dark | auto, default auto), locale (en, de,
 // pt-BR, zh-CN, es, fr, ja; default: the visitor's language), accent (your main colour as #rrggbb;
-// default: Corvo's own), origin (default: where this file came
+// default: Rook's own), origin (default: where this file came
 // from). Events: corvo-ready, corvo-expired.
 (() => {
   if (customElements.get("corvo-assistant")) return;
@@ -28,7 +28,7 @@
       if (this.frame) return;
       if (!this.style.display) this.style.display = "block";
       this.frame = document.createElement("iframe");
-      this.frame.title = "Corvo";
+      this.frame.title = "Rook";
       this.frame.allow = "clipboard-write";
       this.frame.style.cssText =
         "border:0;width:100%;height:100%;display:block;background:transparent";

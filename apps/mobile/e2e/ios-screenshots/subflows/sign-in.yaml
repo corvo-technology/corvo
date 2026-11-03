@@ -3,11 +3,11 @@ appId: tech.corvo.bots.mobile
 - runFlow: launch-app.yaml
 - runFlow:
     when:
-      visible: "Sign up for Corvo"
+      visible: "Sign up for Rook"
     commands:
       - tapOn: "Sign in"
 - extendedWaitUntil:
-    visible: "Sign in to Corvo"
+    visible: "Sign in to Rook"
     timeout: 15000
 - tapOn: "Email"
 - inputText: ${CORVO_ACTIVE_EMAIL}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="corvo_call_channel">Ongoing call</string>
-  <string name="corvo_call_title">Corvo call</string>
+  <string name="corvo_call_title">Rook call</string>
   <string name="corvo_call_text">Microphone is active</string>
 </resources>

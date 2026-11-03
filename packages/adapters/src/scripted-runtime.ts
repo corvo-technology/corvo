@@ -593,7 +593,7 @@ code-b
         toolCalls: [
           {
             name: "destination.write",
-            args: { collection: "notes", title: "Corvo result", body: prompt },
+            args: { collection: "notes", title: "Rook result", body: prompt },
           },
         ],
         complete: true,

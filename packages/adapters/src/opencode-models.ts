@@ -8,7 +8,7 @@ import { findOpenCode, openCodeCommand } from "./opencode-acp.js";
  * operator-configured local model server. Undefined when OpenCode is not installed here.
  */
 export async function startOpenCodeModels(options: {
-  /** A folder Corvo owns for OpenCode's database. */
+  /** A folder Rook owns for OpenCode's database. */
   dataDir: string;
   /** Part of the address: only a caller that was told it can use the bridge. */
   secret: string;

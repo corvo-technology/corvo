@@ -1,6 +1,6 @@
 # Partner pilot
 
-A SaaS partner (here `acme-saas`) embeds Corvo agents for its own customers. The partner's backend
+A SaaS partner (here `acme-saas`) embeds Rook agents for its own customers. The partner's backend
 calls a small API; each customer gets an isolated organization with one owner, a connector to the
 partner's system, and starter agents. Nothing here needs a hosted vendor.
 
@@ -95,7 +95,7 @@ answer `404`.
 
 Instead of redirecting, put the assistant in a frame on your page, signed in as the customer.
 
-1. A route on your backend (for example `POST /corvo/session`) that calls Corvo's
+1. A route on your backend (for example `POST /corvo/session`) that calls Rook's
    `POST /api/partner/v1/sessions` for the logged-in customer and returns `{ "code": "<code>" }`
    from the answer. Return only the code: never the key, never the redirect address.
 2. On your page:
@@ -108,7 +108,7 @@ Instead of redirecting, put the assistant in a frame on your page, signed in as 
    `theme` is `light`, `dark` or `auto`; `locale` is `en`, `de`, `pt-BR`, `zh-CN`, `es`, `fr` or
    `ja` (default: the visitor's language). `accent` is your main colour as `#rrggbb` (for example
    `accent="#e11d48"`): buttons and the current state use it, and the text on it turns light or dark
-   to stay readable; leave it out to keep Corvo's own green. Change any attribute and the frame
+   to stay readable; leave it out to keep Rook's own green. Change any attribute and the frame
    follows without reloading. The element asks your route for a new code whenever the frame needs one, and fires
    `corvo-ready` and `corvo-expired` events.
 
@@ -133,7 +133,7 @@ the agents present and no onboarding or billing screen.
 
 ## What the pilot deliberately does not do
 
-- One Corvo seat (the owner) per customer; the partner's own users share it.
+- One Rook seat (the owner) per customer; the partner's own users share it.
 - No embedding in the partner's page, per-user permissions, usage budgets, events back to the
   partner, shared agents, versioned agent updates, or more than one partner per deployment's
   branding.

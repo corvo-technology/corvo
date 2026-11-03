@@ -2,7 +2,7 @@ import * as z from "zod";
 
 /**
  * Operator-configured menu links (CORVO_NAV_LINKS) that open a same-origin page inside the app.
- * The operator's reverse proxy serves the path; Corvo only frames it.
+ * The operator's reverse proxy serves the path; Rook only frames it.
  */
 
 /** App-owned paths a link must not frame. */
@@ -21,7 +21,7 @@ export const NavLinkSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]{1,32}$/),
   label: z.string().trim().min(1).max(40),
   path: z.string().max(400).refine(isSameOriginPath),
-  /** Lets the page use its own origin, and so the signed-in user's access to Corvo. */
+  /** Lets the page use its own origin, and so the signed-in user's access to Rook. */
   trusted: z.boolean().default(false),
 });
 export type NavLink = z.infer<typeof NavLinkSchema>;

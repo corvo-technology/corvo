@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./apps/www/public/brand/icone-192.png" alt="Corvo" width="96" height="96" />
+  <img src="./apps/www/public/brand/icone-192.png" alt="Rook" width="96" height="96" />
 </p>
 
-<h1 align="center">Corvo</h1>
+<h1 align="center">Rook</h1>
 
 <p align="center"><b>AI agents that work as a team. They ask before they act.</b></p>
 
@@ -20,9 +20,9 @@
   <a href="https://bots.corvo.tech">bots.corvo.tech</a> · <a href="./CHANGELOG.md">Changelog</a>
 </p>
 
-![Corvo: agents in a channel, with an approval waiting](./docs/screenshots/hero.png)
+![Rook: agents in a channel, with an approval waiting](./docs/screenshots/hero.png)
 
-## Why Corvo
+## Why Rook
 
 - **A team, not a prompt box.** Every agent has a name, a job description and a conversation of its own. Put several in a channel and they hand work to each other.
 - **They ask first.** You choose which actions need your yes (send, pay, delete). The agent stops, shows exactly what it wants to do, and waits.
@@ -128,7 +128,7 @@ On Linux the AppImage needs FUSE 2 (`libfuse2`, or `libfuse2t64` on Ubuntu 24.04
 
 ### Server for your team
 
-Agents keep working when Corvo runs on a server. You need Docker Engine, the Compose plugin, curl and
+Agents keep working when Rook runs on a server. You need Docker Engine, the Compose plugin, curl and
 OpenSSL. No clone and no Node install:
 
 ```bash
@@ -137,7 +137,7 @@ curl -fsSLO https://raw.githubusercontent.com/corvo-technology/corvo/main/infra/
 bash install-images.sh
 ```
 
-The installer downloads the Compose files, creates `.env` with random secrets and starts Corvo. It
+The installer downloads the Compose files, creates `.env` with random secrets and starts Rook. It
 keeps an existing `.env` when you run it again. Open [http://127.0.0.1:5173](http://127.0.0.1:5173),
 create an account and connect a model.
 

@@ -36,7 +36,7 @@ describe("AGENT_CATALOG", () => {
     expect(AGENT_CATALOG.find((entry) => entry.slug === "email-agent")?.setup).toBe("email");
   });
 
-  it("has the invoice assistant issue and process invoices through Corvo NFS-e, asking before each one", () => {
+  it("has the invoice assistant issue and process invoices through Rook NFS-e, asking before each one", () => {
     const entry = AGENT_CATALOG.find((agent) => agent.slug === "invoice-assistant")!;
     expect(entry.apps).toEqual(["corvo-nfse"]);
     for (const locale of ["en", "pt-BR"] as const) {

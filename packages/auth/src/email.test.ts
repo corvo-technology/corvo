@@ -38,7 +38,7 @@ describe("account email templates", () => {
   it("carries the logo and a button on every account email", async () => {
     const message = await verificationEmail(origin, "user@example.test", url);
     expect(message.html).toContain('src="https://app.example.test/icon-192.png"');
-    expect(message.html).toContain("Corvo");
+    expect(message.html).toContain("Rook");
     expect(message.text).toContain("Verify email");
   });
 });

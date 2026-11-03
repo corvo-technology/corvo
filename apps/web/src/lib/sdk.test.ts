@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 describe("<corvo-assistant>", () => {
-  it("opens a frame on the Corvo origin with the code, theme and locale in the fragment", async () => {
+  it("opens a frame on the Rook origin with the code, theme and locale in the fragment", async () => {
     const element = mount({ theme: "dark", locale: "fr" });
     await settle();
     const src = new URL(frameOf(element).src);

@@ -1,7 +1,7 @@
 import type { SkillStoreEntry } from "@corvo/contracts";
 
 /**
- * Management, operations, sales and customer skills for a small business. Written for Corvo.
+ * Management, operations, sales and customer skills for a small business. Written for Rook.
  * They prepare, organize and draft; none sends, buys, hires or decides on its own. Names stay
  * plain (no accents) so the `/` and `@` pickers match them as typed.
  */

@@ -1,7 +1,7 @@
 import type { SkillStoreEntry } from "@corvo/contracts";
 
 /**
- * Social media, marketing and design skills for a small business. Written for Corvo. They plan,
+ * Social media, marketing and design skills for a small business. Written for Rook. They plan,
  * write and review; none publishes, spends or changes anything on its own. Names stay plain (no
  * accents) so the `/` and `@` pickers match them as typed.
  */

@@ -56,7 +56,7 @@ export interface AuthEnv {
    */
   codeOnly?: boolean;
   /**
-   * Origin of the central Corvo server that owns accounts. An engine on one person's computer
+   * Origin of the central Rook server that owns accounts. An engine on one person's computer
    * sets this: sign-in is then the same email-and-code form, checked by that server, and the
    * engine keeps a local session for 30 days. Needs no mail provider of its own.
    */
@@ -106,7 +106,7 @@ export const SIGN_IN_CODE_EXPIRES_IN_SECONDS = 10 * 60;
 
 /**
  * The email OTP plugin also exposes OTP email verification, password reset and
- * email change. Corvo uses links for those, so only sign-in codes stay open.
+ * email change. Rook uses links for those, so only sign-in codes stay open.
  */
 function isUnusedEmailCodePath(path: string, body: { type?: unknown } | undefined): boolean {
   if (path === SEND_SIGN_IN_CODE_PATH) return body?.type !== "sign-in";
@@ -165,7 +165,7 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
   let authContext: Promise<{ secretConfig: TokenKey }> | undefined;
   const tokenKey = async () => (await authContext!).secretConfig;
   const auth = betterAuth({
-    appName: "Corvo",
+    appName: "Rook",
     logger: env.logger,
     secret: env.secret,
     baseURL: env.baseURL,
@@ -329,7 +329,7 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
         ? [
             passkey({
               rpID: relyingParty.rpID,
-              rpName: "Corvo",
+              rpName: "Rook",
               origin: relyingParty.origins,
             }) as BetterAuthPlugin,
           ]

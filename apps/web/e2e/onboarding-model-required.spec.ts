@@ -55,7 +55,7 @@ test("Ollama Cloud onboarding requires a key before continuing", async ({ page }
   await expect(continueButton).toBeDisabled();
 });
 
-test("Corvo credits are chosen like a provider, with nothing else to fill in", async ({
+test("Rook credits are chosen like a provider, with nothing else to fill in", async ({
   page,
 }, testInfo) => {
   await page.route("**/rpc/me", async (route) => {
@@ -77,7 +77,7 @@ test("Corvo credits are chosen like a provider, with nothing else to fill in", a
   });
   await page.getByRole("button", { name: "Other providers", exact: true }).click();
   await page.getByRole("combobox", { name: "Provider" }).click();
-  await page.getByRole("option", { name: "Corvo credits", exact: true }).click();
+  await page.getByRole("option", { name: "Rook credits", exact: true }).click();
   await expect(page.getByRole("combobox", { name: "Model", exact: true })).toHaveCount(0);
   await expect(page.getByLabel(/API key/)).toHaveCount(0);
   await captureScreenshot(page, testInfo, "onboarding-corvo-credits");

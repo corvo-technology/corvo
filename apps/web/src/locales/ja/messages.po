@@ -13,10 +13,6 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/pages/shell/import-status.ts
-msgid "Not in Corvo's catalog"
-msgstr "Corvoのカタログにありません"
-
 #: src/pages/shell/sidebar-roster.tsx
 msgid " (unread)"
 msgstr "（未読）"
@@ -770,10 +766,6 @@ msgstr "全期間"
 msgid "Allow"
 msgstr "許可"
 
-#: src/components/DesktopControlSettings.tsx
-msgid "Allow Corvo under Accessibility in your system's privacy settings."
-msgstr "システムのプライバシー設定の「アクセシビリティ」で Corvo を許可してください。"
-
 #: src/pages/shell/bot-panel.tsx
 msgid "Allow cross-space bot communication"
 msgstr "スペース間のボット通信を許可"
@@ -781,6 +773,10 @@ msgstr "スペース間のボット通信を許可"
 #: src/components/AskCard.tsx
 msgid "Allow once"
 msgstr "今回のみ許可"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Allow Rook under Accessibility in your system's privacy settings."
+msgstr "システムのプライバシー設定の「アクセシビリティ」で Rook を許可してください。"
 
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Allow writing"
@@ -819,8 +815,8 @@ msgid "An API key is stored for this provider, not a subscription sign-in."
 msgstr "このプロバイダーにはサブスクリプションのログインではなく、APIキーが保存されています。"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "An existing Honcho peer to read from. Corvo never writes to it."
-msgstr "読み取り元となる既存のHonchoピアです。Corvoが書き込むことはありません。"
+msgid "An existing Honcho peer to read from. Rook never writes to it."
+msgstr "読み取り元となる既存のHonchoピアです。Rookが書き込むことはありません。"
 
 #: src/lib/agent-import-errors.ts
 msgid "An imported API key could not be checked. Try again."
@@ -1426,8 +1422,8 @@ msgstr "フォルダを選択"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
-msgid "Choose how to use Corvo"
-msgstr "Corvoの使い方を選択"
+msgid "Choose how to use Rook"
+msgstr "Rookの使い方を選択"
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -1739,8 +1735,8 @@ msgstr "Tregを接続"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect your own API key in Models or choose Corvo credits in Billing."
-msgstr "モデルで自分のAPIキーを接続するか、請求でCorvoクレジットを選択してください。"
+msgid "Connect your own API key in Models or choose Rook credits in Billing."
+msgstr "モデルで自分のAPIキーを接続するか、請求でRookクレジットを選択してください。"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ChatAppsRow.tsx
@@ -1865,13 +1861,9 @@ msgstr "プロンプトをコピー"
 msgid "Copy rows"
 msgstr "行をコピー"
 
-#: src/pages/Onboarding.tsx
-msgid "Corvo credits"
-msgstr "Corvoクレジット"
-
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "corvo-shared and IDs starting with bot- are reserved for Corvo."
-msgstr "corvo-sharedおよびbot-で始まるIDはCorvo用に予約されています。"
+msgid "corvo-shared and IDs starting with bot- are reserved for Rook."
+msgstr "corvo-sharedおよびbot-で始まるIDはRook用に予約されています。"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Usage.tsx
@@ -2411,8 +2403,8 @@ msgid "Create space"
 msgstr "スペースを作成"
 
 #: src/pages/Auth.tsx
-msgid "Create your Corvo"
-msgstr "Corvoを作成"
+msgid "Create your Rook"
+msgstr "Rookを作成"
 
 #: src/components/AskCard.tsx
 msgid "Created"
@@ -3296,8 +3288,8 @@ msgid "How to check"
 msgstr "確認方法"
 
 #: src/pages/onboarding/UseStep.tsx
-msgid "How will you use Corvo?"
-msgstr "Corvoをどのように使いますか？"
+msgid "How will you use Rook?"
+msgstr "Rookをどのように使いますか？"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -4326,6 +4318,10 @@ msgstr "インポートされていません"
 msgid "Not in a team"
 msgstr "チーム未所属"
 
+#: src/pages/shell/import-status.ts
+msgid "Not in Rook's catalog"
+msgstr "Rookのカタログにありません"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
 msgstr "プラグインカタログにありません"
@@ -4338,12 +4334,12 @@ msgstr "今はしない"
 
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/import-status.ts
-msgid "Not supported in Corvo"
-msgstr "Corvoでは未対応です"
+msgid "Not supported in Rook"
+msgstr "Rookでは未対応です"
 
 #: src/pages/shell/agent-import.tsx
-msgid "Not used by Corvo"
-msgstr "Corvoでは使用しません"
+msgid "Not used by Rook"
+msgstr "Rookでは使用しません"
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not working"
@@ -4465,10 +4461,6 @@ msgstr "{0}とのチャットを開く"
 msgid "Open computer settings"
 msgstr "コンピューター設定を開く"
 
-#: src/lib/mcp-connect.ts
-msgid "Open Corvo directly to connect this app."
-msgstr "このアプリを接続するには、Corvo を直接開いてください。"
-
 #: src/components/markdown-link-prompt.tsx
 msgid "Open external link?"
 msgstr "外部リンクを開きますか？"
@@ -4485,6 +4477,10 @@ msgstr "ナビゲーションを開く"
 #: src/components/DesktopControlSettings.tsx
 msgid "Open privacy settings"
 msgstr "プライバシー設定を開く"
+
+#: src/lib/mcp-connect.ts
+msgid "Open Rook directly to connect this app."
+msgstr "このアプリを接続するには、Rook を直接開いてください。"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4623,8 +4619,8 @@ msgid "Paste the key to let your agent use this server's tools."
 msgstr "キーを貼り付けると、エージェントがこのサーバーのツールを使えるようになります。"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
-msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."
-msgstr "サーバーのOpenAI互換アドレスを貼り付けてください。必要に応じてCorvoが/v1を追加します。"
+msgid "Paste the OpenAI-compatible address from your server. Rook adds /v1 if needed."
+msgstr "サーバーのOpenAI互換アドレスを貼り付けてください。必要に応じてRookが/v1を追加します。"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Paste the reply"
@@ -5185,8 +5181,8 @@ msgid "Return to call with {0}"
 msgstr "{0}との通話に戻る"
 
 #: src/pages/McpOAuthCallback.tsx
-msgid "Return to Corvo"
-msgstr "Corvoに戻る"
+msgid "Return to Rook"
+msgstr "Rookに戻る"
 
 #: src/components/AskCard.tsx
 msgid "Review before {reviewing}"
@@ -5195,6 +5191,10 @@ msgstr "実行前に確認: {reviewing}"
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
 msgstr "プロバイダー設定を確認して、もう一度テストしてください。"
+
+#: src/pages/Onboarding.tsx
+msgid "Rook credits"
+msgstr "Rookクレジット"
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Room guidance"
@@ -5631,8 +5631,8 @@ msgid "Sign in or create your account"
 msgstr "サインインまたはアカウント作成"
 
 #: src/pages/Auth.tsx
-msgid "Sign in to Corvo"
-msgstr "Corvoにログイン"
+msgid "Sign in to Rook"
+msgstr "Rookにログイン"
 
 #: src/lib/user-error.ts
 msgid "Sign in to your existing account to link SSO"
@@ -5882,8 +5882,8 @@ msgid "Subscribe for ${0} / month"
 msgstr "月額 ${0} で登録"
 
 #: src/components/ModelCredits.tsx
-msgid "Subscribe to Corvo credits"
-msgstr "Corvo クレジットに申し込む"
+msgid "Subscribe to Rook credits"
+msgstr "Rook クレジットに申し込む"
 
 #: src/components/ModelCredits.tsx
 msgid "Subscribe with your own AI"
@@ -6189,8 +6189,8 @@ msgid "This server is already connected. Disconnect it first to authorize again.
 msgstr "このサーバーはすでに接続されています。再度認可するには、先に切断してください。"
 
 #: src/pages/model-settings/connection-controls.tsx
-msgid "This subscription sign-in is not available in Corvo yet. Use a deployment credential or choose another provider."
-msgstr "このサブスクリプションでのログインはCorvoではまだ利用できません。デプロイメントの認証情報を使用するか、別のプロバイダーを選択してください。"
+msgid "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider."
+msgstr "このサブスクリプションでのログインはRookではまだ利用できません。デプロイメントの認証情報を使用するか、別のプロバイダーを選択してください。"
 
 #: src/pages/Artifacts.tsx
 msgid "This week"
@@ -6479,10 +6479,6 @@ msgstr "見つかったモデルを使用"
 msgid "Use Connect to verify the key."
 msgstr "「接続」でキーを確認してください。"
 
-#: src/components/ModelCredits.tsx
-msgid "Use Corvo credits"
-msgstr "Corvoクレジットを使用"
-
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Use default guidance"
 msgstr "デフォルトのガイダンスを使用"
@@ -6498,6 +6494,10 @@ msgstr "{label}でデフォルトを使用"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "パスワードには保護された入力を使用してください。"
+
+#: src/components/ModelCredits.tsx
+msgid "Use Rook credits"
+msgstr "Rookクレジットを使用"
 
 #: src/pages/model-settings/space-bots-model.tsx
 msgid "Use space default"

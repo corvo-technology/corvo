@@ -109,8 +109,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "Your model provider": "お使いのモデルプロバイダー",
   "Connect a model in Settings before running bots.":
     "ボットを実行する前に、設定でモデルを接続してください。",
-  "Connect your own API key in Models or choose Corvo credits in Billing.":
-    "モデルで自分のAPIキーを接続するか、請求でCorvoクレジットを選択してください。",
+  "Connect your own API key in Models or choose Rook credits in Billing.":
+    "モデルで自分のAPIキーを接続するか、請求でRookクレジットを選択してください。",
   "The model provider returned an error.": "モデルプロバイダーがエラーを返しました。",
   "{provider} is rate limiting requests. Try again shortly.":
     "{provider}がリクエストを制限しています。しばらくしてからもう一度お試しください。",
@@ -160,8 +160,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "Chat Settings": "チャット設定",
   "Configure a plugin catalog on the server to connect apps.":
     "アプリを接続するには、サーバーでプラグインカタログを設定してください。",
-  "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed.":
-    "サーバーのOpenAI互換アドレスを貼り付けてください。必要に応じてCorvoが/v1を追加します。",
+  "Paste the OpenAI-compatible address from your server. Rook adds /v1 if needed.":
+    "サーバーのOpenAI互換アドレスを貼り付けてください。必要に応じてRookが/v1を追加します。",
   "Settings: General": "設定: 一般",
   "Settings: Usage": "設定: 使用量",
   "Sign-in did not return a session": "ログインでセッションが返されませんでした",
@@ -201,9 +201,9 @@ export const JA_MESSAGES: Record<string, string> = {
   "Reset your password": "パスワードをリセット",
   "Send reset link": "リセットリンクを送信",
   Server: "サーバー",
-  "Sign in to Corvo": "Corvoにログイン",
+  "Sign in to Rook": "Rookにログイン",
   "Sign up": "新規登録",
-  "Sign up for Corvo": "Corvoに新規登録",
+  "Sign up for Rook": "Rookに新規登録",
   "Use a custom server": "カスタムサーバーを使用",
   "Use default server": "デフォルトのサーバーを使用",
   Activity: "アクティビティ",
@@ -518,8 +518,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "Supports images": "画像に対応",
   "Supports thinking": "思考に対応",
   "Then paste the code here.": "その後、ここにコードを貼り付けてください。",
-  "This subscription sign-in is not available in Corvo yet. Use a deployment credential or choose another provider.":
-    "このサブスクリプションでのログインはCorvoではまだ利用できません。デプロイの認証情報を使うか、別のプロバイダーを選択してください。",
+  "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider.":
+    "このサブスクリプションでのログインはRookではまだ利用できません。デプロイの認証情報を使うか、別のプロバイダーを選択してください。",
   "Use a found model": "見つかったモデルを使用",
   "Waiting for sign-in…": "ログインを待っています…",
   "exact-model-id": "exact-model-id",
@@ -798,7 +798,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "Enter a server URL": "サーバーのURLを入力してください",
   "Public servers need https://. HTTP only works on your local network.":
     "公開サーバーには https:// が必要です。HTTPはローカルネットワークでのみ使用できます。",
-  "That URL did not look like a Corvo server": "そのURLはCorvoサーバーではないようです",
+  "That URL did not look like a Rook server": "そのURLはRookサーバーではないようです",
   "That URL is missing a host": "URLにホストがありません",
   "That doesn’t look like a URL": "URLではないようです",
   "Use an http or https URL": "http または https のURLを使用してください",
@@ -866,7 +866,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "AI models": "AIモデル",
   Memory: "メモリ",
   "Privacy policies": "プライバシーポリシー",
-  Corvo: "Corvo",
+  Rook: "Rook",
   "Withdraw all permissions": "すべての許可を取り消す",
   "Withdraw all permissions?": "すべての許可を取り消しますか？",
   "New mobile actions won't send data to these services. Runs already in progress and routines keep going until you stop them.":
@@ -991,7 +991,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "Start {days}-day free trial": "{days}日間の無料トライアルを開始",
   "Monthly credits expire at renewal. Top-ups do not expire.":
     "月間クレジットは更新時に失効します。追加購入分は失効しません。",
-  "Use Corvo credits": "Corvoクレジットを使用",
+  "Use Rook credits": "Rookクレジットを使用",
   "1 unread": "未読1件",
   "{count} unread": "未読{count}件",
   "{count} need attention": "{count}件が要対応",
@@ -999,11 +999,11 @@ export const JA_MESSAGES: Record<string, string> = {
   "{label}, below": "{label}、下",
   Work: "仕事",
   Both: "両方",
-  "How will you use Corvo?": "Corvoをどのように使いますか？",
-  "What do you most want Corvo to help with?": "Corvoで一番手伝ってほしいことは何ですか？",
+  "How will you use Rook?": "Rookをどのように使いますか？",
+  "What do you most want Rook to help with?": "Rookで一番手伝ってほしいことは何ですか？",
   "How big is your team?": "チームの規模はどのくらいですか？",
-  "How did you hear about us?": "Corvoを何で知りましたか？",
-  "Welcome to Corvo": "Corvoへようこそ",
+  "How did you hear about us?": "Rookを何で知りましたか？",
+  "Welcome to Rook": "Rookへようこそ",
   "Stop all workers and confirm that provider operations have stopped before releasing this computer.":
     "このコンピューターを解放する前に、すべてのワーカーを停止し、プロバイダーの処理が停止したことを確認してください。",
   "Workers and operations are stopped": "ワーカーと処理は停止済み",
@@ -1023,8 +1023,8 @@ export const JA_MESSAGES: Record<string, string> = {
   Loading: "読み込み中",
   "Members ({min}–{max})": "メンバー（{min}–{max}）",
   "Open computer →": "コンピューターを開く →",
-  "Point this app at your self-hosted Corvo origin, the same HTTPS URL you open in a browser.":
-    "ブラウザで開くのと同じHTTPSのURLで、セルフホストのCorvoオリジンを指定してください。",
+  "Point this app at your self-hosted Rook origin, the same HTTPS URL you open in a browser.":
+    "ブラウザで開くのと同じHTTPSのURLで、セルフホストのRookオリジンを指定してください。",
   Recover: "復旧",
   "Remove thumbs-up": "いいねを削除",
   Searching: "検索中",

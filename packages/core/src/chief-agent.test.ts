@@ -81,7 +81,7 @@ describe("the Chief", () => {
 });
 
 describe("the Chief in a chat app", () => {
-  it("has a note for every chat app Corvo knows by name, so a new integration cannot be left out", () => {
+  it("has a note for every chat app Rook knows by name, so a new integration cannot be left out", () => {
     for (const provider of MESSAGING_PROVIDER_IDS) expect(CHANNELS_WITH_NOTES).toContain(provider);
   });
 

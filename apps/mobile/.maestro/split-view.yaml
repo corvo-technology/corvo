@@ -1,5 +1,5 @@
 appId: tech.corvo.bots.mobile
-name: Corvo split view on a wide window
+name: Rook split view on a wide window
 tags:
   - screenshots
 ---
@@ -9,7 +9,7 @@ tags:
     permissions:
       notifications: deny
 - extendedWaitUntil:
-    visible: "Sign up for Corvo|Pixel Launcher isn't responding"
+    visible: "Sign up for Rook|Pixel Launcher isn't responding"
     timeout: 30000
 - runFlow:
     when:
@@ -17,7 +17,7 @@ tags:
     commands:
       - tapOn: "Close app"
 - extendedWaitUntil:
-    visible: "Sign up for Corvo"
+    visible: "Sign up for Rook"
     timeout: 30000
 - tapOn: "Sign in"
 - runFlow: helpers/server.yaml

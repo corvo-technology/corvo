@@ -150,12 +150,12 @@ describe("DesktopControlSettings", () => {
     rpcMock.mcp.servers.list.mockResolvedValue([server]);
     bridge.status.mockResolvedValue(denied);
     await render();
-    expect(text()).toContain("Allow Corvo under Accessibility");
+    expect(text()).toContain("Allow Rook under Accessibility");
     await act(async () => button("Open privacy settings")?.click());
     expect(bridge.openPermissionGuide).toHaveBeenCalledOnce();
     bridge.status.mockResolvedValue(ready);
     await act(async () => button("Check again")?.click());
-    expect(text()).not.toContain("Allow Corvo under Accessibility");
+    expect(text()).not.toContain("Allow Rook under Accessibility");
   });
 
   it("says nothing about permissions once access works", async () => {

@@ -246,9 +246,9 @@ export default function SignIn() {
                 {resetSent || codeStep
                   ? t("Check your email")
                   : mode === "in"
-                    ? t("Sign in to Corvo")
+                    ? t("Sign in to Rook")
                     : mode === "up"
-                      ? t("Sign up for Corvo")
+                      ? t("Sign up for Rook")
                       : t("Reset your password")}
               </Text>
               {resetSent ? (

@@ -141,13 +141,13 @@ export function CreditChoice({
         </Button>
       )}
       <h1 className="text-heading1 font-medium">
-        <Trans>Choose how to use Corvo</Trans>
+        <Trans>Choose how to use Rook</Trans>
       </h1>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
             <Label htmlFor="use-corvo-credits" className="text-lg font-medium">
-              <Trans>Use Corvo credits</Trans>
+              <Trans>Use Rook credits</Trans>
             </Label>
             <Switch
               id="use-corvo-credits"
@@ -194,7 +194,7 @@ export function CreditChoice({
             disabled={pending || !status.canManage}
             aria-label={
               withCredits
-                ? t`Subscribe to Corvo credits`
+                ? t`Subscribe to Rook credits`
                 : ownKeyFree
                   ? undefined
                   : t`Subscribe with your own AI`
@@ -369,7 +369,7 @@ export function ModelCreditsSettings({
       {status.canManage && (canUseCredits || canUseOwnKey) ? (
         <div className="flex items-center justify-between gap-4 rounded-xl border border-border p-5">
           <Label htmlFor="use-corvo-credits-setting" className="font-medium">
-            <Trans>Use Corvo credits</Trans>
+            <Trans>Use Rook credits</Trans>
           </Label>
           <Switch
             id="use-corvo-credits-setting"

@@ -355,7 +355,7 @@ export const APP_CATALOG: readonly AppCatalogEntry[] = [
   },
   {
     slug: "corvo-nfse",
-    name: "Corvo NFS-e",
+    name: "Rook NFS-e",
     tagline: "Issue and manage service invoices",
     category: "productivity",
     iconUrl: "https://corvo.tech/favicon.ico",

@@ -1,6 +1,6 @@
-# Contributing to Corvo
+# Contributing to Rook
 
-Thanks for helping improve Corvo. Keep changes focused and testable.
+Thanks for helping improve Rook. Keep changes focused and testable.
 
 ## Run locally
 

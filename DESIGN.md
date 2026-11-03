@@ -1,4 +1,4 @@
-# DESIGN.md: Corvo
+# DESIGN.md: Rook
 
 > Living design brief for the web and desktop app (mobile follows its own native rules).
 > Read order: tokens in code (`packages/ui-tokens`, `packages/ui-web/src/styles.css`), then this file.
@@ -13,7 +13,7 @@
 
 ## 2. Design Read and surface types
 
-Reading this as: the Corvo app for people who are not technical, a dark-first, monochrome language with one green, on React, Tailwind and shadcn (Base UI).
+Reading this as: the Rook app for people who are not technical, a dark-first, monochrome language with one green, on React, Tailwind and shadcn (Base UI).
 
 | Surface | Type | V | M | D |
 |---|---|---|---|---|

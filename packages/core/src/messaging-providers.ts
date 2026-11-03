@@ -6,7 +6,7 @@ const PROVIDER_NAMES: Record<string, string> = {
   lark: "Feishu",
 };
 
-/** The chat apps Corvo knows by name; a new one is added to the table above. */
+/** The chat apps Rook knows by name; a new one is added to the table above. */
 export const MESSAGING_PROVIDER_IDS: readonly string[] = Object.keys(PROVIDER_NAMES);
 
 /** User-facing name of a messaging provider (falls back to the raw id). */

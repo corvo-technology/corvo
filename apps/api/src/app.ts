@@ -859,7 +859,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         );
         return c.redirect(new URL("/app?settings=messaging", env.webOrigin).toString());
       } catch {
-        return c.text("Slack connection failed. Return to Corvo and try again.", 400);
+        return c.text("Slack connection failed. Return to Rook and try again.", 400);
       }
     });
   }

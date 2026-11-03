@@ -44,8 +44,8 @@ export function useImportStatusText() {
         return t`Contains code to run`;
       case "unsupported":
         return value.reason === "not_in_catalog"
-          ? t`Not in Corvo's catalog`
-          : t`Not supported in Corvo`;
+          ? t`Not in Rook's catalog`
+          : t`Not supported in Rook`;
     }
   };
   return { need, status };

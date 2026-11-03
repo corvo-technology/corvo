@@ -21,7 +21,7 @@ interface CentralSession {
 }
 
 export interface CentralSignInOptions {
-  /** Origin of the Corvo server that owns accounts. Everything else here is a mirror of it. */
+  /** Origin of the Rook server that owns accounts. Everything else here is a mirror of it. */
   url: string;
   fetch?: typeof fetch;
 }
@@ -35,7 +35,7 @@ function text(value: unknown, max = 320): string {
 
 /**
  * Sign-in for an engine that runs on one person's computer but whose accounts live on a central
- * Corvo server. The person sees the usual email-and-code form; this plugin answers the same two
+ * Rook server. The person sees the usual email-and-code form; this plugin answers the same two
  * endpoints by asking the central server to send and check the code, and on success mirrors the
  * account locally and opens a local session. The central server stays the one place that knows
  * who has an account, and a local session keeps working offline until it expires.

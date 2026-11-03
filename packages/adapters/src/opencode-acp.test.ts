@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { explainOpenCodeExit, findOpenCode, openCodeCommand } from "./opencode-acp.js";
 
 describe("OpenCode as an ACP agent", () => {
-  it("runs `opencode acp` with a database of Corvo's own", () => {
+  it("runs `opencode acp` with a database of Rook's own", () => {
     const command = openCodeCommand({ binary: "/bin/opencode", dataDir: "/data/opencode" });
     expect(command).toMatchObject({
       command: "/bin/opencode",

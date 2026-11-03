@@ -6,7 +6,7 @@ import { ConnectionModeFields } from "./ConnectionModeFields";
 import type { MemoryProviderConnectionDraft, MemoryProviderSettingsFormProps } from "./registry";
 
 const RESOURCE_ID_PATTERN = /^[A-Za-z0-9_-]{0,512}$/;
-// Corvo writes to these peers, so they cannot be read as the user's own peer.
+// Rook writes to these peers, so they cannot be read as the user's own peer.
 function isReservedPeerId(value: string): boolean {
   return value === "corvo-shared" || value.startsWith("bot-");
 }
@@ -113,12 +113,12 @@ export function HonchoSettingsForm({ busy, onConnect }: MemoryProviderSettingsFo
             autoComplete="off"
           />
           <p id={userPeerDescriptionId} className="mt-2 text-[13px] text-muted-foreground">
-            <Trans>An existing Honcho peer to read from. Corvo never writes to it.</Trans>
+            <Trans>An existing Honcho peer to read from. Rook never writes to it.</Trans>
           </p>
           {!userPeerValid ? (
             <FieldError id={userPeerErrorId}>
               {userPeerFormatValid ? (
-                <Trans>corvo-shared and IDs starting with bot- are reserved for Corvo.</Trans>
+                <Trans>corvo-shared and IDs starting with bot- are reserved for Rook.</Trans>
               ) : (
                 <Trans>Use up to 512 letters, digits, _ or -.</Trans>
               )}

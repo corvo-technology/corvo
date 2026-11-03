@@ -245,7 +245,7 @@ describe("passkey registration", () => {
       .mockResolvedValueOnce(
         challengeResponse({
           challenge: "register",
-          rp: { id: "corvo.example.test", name: "Corvo" },
+          rp: { id: "corvo.example.test", name: "Rook" },
         }),
       )
       .mockResolvedValueOnce({ response: Response.json({}), body: { id: "passkey-1" } });
@@ -256,7 +256,7 @@ describe("passkey registration", () => {
     expect(options?.headers).toMatchObject({ authorization: "Bearer current-session" });
     expect(create).toHaveBeenCalledWith({
       challenge: "register",
-      rp: { id: "corvo.example.test", name: "Corvo" },
+      rp: { id: "corvo.example.test", name: "Rook" },
     });
     expect(verify?.path).toBe("/api/auth/passkey/verify-registration");
     expect(verify?.headers).toMatchObject({
@@ -282,7 +282,7 @@ describe("passkey registration", () => {
     vi.mocked(fetchMobileJson).mockResolvedValueOnce(
       challengeResponse({
         challenge: "register",
-        rp: { id: "corvo.example.test", name: "Corvo" },
+        rp: { id: "corvo.example.test", name: "Rook" },
       }),
     );
     vi.mocked(create).mockRejectedValue({ code: "ERR_USER_CANCELLED" });
@@ -387,7 +387,7 @@ describe("one-time passkey offer", () => {
       .mockResolvedValueOnce(
         challengeResponse({
           challenge: "register",
-          rp: { id: "corvo.example.test", name: "Corvo" },
+          rp: { id: "corvo.example.test", name: "Rook" },
         }),
       )
       .mockResolvedValueOnce({ response: Response.json({}), body: {} });
