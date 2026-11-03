@@ -2,16 +2,16 @@ import type { LaunchCopy } from "./types";
 
 const COPY: LaunchCopy = {
   meta: {
-    title: "Corvo | チームで働くオープンソースの AI エージェント",
+    title: "Rook | チームで働くオープンソースの AI エージェント",
     description:
-      "Corvo は、オープンソースの AI エージェントのチームです。それぞれに仕事と専用のツール、専用の会話があります。あなたのコンピューター上のチャンネルで協力して働き、動く前に確認します。",
-    ogImageAlt: "Corvo。チームで働き、動く前に確認する AI エージェント。",
+      "Rook は、オープンソースの AI エージェントのチームです。それぞれに仕事と専用のツール、専用の会話があります。あなたのコンピューター上のチャンネルで協力して働き、動く前に確認します。",
+    ogImageAlt: "Rook。チームで働き、動く前に確認する AI エージェント。",
     ogTagline: "オープンソース。あなたのコンピューターで動きます。",
     availableLanguage: "日本語",
     skipToContent: "本文へ移動",
   },
   nav: {
-    home: "Corvo ホーム",
+    home: "Rook ホーム",
     primary: "メインメニュー",
     menu: "メニュー",
     demo: "エージェント",
@@ -50,7 +50,7 @@ const COPY: LaunchCopy = {
   hero: {
     line1: "チームで働く AI エージェント。",
     line2: "動く前に、必ず確認します。",
-    lead: "Corvo は、オープンソースの AI エージェントのチームです。それぞれに仕事と専用のツール、専用の会話があります。あなたのコンピューター上のチャンネルで協力して働き、本物に触れる前にあなたに確認します。",
+    lead: "Rook は、オープンソースの AI エージェントのチームです。それぞれに仕事と専用のツール、専用の会話があります。あなたのコンピューター上のチャンネルで協力して働き、本物に触れる前にあなたに確認します。",
     githubLabel: "GitHub でスターを付ける",
     note: "{windows} と {linux} にも",
     tags: [
@@ -92,7 +92,7 @@ const COPY: LaunchCopy = {
     },
   },
   preview: {
-    window: "Corvo",
+    window: "Rook",
     rail: { agents: "エージェント", routines: "ルーティン", workflows: "ワークフロー", more: "その他", store: "ストア" },
     workspace: "Pedro",
     chief: "チーフ",
@@ -324,7 +324,7 @@ const COPY: LaunchCopy = {
   },
   install: {
     heading: "あなたのコンピューターに入れましょう。",
-    copy: "Corvo はあなたのマシンで、専用のデータベースとともに動きます。設定も、アカウント作成も要りません。",
+    copy: "Rook はあなたのマシンで、専用のデータベースとともに動きます。設定も、アカウント作成も要りません。",
     download: "Mac 版をダウンロード",
     alsoFor: "Windows と Linux にも",
     macLinux: "macOS と Linux",

@@ -1,13 +1,13 @@
-export const SITE_NAME = "Corvo";
-export const SITE_URL = "https://bots.corvo.tech";
+export const SITE_NAME = "Rook";
+export const SITE_URL = "https://rookup.run";
 export const SITE_DESCRIPTION =
-  "Corvo is an open source team of AI agents that lives in channels on your computer, remembers what matters and asks before it touches anything real.";
+  "Rook is an open source team of AI agents that lives in channels on your computer, remembers what matters and asks before it touches anything real.";
 
-export const CONTACT_EMAIL = "legal@corvo.tech";
-export const SECURITY_EMAIL = "security@corvo.tech";
+export const CONTACT_EMAIL = "legal@rookup.run";
+export const SECURITY_EMAIL = "security@rookup.run";
 
 /** The open source repository. */
-export const GITHUB_URL = "https://github.com/corvo-technology/corvo";
+export const GITHUB_URL = "https://github.com/corvo-technology/rook";
 
 /**
  * The macOS installer (Apple silicon) of the latest release. Its file name carries no version, so

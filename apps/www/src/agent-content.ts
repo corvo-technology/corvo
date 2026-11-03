@@ -14,7 +14,7 @@ export const AGENT_DISCOVERY_LINKS =
 
 const home = getLaunchCopy("en");
 
-export const HOME_MARKDOWN = `# Corvo
+export const HOME_MARKDOWN = `# Rook
 
 ${home.hero.line1} ${home.hero.line2}
 
@@ -72,35 +72,35 @@ ${home.cta.copy}
 - [Sitemap](${SITE_URL}/sitemap-index.xml)
 `;
 
-export const ABOUT_MARKDOWN = `# About Corvo
+export const ABOUT_MARKDOWN = `# About Rook
 
-Corvo gives a business a team of AI bots. Each bot has one job, keeps its own conversation and memory, works in the background, and asks for approval before the actions you choose.
+Rook gives a business a team of AI bots. Each bot has one job, keeps its own conversation and memory, works in the background, and asks for approval before the actions you choose.
 
 For questions, email [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}).
 `;
 
-export const SUPPORT_MARKDOWN = `# Corvo support
+export const SUPPORT_MARKDOWN = `# Rook support
 
 For help with your account, email [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}). Include the email address on the account, what you expected to happen, and any error message you saw. Never send passwords, API keys, access tokens, or other secrets.
 
 Report vulnerabilities only to [${SECURITY_EMAIL}](mailto:${SECURITY_EMAIL}).
 `;
 
-export const PRIVACY_MARKDOWN = `# Corvo privacy
+export const PRIVACY_MARKDOWN = `# Rook privacy
 
 Our privacy policy is being finalized and will be published before launch. For privacy questions or requests, email [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}).
 `;
 
-export const TERMS_MARKDOWN = `# Corvo terms
+export const TERMS_MARKDOWN = `# Rook terms
 
 Our terms are being finalized and will be published before launch. For questions, email [${CONTACT_EMAIL}](mailto:${CONTACT_EMAIL}).
 `;
 
-export const AGENT_INSTRUCTIONS = `# Corvo
+export const AGENT_INSTRUCTIONS = `# Rook
 
 > AI bots that do the work, and ask before they act.
 
-Corvo gives a business a team of AI bots. Each bot has one job, remembers its work, runs in the background, and waits for approval before the actions the owner chooses.
+Rook gives a business a team of AI bots. Each bot has one job, remembers its work, runs in the background, and waits for approval before the actions the owner chooses.
 
 Do not send passwords, tokens, or private customer data to the public website.
 
@@ -117,7 +117,7 @@ Do not send passwords, tokens, or private customer data to the public website.
 
 export const NOT_FOUND_MARKDOWN = `# Page not found
 
-The requested Corvo page does not exist.
+The requested Rook page does not exist.
 
 - [Home](${SITE_URL}/)
 - [Agent instructions](${SITE_URL}/llms.txt)

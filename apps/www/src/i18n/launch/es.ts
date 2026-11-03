@@ -2,16 +2,16 @@ import type { LaunchCopy } from "./types";
 
 const COPY: LaunchCopy = {
   meta: {
-    title: "Corvo | Agentes de IA de código abierto que trabajan en equipo",
+    title: "Rook | Agentes de IA de código abierto que trabajan en equipo",
     description:
-      "Corvo es un equipo de agentes de IA de código abierto. Cada uno tiene un trabajo, sus propias herramientas y su propia conversación. Trabajan juntos en canales en tu ordenador y preguntan antes de actuar.",
-    ogImageAlt: "Corvo. Agentes de IA que trabajan en equipo y preguntan antes de actuar.",
+      "Rook es un equipo de agentes de IA de código abierto. Cada uno tiene un trabajo, sus propias herramientas y su propia conversación. Trabajan juntos en canales en tu ordenador y preguntan antes de actuar.",
+    ogImageAlt: "Rook. Agentes de IA que trabajan en equipo y preguntan antes de actuar.",
     ogTagline: "Código abierto. Funciona en tu ordenador.",
     availableLanguage: "Español",
     skipToContent: "Saltar al contenido",
   },
   nav: {
-    home: "Inicio de Corvo",
+    home: "Inicio de Rook",
     primary: "Principal",
     menu: "Menú",
     demo: "Agentes",
@@ -50,7 +50,7 @@ const COPY: LaunchCopy = {
   hero: {
     line1: "Agentes de IA que trabajan en equipo.",
     line2: "Preguntan antes de actuar.",
-    lead: "Corvo es un equipo de agentes de IA de código abierto. Cada uno tiene un trabajo, sus propias herramientas y su propia conversación. Trabajan juntos en canales, en tu ordenador, y consultan contigo antes de tocar nada real.",
+    lead: "Rook es un equipo de agentes de IA de código abierto. Cada uno tiene un trabajo, sus propias herramientas y su propia conversación. Trabajan juntos en canales, en tu ordenador, y consultan contigo antes de tocar nada real.",
     githubLabel: "Dar una estrella en GitHub",
     note: "También para {windows} y {linux}",
     tags: [
@@ -92,7 +92,7 @@ const COPY: LaunchCopy = {
     },
   },
   preview: {
-    window: "Corvo",
+    window: "Rook",
     rail: { agents: "Agentes", routines: "Rutinas", workflows: "Workflows", more: "Más", store: "Tienda" },
     workspace: "Pedro",
     chief: "Jefe",
@@ -324,7 +324,7 @@ const COPY: LaunchCopy = {
   },
   install: {
     heading: "Instálalo en tu ordenador.",
-    copy: "Corvo funciona en tu máquina, con su propia base de datos. Nada que configurar y ninguna cuenta que crear.",
+    copy: "Rook funciona en tu máquina, con su propia base de datos. Nada que configurar y ninguna cuenta que crear.",
     download: "Descargar para Mac",
     alsoFor: "También para Windows y Linux",
     macLinux: "macOS y Linux",

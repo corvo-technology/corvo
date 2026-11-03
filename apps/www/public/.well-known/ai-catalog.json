@@ -1,23 +1,23 @@
 {
   "specVersion": "1.0",
   "host": {
-    "displayName": "Corvo",
-    "documentationUrl": "https://bots.corvo.tech/"
+    "displayName": "Rook",
+    "documentationUrl": "https://rookup.run/"
   },
   "entries": [
     {
-      "identifier": "urn:air:bots.corvo.tech:docs:llms",
-      "displayName": "Corvo agent guide",
+      "identifier": "urn:air:rookup.run:docs:llms",
+      "displayName": "Rook agent guide",
       "type": "text/plain",
-      "url": "https://bots.corvo.tech/llms.txt",
+      "url": "https://rookup.run/llms.txt",
       "description": "Product overview and canonical resources."
     },
     {
-      "identifier": "urn:air:bots.corvo.tech:docs:overview",
-      "displayName": "Corvo overview",
+      "identifier": "urn:air:rookup.run:docs:overview",
+      "displayName": "Rook overview",
       "type": "text/markdown",
-      "url": "https://bots.corvo.tech/index.md",
-      "description": "What Corvo bots do and common questions."
+      "url": "https://rookup.run/index.md",
+      "description": "What Rook bots do and common questions."
     }
   ]
 }

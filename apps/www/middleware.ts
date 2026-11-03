@@ -8,8 +8,9 @@ import {
 } from "./src/agent-content.js";
 
 const VARY_HEADER = "Accept, Accept-Encoding";
-const APEX_ORIGIN = "https://bots.corvo.tech";
-const WWW_HOST = "www.bots.corvo.tech";
+const APEX_ORIGIN = "https://rookup.run";
+// www, and the address the site had before it moved, both lead to the apex.
+const REDIRECTED_HOSTS = new Set(["www.rookup.run", "bots.corvo.tech", "www.bots.corvo.tech"]);
 
 export const config = {
   matcher: ["/((?!api|_astro|.*\\..*).*)", "/sitemap.xml"],
@@ -25,7 +26,7 @@ function permanentRedirect(location: string): Response {
 export default function middleware(request: Request): Response {
   const url = new URL(request.url);
 
-  if (url.hostname.toLowerCase() === WWW_HOST) {
+  if (REDIRECTED_HOSTS.has(url.hostname.toLowerCase())) {
     const destination = new URL(`${url.pathname}${url.search}`, APEX_ORIGIN);
     return permanentRedirect(destination.toString());
   }

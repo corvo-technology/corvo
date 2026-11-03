@@ -2,16 +2,16 @@ import type { LaunchCopy } from "./types";
 
 const COPY: LaunchCopy = {
   meta: {
-    title: "Corvo | Open source AI agents that work as a team",
+    title: "Rook | Open source AI agents that work as a team",
     description:
-      "Corvo is an open source team of AI agents. Each one has a job, its own tools and its own conversation. They work together in channels on your computer and ask before they act.",
-    ogImageAlt: "Corvo. AI agents that work as a team and ask before they act.",
+      "Rook is an open source team of AI agents. Each one has a job, its own tools and its own conversation. They work together in channels on your computer and ask before they act.",
+    ogImageAlt: "Rook. AI agents that work as a team and ask before they act.",
     ogTagline: "Open source. Runs on your computer.",
     availableLanguage: "English",
     skipToContent: "Skip to content",
   },
   nav: {
-    home: "Corvo home",
+    home: "Rook home",
     primary: "Primary",
     menu: "Menu",
     demo: "Agents",
@@ -50,7 +50,7 @@ const COPY: LaunchCopy = {
   hero: {
     line1: "AI agents that work as a team.",
     line2: "They ask before they act.",
-    lead: "Corvo is an open source team of AI agents. Each one has a job, its own tools and its own conversation. They work together in channels, on your computer, and check with you before anything real.",
+    lead: "Rook is an open source team of AI agents. Each one has a job, its own tools and its own conversation. They work together in channels, on your computer, and check with you before anything real.",
     githubLabel: "Star on GitHub",
     note: "Also for {windows} and {linux}",
     tags: [
@@ -92,7 +92,7 @@ const COPY: LaunchCopy = {
     },
   },
   preview: {
-    window: "Corvo",
+    window: "Rook",
     rail: { agents: "Agents", routines: "Routines", workflows: "Workflows", more: "More", store: "Store" },
     workspace: "Pedro",
     chief: "Chief",
@@ -324,7 +324,7 @@ const COPY: LaunchCopy = {
   },
   install: {
     heading: "Install it on your computer.",
-    copy: "Corvo runs on your machine, with its own database. Nothing to set up and no account to create.",
+    copy: "Rook runs on your machine, with its own database. Nothing to set up and no account to create.",
     download: "Download for Mac",
     alsoFor: "Also for Windows and Linux",
     macLinux: "macOS and Linux",
