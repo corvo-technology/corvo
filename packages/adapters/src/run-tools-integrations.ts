@@ -2,6 +2,7 @@ import { normalizedHttpUrl } from "@corvo/core/egress";
 import { executeCloudAgentTool } from "./cloud-agent-service.js";
 import { collectLogIds } from "./composio-connector.js";
 import { connectApp } from "./connect-app.js";
+import { requestSpaceAppAccess } from "./mcp-access.js";
 import { addMcpServerFromTool } from "./mcp-server-tool.js";
 import type { RunContext } from "./run-context.js";
 import { runScopedToolExecutionId } from "./run-effects.js";
@@ -93,6 +94,12 @@ export const integrationTools: ToolHandlers = {
     const { args, executionId, applied } = call;
     await flushProgress(ctx);
     await publishMidTurnNarration(ctx, true);
+    // An app already added to the workspace only needs this agent given access to it.
+    const addedApp =
+      typeof args.app === "string" && args.app.trim() && args.app.length <= 100
+        ? await requestSpaceAppAccess(deps, run, args.app)
+        : undefined;
+    if (addedApp) return call.finish(addedApp);
     return call.finish(
       await connectApp(
         deps,

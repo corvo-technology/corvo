@@ -468,7 +468,7 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "connect_app",
     description:
-      "Show an inline card to connect an app in this chat when you need an unconnected app or the user asks to connect one. Then wait for the user instead of directing them elsewhere.",
+      "Show an inline card to connect an app in this chat when you need an unconnected app or the user asks to connect one. This includes an app already added to the workspace that you cannot use yet, such as PostHog or Trello: call it with the app name instead of saying it is unavailable. Then wait for the user instead of directing them elsewhere.",
     inputSchema: {
       type: "object",
       properties: { app: { type: "string", minLength: 1, maxLength: 100 } },
