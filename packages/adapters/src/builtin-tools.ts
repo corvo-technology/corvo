@@ -633,6 +633,11 @@ export const builtinAgentTools: ConnectorTool[] = [
           type: "string",
           description: "Static access token, equivalent to an Authorization: Bearer header.",
         },
+        needs_key: {
+          type: "boolean",
+          description:
+            "True when the user says the server uses an API key. The card then asks them for it, so never ask for the key in chat and leave secret empty.",
+        },
         assign_to_self: {
           type: "boolean",
           description:

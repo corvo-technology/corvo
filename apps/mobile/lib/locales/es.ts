@@ -596,6 +596,7 @@ export const ES_MESSAGES: Record<string, string> = {
     "No se pudieron verificar ni guardar estas credenciales",
   "Direct MCP": "MCP directo",
   "Finish MCP authorization in the web app.": "Completa la autorización de MCP en la app web.",
+  "Add this server's key in the web app.": "Añade la clave de este servidor en la app web.",
   "Get credentials": "Obtener credenciales",
   "Open web app": "Abrir app web",
   "Project ID": "ID del proyecto",

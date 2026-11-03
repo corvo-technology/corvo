@@ -593,6 +593,7 @@ export const PT_BR_MESSAGES: Record<string, string> = {
     "Não foi possível verificar ou salvar estas credenciais",
   "Direct MCP": "MCP direto",
   "Finish MCP authorization in the web app.": "Conclua a autorização do MCP no app web.",
+  "Add this server's key in the web app.": "Adicione a chave deste servidor no app web.",
   "Get credentials": "Obter credenciais",
   "Open web app": "Abrir app web",
   "Project ID": "ID do projeto",

@@ -1681,6 +1681,7 @@ msgstr "このブラウザセッションからURLにアクセスできること
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
 #: src/pages/model-settings/role-model-picker.tsx
+#: src/pages/shell/message-cards.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Connect"
 msgstr "接続"
@@ -4597,6 +4598,10 @@ msgstr "支払い期限超過"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste a replacement key"
 msgstr "新しいキーを貼り付け"
+
+#: src/pages/shell/message-cards.tsx
+msgid "Paste the key to let your agent use this server's tools."
+msgstr"キーを貼り付けると、エージェントがこのサーバーのツールを使えるようになります。"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."

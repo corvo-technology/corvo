@@ -55,6 +55,17 @@ describe("parseMcpServerToolArgs", () => {
     expect(parsed?.slug).toBe("brex");
   });
 
+  it("reads needs_key as a request for a key card, off unless it is exactly true", () => {
+    const base = {
+      name: "Brex",
+      transport: "streamable_http",
+      endpoint: "https://mcp.brex.example/mcp",
+    };
+    expect(parseMcpServerToolArgs({ ...base, needs_key: true })?.needsKey).toBe(true);
+    expect(parseMcpServerToolArgs(base)?.needsKey).toBe(false);
+    expect(parseMcpServerToolArgs({ ...base, needs_key: "yes" })?.needsKey).toBe(false);
+  });
+
   it("rejects missing names, bad transports, and non-http endpoints", () => {
     expect(
       parseMcpServerToolArgs({ transport: "streamable_http", endpoint: "https://x.test" }),

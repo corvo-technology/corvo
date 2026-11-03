@@ -590,6 +590,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "Could not verify or save these credentials": "この認証情報を確認または保存できませんでした",
   "Direct MCP": "直接MCP",
   "Finish MCP authorization in the web app.": "WebアプリでMCPの認可を完了してください。",
+  "Add this server's key in the web app.": "Webアプリでこのサーバーのキーを追加してください。",
   "Get credentials": "認証情報を取得",
   "Open web app": "Webアプリを開く",
   "Project ID": "プロジェクトID",
