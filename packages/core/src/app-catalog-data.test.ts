@@ -35,6 +35,15 @@ describe("APP_CATALOG", () => {
     });
   });
 
+  it("adds GitHub with its hosted server and a personal access token as a bearer token", () => {
+    const github = APP_CATALOG.find((entry) => entry.slug === "github");
+    expect(github?.endpoint).toBe("https://api.githubcopilot.com/mcp/");
+    expect(github?.auth.kind).toBe("key");
+    expect(appCatalogToMcpConfig(github!, " ghp_test ")).toMatchObject({
+      headers: { Authorization: "Bearer ghp_test" },
+    });
+  });
+
   it("adds Grafana, Corvo NFS-e and MillionSend as hosted servers that sign in with OAuth", () => {
     const endpoints = {
       grafana: "https://mcp.grafana.com/mcp",
