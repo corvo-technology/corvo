@@ -928,6 +928,7 @@ export function PluginsOverlay({
                   query={query}
                   servers={mcpServers}
                   onUsePrompt={activeBotId ? (text) => void sendExamplePrompt(text) : undefined}
+                  botId={activeBotId}
                   onChanged={() => void mcpQuery.refetch()}
                   focus={focusApp}
                 />

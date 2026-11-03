@@ -5,7 +5,7 @@ import { Button, Input } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { connectCatalogApp } from "../lib/app-catalog-connect";
+import { connectCatalogApp, giveAgentAccess } from "../lib/app-catalog-connect";
 import { desktopBridge } from "../lib/desktop";
 import { errorText } from "../lib/user-error";
 
@@ -39,6 +39,7 @@ export function AppCatalogGrid({
   onUsePrompt,
   onChanged,
   focus,
+  botId,
 }: {
   query: string;
   servers: readonly McpServer[];
@@ -47,6 +48,8 @@ export function AppCatalogGrid({
   onChanged: () => void;
   /** Opens that app's detail; `n` changes with each request so choosing the same app twice works. */
   focus?: { slug: string; n: number };
+  /** The agent the apps are added for; it can use each one it adds or sends an example to. */
+  botId?: string;
 }) {
   const { t } = useLingui();
   const [category, setCategory] = useState<AppCategory | null>(null);
@@ -70,13 +73,24 @@ export function AppCatalogGrid({
     setPending(entry.slug);
     setError(null);
     try {
-      await connectCatalogApp(entry, { key: apiKey, existing });
+      await connectCatalogApp(entry, { key: apiKey, existing, botId });
       setKey("");
       onChanged();
     } catch (err) {
       setError(errorText(err, t`Could not connect`));
     } finally {
       setPending(null);
+    }
+  }
+
+  // An app added before it was tied to an agent still works for the agent asked about it.
+  async function sendPrompt(prompt: string, server?: McpServer) {
+    setError(null);
+    try {
+      if (botId && server) await giveAgentAccess(botId, server.id);
+      onUsePrompt?.(prompt);
+    } catch (err) {
+      setError(errorText(err, t`Could not connect`));
     }
   }
 
@@ -140,7 +154,7 @@ export function AppCatalogGrid({
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={() => onUsePrompt(prompt)}
+                onClick={() => void sendPrompt(prompt, server)}
               >
                 {prompt}
               </Button>

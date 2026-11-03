@@ -2,10 +2,16 @@ import type { AppCatalogEntry, McpServer } from "@corvo/contracts";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const create = vi.fn();
+const approve = vi.fn();
 const connectMcpOauth = vi.fn();
 
 vi.mock("./rpc", () => ({
-  rpc: { mcp: { servers: { create: (...args: unknown[]) => create(...args) } } },
+  rpc: {
+    mcp: {
+      servers: { create: (...args: unknown[]) => create(...args) },
+      assignments: { approve: (...args: unknown[]) => approve(...args) },
+    },
+  },
 }));
 vi.mock("./mcp-connect", () => ({
   connectMcpOauth: (...args: unknown[]) => connectMcpOauth(...args),
@@ -43,6 +49,7 @@ const created = { id: "srv_1", slug: "linear" } as McpServer;
 
 beforeEach(() => {
   create.mockReset().mockResolvedValue(created);
+  approve.mockReset().mockResolvedValue({});
   connectMcpOauth.mockReset().mockResolvedValue("connected");
 });
 
@@ -88,5 +95,21 @@ describe("connectCatalogApp", () => {
     connectMcpOauth.mockResolvedValue("cancelled");
     const result = await connectCatalogApp(oauthEntry, {});
     expect(result).toEqual({ server: created, oauth: "cancelled" });
+  });
+
+  it("gives the agent it was added from access, once signed in", async () => {
+    await connectCatalogApp(oauthEntry, { botId: "bot_1" });
+    expect(approve).toHaveBeenCalledWith({ botId: "bot_1", serverId: "srv_1" });
+    approve.mockClear();
+    await connectCatalogApp(keyEntry, { key: "rnd_abc", botId: "bot_1" });
+    expect(approve).toHaveBeenCalledWith({ botId: "bot_1", serverId: "srv_1" });
+  });
+
+  it("gives no agent access when oauth is cancelled or no agent was named", async () => {
+    connectMcpOauth.mockResolvedValue("cancelled");
+    await connectCatalogApp(oauthEntry, { botId: "bot_1" });
+    connectMcpOauth.mockResolvedValue("connected");
+    await connectCatalogApp(oauthEntry, {});
+    expect(approve).not.toHaveBeenCalled();
   });
 });
