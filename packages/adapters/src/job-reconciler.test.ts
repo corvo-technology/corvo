@@ -577,7 +577,7 @@ describe("createJobReconciler", () => {
       { id: "bot-1", name: "Researcher" },
       "Finished.",
       "result",
-      { forceUnread: false },
+      { forceUnread: false, failed: false },
     );
     expect(prisma.run.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -636,7 +636,7 @@ describe("createJobReconciler", () => {
       { id: "bot-1", name: "Researcher" },
       "Tuesday afternoon works.",
       "result",
-      { forceUnread: false },
+      { forceUnread: false, failed: false },
     );
   });
 
@@ -682,7 +682,7 @@ describe("createJobReconciler", () => {
       { id: "bot-1", name: "Researcher" },
       stuckText,
       "result",
-      { forceUnread: true },
+      { forceUnread: true, failed: true },
     );
   });
 
@@ -734,7 +734,7 @@ describe("createJobReconciler", () => {
       { id: "bot-1", name: "Researcher" },
       "Tuesday afternoon works.",
       "result",
-      { forceUnread: false },
+      { forceUnread: false, failed: false },
     );
   });
 
@@ -782,7 +782,7 @@ describe("createJobReconciler", () => {
       { id: "bot-1", name: "Researcher" },
       "Checking calendars…",
       "status",
-      { forceUnread: false },
+      { forceUnread: false, failed: false },
     );
   });
 
@@ -824,7 +824,7 @@ describe("createJobReconciler", () => {
         ? `Could not complete the delegated request: ${stuckWorkStatusMessages()[0]}`
         : stuckWorkStatusMessages()[0],
       "status",
-      { forceUnread: true },
+      { forceUnread: true, failed: true },
     );
     expect(prisma.message.findMany).not.toHaveBeenCalledWith(
       expect.objectContaining({ where: expect.objectContaining({ runId: expect.anything() }) }),

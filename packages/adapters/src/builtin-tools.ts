@@ -1222,7 +1222,7 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "plan_update",
     description:
-      "Update the plan card in this chat as work moves: set a step's status (pending, running, done, failed) and a one-line note, or add steps when the plan grows. Mark a step running when you hand it off and done or failed when its answer comes back.",
+      "Update the plan card in this chat as work moves: set a step's status (pending, running, done, failed) and a one-line note, or add steps when the plan grows. Pass plan_step on message_bot or handoff_to_group and the step follows that work by itself (running when sent, done or failed when the answer returns); use this for anything else.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1619,6 +1619,7 @@ export const builtinAgentTools: ConnectorTool[] = [
           enum: ["request", "result", "question", "status", "fyi"],
           description: "What the recipient should do with this message. Defaults to request.",
         },
+        plan_step: { type: "string", description: "Plan step id; its status follows this work." },
       },
       required: ["message"],
     },
@@ -1645,6 +1646,7 @@ export const builtinAgentTools: ConnectorTool[] = [
           type: "string",
           description: "One short sentence on why this group or member fits the work.",
         },
+        plan_step: { type: "string", description: "Plan step id; its status follows this work." },
       },
       required: ["message"],
     },

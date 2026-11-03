@@ -659,6 +659,20 @@ describe("squad routing authority", () => {
     });
   });
 
+  it("carries the plan step the stage belongs to", async () => {
+    const h = outsideTurn();
+    await handoffToGroupBot(
+      h.deps as never,
+      run,
+      "group-1",
+      { bot_id: "bot-b", message: "Avaliar o hero", planStep: " 2 " },
+      routing,
+    );
+    expect(h.messageCreate.mock.calls[0]?.[0]).toMatchObject({
+      data: { blocks: [expect.objectContaining({ planStep: "2" })] },
+    });
+  });
+
   it("a handoff from outside the group expects the stage's result back", async () => {
     const h = outsideTurn();
     await handoffToGroupBot(

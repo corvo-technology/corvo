@@ -324,6 +324,8 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     returnsToSender: z.literal(true).optional(),
     /** The sender could route to groups it is not in, so the result may let it route on. */
     routedWithAuthority: z.literal(true).optional(),
+    /** The step of the sender's plan this stage carries; its status follows the work. */
+    planStep: z.string().max(20).optional(),
   }),
   z.object({
     /** A group-chat message delivered into a member bot's own thread. */
@@ -358,6 +360,8 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     hop: z.number().int().nonnegative().optional(),
     /** The answer to a routed handoff: the router that sent it may route the next stage. */
     continuesRouting: z.literal(true).optional(),
+    /** The step of the sender's plan this request carries; its status follows the work. */
+    planStep: z.string().max(20).optional(),
   }),
 ]);
 export type MessageBlock = z.infer<typeof MessageBlock>;

@@ -17,6 +17,7 @@ import {
 } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
+import { updatePlanCard } from "./plan-card.js";
 
 /**
  * The hop the current run sits at, read back from the message that woke this
@@ -69,7 +70,7 @@ export async function loadBotMessageContext(
 export async function handoffReturnTarget(
   prisma: PrismaClient,
   sourceMessageId: string | null | undefined,
-): Promise<{ fromBotId: string; continuesRouting: boolean } | undefined> {
+): Promise<{ fromBotId: string; continuesRouting: boolean; planStep?: string } | undefined> {
   if (!sourceMessageId) return undefined;
   const source = await prisma.message.findUnique({
     where: { id: sourceMessageId },
@@ -81,7 +82,11 @@ export async function handoffReturnTarget(
       block.kind === "handoff" && block.returnsToSender === true,
   );
   return handoff
-    ? { fromBotId: handoff.fromBotId, continuesRouting: handoff.routedWithAuthority === true }
+    ? {
+        fromBotId: handoff.fromBotId,
+        continuesRouting: handoff.routedWithAuthority === true,
+        ...(handoff.planStep ? { planStep: handoff.planStep } : {}),
+      }
     : undefined;
 }
 
@@ -117,6 +122,8 @@ export async function messageBot(
     confirm_name?: string;
     message: string;
     intent?: BotMessageIntent;
+    /** The step of the sender's plan this request carries. */
+    planStep?: string;
     deliveryKey?: string;
   },
   options?: { allowTerminalSource?: boolean; forceUnread?: boolean; continuesRouting?: boolean },
@@ -266,6 +273,7 @@ export async function messageBot(
           intent,
           returnToMessageId: outbound.id,
           ...(options?.continuesRouting ? { continuesRouting: true as const } : {}),
+          ...(input.planStep?.trim() ? { planStep: input.planStep.trim().slice(0, 20) } : {}),
         };
         const inbound = await createThreadMessageInTransaction(tx, {
           threadId: targetThreadId,
@@ -375,10 +383,15 @@ export async function returnBotMessageOutcome(
   sender: { id: string; name: string },
   text: string,
   intent: "result" | "status" = "result",
-  options?: { forceUnread?: boolean },
+  options?: { forceUnread?: boolean; failed?: boolean },
 ) {
   const source:
-    | { fromBotId: string; intent?: BotMessageIntent; continuesRouting?: boolean }
+    | {
+        fromBotId: string;
+        intent?: BotMessageIntent;
+        continuesRouting?: boolean;
+        planStep?: string;
+      }
     | undefined =
     (await loadBotMessageContext(deps.prisma, run.sourceMessageId)) ??
     (await handoffReturnTarget(deps.prisma, run.sourceMessageId));
@@ -427,8 +440,39 @@ export async function returnBotMessageOutcome(
       continuesRouting: source.continuesRouting,
     },
   );
-  if (outcome.ok) await markBotOutcomeReturned(deps.prisma, run.id);
+  if (outcome.ok) {
+    await markBotOutcomeReturned(deps.prisma, run.id);
+    // The sender's plan follows the work: done on a result, failed on a failure, and untouched on
+    // a progress note, since the stage is still going.
+    const planStatus = options?.failed ? "failed" : intent === "result" ? "done" : undefined;
+    if (source.planStep && planStatus) {
+      await followPlanStep(deps, source.fromBotId, source.planStep, planStatus);
+    }
+  }
   return outcome.ok;
+}
+
+/** Mark a step on the plan card in the sender's own chat; a missing plan or step is not an error. */
+async function followPlanStep(
+  deps: Pick<ExecutorDeps, "prisma" | "events">,
+  senderBotId: string,
+  step: string,
+  status: "done" | "failed",
+) {
+  try {
+    const chat = await deps.prisma.thread.findUnique({
+      where: { botId: senderBotId },
+      select: { id: true, spaceId: true },
+    });
+    if (!chat) return;
+    await updatePlanCard(
+      deps,
+      { spaceId: chat.spaceId, threadId: chat.id, botId: senderBotId },
+      { updates: [{ step, status }] },
+    );
+  } catch (error) {
+    getLogger().error("plan step follow", error);
+  }
 }
 
 async function markBotOutcomeReturned(prisma: PrismaClient, runId: string) {

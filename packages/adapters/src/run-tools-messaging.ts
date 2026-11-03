@@ -1,4 +1,5 @@
 import { isBackgroundRunTrigger, redactSecrets } from "@corvo/core";
+import { getLogger } from "@corvo/logging";
 import {
   connectAgent,
   messageConnectedAgent,
@@ -7,6 +8,7 @@ import {
 import { messageBot } from "./bot-messages.js";
 import { endCallFromTool, requestUserCall } from "./call-request.js";
 import { handoffToGroupBot } from "./group-handoff.js";
+import { updatePlanCard } from "./plan-card.js";
 import type { RunContext } from "./run-context.js";
 import { isSubagentToolExecution } from "./run-effects.js";
 import { publishMessage } from "./run-messages.js";
@@ -64,6 +66,24 @@ export async function squadRoutingAuthority(
   });
   const squadRouting = Boolean(live?.squadRouting) && !(await ctx.trust.receivedOutsideMessage());
   return { squadRouting, ownerStarted };
+}
+
+/** Mark the plan step a stage carries as running once it has been sent; never fails the send. */
+export async function startPlanStep(
+  ctx: Pick<RunContext, "deps" | "run" | "bot" | "thread">,
+  step: unknown,
+) {
+  const id = typeof step === "string" ? step.trim() : "";
+  if (!id) return;
+  try {
+    await updatePlanCard(
+      ctx.deps,
+      { spaceId: ctx.run.spaceId, threadId: ctx.thread.id, botId: ctx.bot.id },
+      { updates: [{ step: id, status: "running" }] },
+    );
+  } catch (error) {
+    getLogger().error("plan step start", error);
+  }
 }
 
 /** Messages to the user, other bots and connected agents, and calls. */
@@ -160,10 +180,14 @@ export const messagingTools: ToolHandlers = {
         confirm_name: args.confirm_name ? String(args.confirm_name) : undefined,
         message: redactSecrets(String(args.message ?? ""), ctx.secrets),
         intent: args.intent as "request" | "result" | "question" | "status" | "fyi" | undefined,
+        planStep: typeof args.plan_step === "string" ? args.plan_step : undefined,
         deliveryKey: effectKey,
       },
     );
     if (!sent.ok) return call.finish({ error: sent.error });
+    if (args.intent === undefined || args.intent === "request") {
+      await startPlanStep(ctx, args.plan_step);
+    }
     return call.finish({
       ok: true,
       botId: sent.botId,
@@ -229,10 +253,12 @@ export const messagingTools: ToolHandlers = {
         confirm_name: args.confirm_name ? String(args.confirm_name) : undefined,
         message: redactSecrets(String(args.message ?? ""), ctx.secrets),
         reason: args.reason ? redactSecrets(String(args.reason), ctx.secrets) : undefined,
+        planStep: typeof args.plan_step === "string" ? args.plan_step : undefined,
         deliveryKey: effectKey,
       },
       await squadRoutingAuthority(ctx, call.executionId),
     );
+    if ("ok" in result && result.ok) await startPlanStep(ctx, args.plan_step);
     if ("ok" in result && result.ok && thread.groupId) ctx.state.handedOff = true;
     return call.finish(result);
   },

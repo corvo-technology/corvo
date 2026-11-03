@@ -469,7 +469,7 @@ describe("held-back narration on peer requests", () => {
         { id: "bot-1", name: "Assistant" },
         "The draft is posted.",
         "result",
-        { forceUnread: false },
+        { forceUnread: false, failed: false },
       );
     },
   );

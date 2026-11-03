@@ -93,7 +93,7 @@ export async function failRunBeforeTurn(
       { id: run.botId, name: botName },
       `Could not complete the delegated request: ${message}`,
       "status",
-      { forceUnread: true },
+      { forceUnread: true, failed: true },
     ).catch((error) => getLogger().error("bot message failure return", error));
   }
   if (!failed.continuationRunId) {

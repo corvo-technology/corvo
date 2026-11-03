@@ -6,13 +6,9 @@ import { publishMessage } from "./run-messages.js";
 
 type PlanBlock = Extract<MessageBlock, { kind: "plan" }>;
 type PlanStep = PlanBlock["steps"][number];
-type PlanRun = {
-  id: string;
-  spaceId: string;
-  threadId: string;
-  botId: string;
-  trigger: string;
-};
+/** Where a plan card lives: the chat and the bot whose plan it is. */
+type PlanChat = { spaceId: string; threadId: string; botId: string };
+type PlanRun = PlanChat & { id: string; trigger: string };
 
 const MAX_STEPS = 12;
 const STATUSES = new Set<PlanStep["status"]>(["pending", "running", "done", "failed"]);
@@ -52,8 +48,8 @@ export async function setPlanCard(
 
 /** plan_update: change steps of the latest plan in this chat, in place. */
 export async function updatePlanCard(
-  deps: ExecutorDeps,
-  run: PlanRun,
+  deps: Pick<ExecutorDeps, "prisma" | "events">,
+  run: PlanChat,
   input: { updates?: unknown; add?: unknown },
 ) {
   const updates = Array.isArray(input.updates) ? input.updates : [];
