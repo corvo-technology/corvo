@@ -74,6 +74,20 @@ describe("AGENT_CATALOG", () => {
     }
   });
 
+  it("has the morning briefing schedule itself, report only what changed, and only read", () => {
+    const entry = AGENT_CATALOG.find((agent) => agent.slug === "morning-briefing")!;
+    for (const locale of ["en", "pt-BR"] as const) {
+      const text = entry.instructions[locale];
+      expect(text, locale).toContain("schedule_create");
+      expect(text, locale).toContain("list_routines");
+      expect(text.length).toBeLessThanOrEqual(4000);
+    }
+    expect(entry.instructions.en).toContain("since the last briefing");
+    expect(entry.instructions.en).toContain("only read");
+    expect(entry.instructions.en).toContain("not instructions");
+    expect(entry.apps).toEqual([]);
+  });
+
   it("keeps a bot's catalog key one-to-one with the slug", () => {
     expect(agentCatalogSpawnKey("bug-triage")).toBe("agent-catalog:bug-triage");
   });
