@@ -21,7 +21,11 @@ import {
   HostedModelCreditsRequiredError,
   hostedModelCreditObserver,
 } from "./model-credit-observer.js";
-import { resolveMemberMainModel, selectConfiguredModel } from "./model-roles.js";
+import {
+  effectiveModelRole,
+  resolveMemberMainModel,
+  selectConfiguredModel,
+} from "./model-roles.js";
 import {
   enabledOpenAiCompatibleModelIds,
   findConnectedModelCredential,
@@ -561,4 +565,30 @@ export async function resolveRunModel(
         }
       : undefined,
   };
+}
+
+/**
+ * The member's fast model for chores such as summaries and small decisions, with the connection
+ * that serves it. Undefined when they chose none or it cannot run, so callers use their main model.
+ */
+export async function resolveFastRunModel(
+  deps: ExecutorDeps,
+  scope: { userId: string; spaceId: string },
+): Promise<AgentRunRequest["model"] | undefined> {
+  try {
+    const { primary } = await effectiveModelRole(deps.prisma, scope, "fast", {});
+    if (!primary) return undefined;
+    return await resolveConnectedRunModel(
+      deps,
+      scope,
+      primary.provider,
+      primary.modelId,
+      undefined,
+      false,
+      primary.thinkingLevel ?? null,
+      primary.credentialId,
+    );
+  } catch {
+    return undefined;
+  }
 }

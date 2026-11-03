@@ -6,7 +6,7 @@ import { HttpDecisionProvider } from "./http-decisions.js";
 import { ModelDecisionProvider } from "./model-decisions.js";
 import { effectiveModelRole } from "./model-roles.js";
 import { findConnectedModelCredential } from "./model-selection.js";
-import { resolveConnectedRunModel, resolveModelKey } from "./run-model.js";
+import { resolveConnectedRunModel, resolveFastRunModel, resolveModelKey } from "./run-model.js";
 
 export type DecisionScope = {
   runId: string;
@@ -74,8 +74,9 @@ export async function routingDecisionChooser(
 }
 
 /**
- * The routing model when there is one, otherwise the model the run itself uses, so a
- * member without a decision model still gets the answer, at the price of a normal call.
+ * The routing model when there is one, then the member's fast model, otherwise the model the run
+ * itself uses, so a member without a decision model still gets the answer, at the price of a
+ * normal call.
  */
 export async function decisionChooserOrRunModel(
   deps: ExecutorDeps,
@@ -86,6 +87,18 @@ export async function decisionChooserOrRunModel(
 ): Promise<Chooser | undefined> {
   const routing = await routingDecisionChooser(deps, scope, operation, registerSecrets);
   if (routing) return routing;
+  const fast = await resolveFastRunModel(deps, { userId: scope.userId, spaceId: scope.spaceId });
+  if (fast) {
+    return {
+      provider: new ModelDecisionProvider({
+        runtime: deps.runtime,
+        model: fast,
+        scope,
+        onUsage: usageRecorder(deps, scope, operation),
+      }),
+      model: fast.id,
+    };
+  }
   try {
     const model = await resolveConnectedRunModel(
       deps,

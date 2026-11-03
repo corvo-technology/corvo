@@ -3554,6 +3554,10 @@ msgstr "Permite a los bots guardar y recordar datos por significado, además de 
 msgid "Light"
 msgstr "Claro"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr"Modelo para tareas ligeras"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "Límite total"
@@ -4247,7 +4251,7 @@ msgstr "No se encontraron archivos de OpenClaw, Hermes ni un documento de agente
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
-msgstr"Aquí no hay dirección pública, así que revisa tu bandeja de entrada con un horario que tú apruebas."
+msgstr "Aquí no hay dirección pública, así que revisa tu bandeja de entrada con un horario que tú apruebas."
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "No remote MCP servers found"

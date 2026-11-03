@@ -13,6 +13,11 @@ describe("modelSupportsRole", () => {
     expect(modelSupportsRole(chat, "routing")).toBe(false);
   });
 
+  it("lets the fast role use chat models only, since it writes text", () => {
+    expect(modelSupportsRole(chat, "fast")).toBe(true);
+    expect(modelSupportsRole(decision, "fast")).toBe(false);
+  });
+
   it("lets approval use either kind", () => {
     expect(modelSupportsRole(chat, "approval")).toBe(true);
     expect(modelSupportsRole(decision, "approval")).toBe(true);

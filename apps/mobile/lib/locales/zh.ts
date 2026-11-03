@@ -16,6 +16,7 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Add a model in Settings to use this.": "请在设置中添加模型后再使用。",
   "Approval model": "审批模型",
   "Routing model": "路由模型",
+  "Light tasks model": "轻量任务模型",
   "Main model": "主模型",
   "Add fallback": "添加备用模型",
   "Manage {provider}": "管理 {provider}",
