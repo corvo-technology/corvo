@@ -81,10 +81,25 @@ describe("requestSpaceAppAccess", () => {
     });
   });
 
-  it("leads with sign-in when the server has no credential yet", async () => {
-    const { deps } = setup([{ ...posthog, secretId: null }]);
-    await requestSpaceAppAccess(deps, run, "posthog");
+  it("leads with sign-in when an OAuth server has no credential yet", async () => {
+    const trello = { ...posthog, id: "srv-t", name: "Trello", slug: "trello", secretId: null };
+    const { deps } = setup([trello]);
+    await requestSpaceAppAccess(deps, run, "trello");
     expect(persist.mock.calls[0]?.[3]?.[0]).toMatchObject({ needsOAuth: true });
+    expect(persist.mock.calls[0]?.[3]?.[0]).not.toHaveProperty("needsKey");
+  });
+
+  it("asks for the key, not a sign-in, when a key server has no credential yet", async () => {
+    const { deps } = setup([{ ...posthog, secretId: null }]);
+    const result = await requestSpaceAppAccess(deps, run, "posthog");
+    expect(persist.mock.calls[0]?.[3]?.[0]).toMatchObject({
+      needsOAuth: false,
+      needsKey: { label: "Personal API key", docsUrl: "https://posthog.com/docs/api" },
+    });
+    expect(result).toMatchObject({
+      status: "pending",
+      message: expect.stringContaining("never ask for the key in chat"),
+    });
   });
 
   it("says it is already available when the agent has it", async () => {
@@ -126,14 +141,19 @@ describe("requestSpaceAppAccess", () => {
     });
   });
 
-  it("sends the user to the Store for an app that needs a key, and never asks for it in chat", async () => {
+  it("adds a key app without a key and shows the card that asks the user for it", async () => {
     const { deps } = setup([]);
     const result = await requestSpaceAppAccess(deps, run, "posthog");
-    expect(result).toEqual({
-      error: expect.stringMatching(/needs an API key.*never to paste a key in chat/),
+    expect(result).toMatchObject({ status: "pending" });
+    const create = (deps.prisma.mcpServer.create as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
+    expect(create.data).toMatchObject({ slug: "posthog", endpoint: "https://mcp.posthog.com/mcp" });
+    expect(JSON.stringify(create.data)).not.toMatch(/secret|header|Bearer/i);
+    expect(persist.mock.calls[0]?.[3]?.[0]).toMatchObject({
+      kind: "mcp_approval",
+      serverId: "srv-new",
+      needsOAuth: false,
+      needsKey: { label: "Personal API key" },
     });
-    expect(deps.prisma.mcpServer.create).not.toHaveBeenCalled();
-    expect(persist).not.toHaveBeenCalled();
   });
 
   it("sends the user to the desktop app when the sign-in needs it", async () => {

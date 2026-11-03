@@ -262,6 +262,14 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     transport: McpTransportSchema,
     endpoint: z.string().nullable(),
     needsOAuth: z.boolean(),
+    /** The server takes an API key as a bearer token; the card asks the user for it. */
+    needsKey: z
+      .object({
+        label: z.string().max(80),
+        hint: z.string().max(200).optional(),
+        docsUrl: z.string().url().max(500).optional(),
+      })
+      .optional(),
     status: z.enum(["pending", "connected", "dismissed"]).default("pending"),
   }),
   z.object({

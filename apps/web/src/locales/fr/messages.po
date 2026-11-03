@@ -1681,6 +1681,7 @@ msgstr "Confirmez que l'URL est accessible depuis cette session du navigateur, p
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
 #: src/pages/model-settings/role-model-picker.tsx
+#: src/pages/shell/message-cards.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Connect"
 msgstr "Connecter"
@@ -4597,6 +4598,10 @@ msgstr "En retard"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste a replacement key"
 msgstr "Collez une clé de remplacement"
+
+#: src/pages/shell/message-cards.tsx
+msgid "Paste the key to let your agent use this server's tools."
+msgstr"Collez la clé pour que votre agent puisse utiliser les outils de ce serveur."
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."

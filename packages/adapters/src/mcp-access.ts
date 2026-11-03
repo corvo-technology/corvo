@@ -6,6 +6,19 @@ import { isUniqueViolation, persistMessageInTransaction } from "./run-messages.j
 
 const RECENT_MESSAGES = 50;
 
+type CatalogApp = (typeof APP_CATALOG)[number];
+
+/** What the card asks for when the app signs in with an API key sent as a bearer token. */
+function bearerKeyAsk(app: CatalogApp | undefined) {
+  if (
+    app?.auth.kind !== "key" ||
+    app.auth.header !== "Authorization" ||
+    app.auth.scheme !== "bearer"
+  )
+    return undefined;
+  return { label: app.auth.label, hint: app.auth.hint, docsUrl: app.auth.docsUrl };
+}
+
 type Target = { id: string; spaceId: string; userId: string; threadId: string; botId: string };
 
 const normalize = (value: string) => value.trim().toLowerCase();
@@ -39,10 +52,11 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
       (entry) => normalize(entry.slug) === wanted || normalize(entry.name) === wanted,
     );
     if (!known) return undefined;
-    // A key is typed into the Store, never into the chat, and a desktop-only sign-in needs the app.
-    if (known.auth.kind === "key" || known.desktopOnly) {
+    // A desktop-only sign-in needs the app, and a key sent any other way than as a bearer token
+    // has no card yet; the user adds those from the Store, where the key goes to the vault.
+    if (known.desktopOnly || (known.auth.kind === "key" && !bearerKeyAsk(known))) {
       return {
-        error: `${known.name} is in the app catalog but has not been added to this workspace, and ${known.auth.kind === "key" ? "it needs an API key" : "its sign-in needs the desktop app"}. Ask the user to add it from the Store (Apps, ${known.name}, Add), never to paste a key in chat, then call connect_app again.`,
+        error: `${known.name} is in the app catalog but has not been added to this workspace, and ${known.desktopOnly ? "its sign-in needs the desktop app" : "it needs an API key"}. Ask the user to add it from the Store (Apps, ${known.name}, Add), never to paste a key in chat, then call connect_app again.`,
       };
     }
     try {
@@ -82,13 +96,18 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
       message: `${server.name} is already assigned to you, so its tools are available. If they are missing, the server is unavailable: say so rather than that it is missing.`,
     };
   }
+  const slug = normalize(server.slug);
+  const needsKey = server.secretId
+    ? undefined
+    : bearerKeyAsk(APP_CATALOG.find((entry) => normalize(entry.slug) === slug));
   const block: MessageBlock = {
     kind: "mcp_approval",
     name: server.name,
     serverId: server.id,
     transport: server.transport as "streamable_http" | "sse" | "stdio",
     endpoint: server.endpoint,
-    needsOAuth: server.transport !== "stdio" && !server.secretId,
+    needsOAuth: !needsKey && server.transport !== "stdio" && !server.secretId,
+    ...(needsKey ? { needsKey } : {}),
     status: "pending",
   };
   const committed = await deps.prisma.$transaction(async (tx) => {
@@ -116,6 +135,8 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
   }
   return {
     status: "pending",
-    message: `${server.name} is added to the workspace but not assigned to you. An approval card is in the chat. End your turn with one short sentence asking the user to approve it there; you will be told when it is connected.`,
+    message: needsKey
+      ? `${server.name} is added to the workspace but not assigned to you, and it needs an API key. A card in the chat asks the user for the key and connects it. End your turn with one short sentence asking them to paste it there; never ask for the key in chat. You will be told when it is connected.`
+      : `${server.name} is added to the workspace but not assigned to you. An approval card is in the chat. End your turn with one short sentence asking the user to approve it there; you will be told when it is connected.`,
   };
 }

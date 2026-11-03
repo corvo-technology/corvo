@@ -183,6 +183,7 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Could not verify or save these credentials": "无法验证或保存这些凭据",
   "Direct MCP": "直连 MCP",
   "Finish MCP authorization in the web app.": "请在网页应用中完成 MCP 授权。",
+  "Add this server's key in the web app.": "请在网页应用中添加此服务器的密钥。",
   "Get credentials": "获取凭据",
   "Open web app": "打开网页应用",
   "Project ID": "项目 ID",

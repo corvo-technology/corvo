@@ -1,6 +1,6 @@
 import type { MessageBlock } from "@corvo/contracts";
 import { appConnectedInput, waitForConnection } from "@corvo/core";
-import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@corvo/ui-web";
+import { Button, Dialog, DialogClose, DialogContent, DialogTitle, Input } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -342,8 +342,9 @@ export function McpApprovalCard({
   block: Extract<MessageBlock, { kind: "mcp_approval" }>;
 }) {
   const { t } = useLingui();
-  const { name, serverId, transport, endpoint, needsOAuth, status: savedStatus } = block;
+  const { name, serverId, transport, endpoint, needsOAuth, needsKey, status: savedStatus } = block;
   const [localStatus, setLocalStatus] = useState<McpApprovalState>("pending");
+  const [key, setKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // A removal repaints the block to pending. Drop an in-session connected
@@ -374,7 +375,10 @@ export function McpApprovalCard({
           return;
         }
       }
+      // The key goes from here to the vault; the agent and its model never receive it.
+      if (needsKey) await rpc.mcp.servers.update({ id: serverId, secret: key.trim() });
       await rpc.mcp.assignments.approve({ botId, serverId, threadId });
+      setKey("");
       setLocalStatus("connected");
     } catch (err) {
       setError(errorText(err, t`Could not approve this server`));
@@ -416,14 +420,48 @@ export function McpApprovalCard({
       {state === "pending" || state === "connecting" ? (
         <>
           <p className="mt-2 text-[13px] leading-[1.5] text-foreground/75">
-            {needsOAuth
-              ? t`Authorize this server so agents can use its tools. A popup opens.`
-              : t`Approve this server to let your agent use its tools.`}
+            {needsKey
+              ? t`Paste the key to let your agent use this server's tools.`
+              : needsOAuth
+                ? t`Authorize this server so agents can use its tools. A popup opens.`
+                : t`Approve this server to let your agent use its tools.`}
           </p>
+          {needsKey ? (
+            <div className="mt-2 space-y-1.5">
+              <Input
+                type="password"
+                value={key}
+                aria-label={needsKey.label}
+                placeholder={needsKey.label}
+                autoComplete="off"
+                disabled={state !== "pending" || busy}
+                onChange={(event) => setKey(event.target.value)}
+              />
+              {needsKey.docsUrl ? (
+                <a
+                  href={needsKey.docsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-[13px] text-muted-foreground underline"
+                >
+                  {needsKey.hint ?? needsKey.docsUrl}
+                </a>
+              ) : null}
+            </div>
+          ) : null}
           {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button disabled={state !== "pending" || busy} onClick={() => void authorize()}>
-              {state === "connecting" ? t`Connecting…` : needsOAuth ? t`Authorize` : t`Approve`}
+            <Button
+              disabled={state !== "pending" || busy || (Boolean(needsKey) && !key.trim())}
+              onClick={() => void authorize()}
+            >
+              {state === "connecting"
+                ? t`Connecting…`
+                : needsKey
+                  ? t`Connect`
+                  : needsOAuth
+                    ? t`Authorize`
+                    : t`Approve`}
             </Button>
             <Button
               variant="secondary"

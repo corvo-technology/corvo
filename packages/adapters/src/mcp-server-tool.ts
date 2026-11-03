@@ -34,6 +34,8 @@ export type ParsedMcpServerArgs = {
   headers: Record<string, string>;
   secret?: string;
   assignToSelf: boolean;
+  /** The user said the server takes an API key; its card asks for it instead of a sign-in. */
+  needsKey: boolean;
 };
 
 /** Returns undefined for anything that would fail server-side validation,
@@ -99,6 +101,7 @@ export function parseMcpServerToolArgs(
     secret:
       typeof args.secret === "string" && args.secret ? args.secret.slice(0, 16384) : undefined,
     assignToSelf: args.assign_to_self !== false,
+    needsKey: args.needs_key === true,
   };
 }
 
@@ -257,7 +260,8 @@ export async function addMcpServerFromTool(
           serverId: server.id,
           transport: parsed.transport,
           endpoint: parsed.endpoint ?? null,
-          needsOAuth: oauthLikely,
+          needsOAuth: oauthLikely && !parsed.needsKey,
+          ...(parsed.needsKey ? { needsKey: { label: "API key" } } : {}),
           status: "pending",
         },
       ];
@@ -290,7 +294,7 @@ export async function addMcpServerFromTool(
     ok: true,
     server_id: serverRow.id,
     next_step: parsed.assignToSelf
-      ? `An approval card is in the chat. End your turn with one short sentence asking the user to ${oauthLikely ? "authorize" : "approve"} it there; the card already shows the server's details. You will be told when they connect it.`
+      ? `An approval card is in the chat. End your turn with one short sentence asking the user to ${parsed.needsKey ? "paste the key" : oauthLikely ? "authorize" : "approve"} it there; the card already shows the server's details${parsed.needsKey ? ", and never ask for the key in chat" : ""}. You will be told when they connect it.`
       : "The server was registered without assigning it to this bot.",
   };
 }

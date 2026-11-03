@@ -623,6 +623,8 @@ export const DE_MESSAGES: Record<string, string> = {
     "Diese Zugangsdaten konnten nicht geprüft oder gespeichert werden",
   "Direct MCP": "Direktes MCP",
   "Finish MCP authorization in the web app.": "Schließe die MCP-Autorisierung in der Web-App ab.",
+  "Add this server's key in the web app.":
+    "Füge den Schlüssel dieses Servers in der Web-App hinzu.",
   "Get credentials": "Zugangsdaten abrufen",
   "Open web app": "Web-App öffnen",
   "Project ID": "Projekt-ID",
