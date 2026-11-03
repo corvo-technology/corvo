@@ -115,7 +115,7 @@ const blankScheduleTiming = {
 const onMessageSpec = {
   type: "string",
   description:
-    'Run each time a message arrives on a connected channel, for example "telegram", instead of at a time. Use it for "when a customer writes, answer" style requests.',
+    'Run each time a message arrives from outside, instead of at a time: on a connected channel such as "telegram" ("when a customer writes, answer"), or "webhook" when a service calls this agent\'s webhook (a payment failing). The webhook URL is secret and on the agent\'s page; never ask for or repeat it.',
 };
 
 const scheduleTimingSpecs = {
