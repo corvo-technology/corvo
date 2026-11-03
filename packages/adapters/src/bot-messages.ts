@@ -62,6 +62,43 @@ export async function loadBotMessageContext(
   return { ...context, repliesToRequest };
 }
 
+/**
+ * The bot a stage was handed off by, when it sent it from outside the group and so expects the
+ * result back. A handoff between group members is a transfer and returns nothing.
+ */
+export async function handoffReturnTarget(
+  prisma: PrismaClient,
+  sourceMessageId: string | null | undefined,
+): Promise<{ fromBotId: string } | undefined> {
+  if (!sourceMessageId) return undefined;
+  const source = await prisma.message.findUnique({
+    where: { id: sourceMessageId },
+    select: { blocks: true },
+  });
+  const blocks = Array.isArray(source?.blocks) ? (source.blocks as MessageBlock[]) : [];
+  const handoff = blocks.find(
+    (block): block is Extract<MessageBlock, { kind: "handoff" }> =>
+      block.kind === "handoff" && block.returnsToSender === true,
+  );
+  return handoff ? { fromBotId: handoff.fromBotId } : undefined;
+}
+
+/** Whether a finished run owes its outcome to the bot that sent it the work. */
+export async function runReturnsOutcome(
+  prisma: PrismaClient,
+  run: { trigger: string; sourceMessageId?: string | null },
+): Promise<boolean> {
+  if (run.trigger === "bot_message") return true;
+  if (run.trigger !== "follow_up") return false;
+  try {
+    return Boolean(await handoffReturnTarget(prisma, run.sourceMessageId));
+  } catch (error) {
+    // Reading the source must not stop a finished run from completing.
+    getLogger().error("handoff return lookup", error);
+    return false;
+  }
+}
+
 export async function messageBot(
   deps: Pick<ExecutorDeps, "prisma" | "events" | "jobs">,
   run: {
@@ -337,7 +374,9 @@ export async function returnBotMessageOutcome(
   intent: "result" | "status" = "result",
   options?: { forceUnread?: boolean },
 ) {
-  const source = await loadBotMessageContext(deps.prisma, run.sourceMessageId);
+  const source: { fromBotId: string; intent?: BotMessageIntent } | undefined =
+    (await loadBotMessageContext(deps.prisma, run.sourceMessageId)) ??
+    (await handoffReturnTarget(deps.prisma, run.sourceMessageId));
   if (!source) {
     await markBotOutcomeReturned(deps.prisma, run.id);
     // Handled: nothing to deliver. Return true so callers do not release a reservation.

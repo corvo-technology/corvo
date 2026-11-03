@@ -5,6 +5,7 @@ import {
   loadBotMessageContext,
   messageBot,
   returnBotMessageOutcome,
+  runReturnsOutcome,
 } from "./bot-messages.js";
 import type { ExecutorDeps } from "./executor-deps.js";
 
@@ -741,5 +742,91 @@ describe("automatic outcome return", () => {
     expect(returned).toBe(true);
     expect(harness.enqueue).not.toHaveBeenCalled();
     expect(harness.deps.prisma.run.updateMany).toHaveBeenCalled();
+  });
+});
+
+describe("a stage handed off by a router outside the group", () => {
+  const routed = {
+    kind: "handoff",
+    fromBotId: "bot-target",
+    toBotId: "bot-sender",
+    text: "write five bios",
+    hop: 1,
+    returnsToSender: true,
+  };
+
+  it("returns the stage's result to the router that sent it, like a delegated request", async () => {
+    const harness = deps({ hopBlocks: [routed] });
+    const returned = await returnBotMessageOutcome(
+      harness.deps,
+      { ...run, sourceMessageId: "message-handoff" },
+      sender,
+      "Here are five bios.",
+    );
+    expect(returned).toBe(true);
+    expect(harness.tx.run.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ trigger: "bot_message", botId: "bot-target" }),
+      }),
+    );
+    expect(harness.enqueue).toHaveBeenCalledOnce();
+  });
+
+  it("returns nothing for a handoff between group members, which passes the baton", async () => {
+    const { returnsToSender: _omitted, ...transfer } = routed;
+    const harness = deps({ hopBlocks: [transfer] });
+    const returned = await returnBotMessageOutcome(
+      harness.deps,
+      { ...run, sourceMessageId: "message-handoff" },
+      sender,
+      "Here are five bios.",
+    );
+    expect(returned).toBe(true);
+    expect(harness.tx.run.create).not.toHaveBeenCalled();
+    expect(harness.enqueue).not.toHaveBeenCalled();
+  });
+});
+
+describe("runReturnsOutcome", () => {
+  const prismaReading = (blocks: unknown[] | Error) =>
+    ({
+      message: {
+        findUnique: vi.fn(async () => {
+          if (blocks instanceof Error) throw blocks;
+          return { blocks };
+        }),
+      },
+    }) as unknown as PrismaClient;
+  const handoff = { kind: "handoff", fromBotId: "bot-a", toBotId: "bot-b", text: "x" };
+
+  it("is true for a delegated run and for a routed handoff, and false for the rest", async () => {
+    const none = prismaReading([]);
+    expect(await runReturnsOutcome(none, { trigger: "bot_message" })).toBe(true);
+    expect(
+      await runReturnsOutcome(prismaReading([{ ...handoff, returnsToSender: true }]), {
+        trigger: "follow_up",
+        sourceMessageId: "m",
+      }),
+    ).toBe(true);
+    expect(
+      await runReturnsOutcome(prismaReading([handoff]), {
+        trigger: "follow_up",
+        sourceMessageId: "m",
+      }),
+    ).toBe(false);
+    expect(await runReturnsOutcome(none, { trigger: "user", sourceMessageId: "m" })).toBe(false);
+  });
+
+  it("does not look anything up for a run that cannot return", async () => {
+    const prisma = prismaReading([]);
+    await runReturnsOutcome(prisma, { trigger: "user", sourceMessageId: "m" });
+    expect(prisma.message.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("is false, not an error, when the source cannot be read", async () => {
+    const failing = prismaReading(new Error("down"));
+    expect(await runReturnsOutcome(failing, { trigger: "follow_up", sourceMessageId: "m" })).toBe(
+      false,
+    );
   });
 });

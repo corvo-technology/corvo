@@ -302,6 +302,8 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     reason: z.string().max(HANDOFF_REASON_MAX_LENGTH).optional(),
     /** Links ownership transfers in one user-started group turn. */
     hop: z.number().int().positive().optional(),
+    /** Set when the sender is outside the group: the stage's result comes back to it. */
+    returnsToSender: z.literal(true).optional(),
   }),
   z.object({
     /** A group-chat message delivered into a member bot's own thread. */
