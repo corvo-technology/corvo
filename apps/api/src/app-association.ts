@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
 
-/** Package of the Corvo Android app (apps/mobile/app.json). */
+/** Package of the Rook Android app (apps/mobile/app.json). */
 const ANDROID_PACKAGE = "tech.corvo.bots.mobile";
 
 /**

@@ -22,9 +22,9 @@ export const MODEL_CONTEXT_TOO_SMALL_ERROR =
 /** A run that starts with no model the user can reach. */
 export const MISSING_MODEL_RUN_ERROR = "Connect a model in Settings before running bots.";
 
-/** A deployment model run while the organization has not chosen Corvo credits. */
+/** A deployment model run while the organization has not chosen Rook credits. */
 export const HOSTED_MODEL_CREDITS_REQUIRED_ERROR =
-  "Connect your own API key in Models or choose Corvo credits in Billing.";
+  "Connect your own API key in Models or choose Rook credits in Billing.";
 
 /** A run in a billing organization without a paid plan, credits, or free period. */
 export const MODEL_ACCESS_REQUIRED_RUN_ERROR = "Subscribe in Billing to keep running bots.";

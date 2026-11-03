@@ -809,7 +809,7 @@ function roundedSummary(values: number[]): NumericSummary {
 
 function renderMarkdown(report: PerformanceReport) {
   const summary = report.summary;
-  return `# Corvo desktop performance — ${report.label}
+  return `# Rook desktop performance — ${report.label}
 
 - Commit: \`${report.environment.gitSha.slice(0, 12)}\`
 - Platform: ${report.environment.platform}/${report.environment.arch}

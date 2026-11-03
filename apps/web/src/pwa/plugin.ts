@@ -17,8 +17,8 @@ export function webManifest() {
   }));
   return {
     id: "/",
-    name: "Corvo",
-    short_name: "Corvo",
+    name: "Rook",
+    short_name: "Rook",
     description: "Your team of always-on agents.",
     start_url: "/",
     scope: "/",

@@ -99,8 +99,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Your Anthropic": "你的 Anthropic",
   "Your model provider": "你的模型提供商",
   "Connect a model in Settings before running bots.": "运行机器人前，请先在设置中连接模型。",
-  "Connect your own API key in Models or choose Corvo credits in Billing.":
-    "请在“模型”中连接你自己的 API 密钥，或在“账单”中选择 Corvo 额度。",
+  "Connect your own API key in Models or choose Rook credits in Billing.":
+    "请在“模型”中连接你自己的 API 密钥，或在“账单”中选择 Rook 额度。",
   "The model provider returned an error.": "模型提供商返回了错误。",
   "{provider} is rate limiting requests. Try again shortly.":
     "{provider}正在限制请求频率。请稍后重试。",
@@ -568,8 +568,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Photo library": "相册",
   Pin: "置顶",
   "Please try again.": "请重试。",
-  "Point this app at your self-hosted Corvo origin, the same HTTPS URL you open in a browser.":
-    "将此应用指向你自托管的 Corvo 源站，地址与你在浏览器中打开的 HTTPS URL 相同。",
+  "Point this app at your self-hosted Rook origin, the same HTTPS URL you open in a browser.":
+    "将此应用指向你自托管的 Rook 源站，地址与你在浏览器中打开的 HTTPS URL 相同。",
   Private: "私有",
   Profile: "资料",
   Providers: "提供商",
@@ -633,10 +633,10 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Show more": "显示更多",
   "Show {label}": "显示 {label}",
   "Sign in": "登录",
-  "Sign in to Corvo": "登录 Corvo",
+  "Sign in to Rook": "登录 Rook",
   "Sign out": "退出登录",
   "Sign up": "注册",
-  "Sign up for Corvo": "注册 Corvo",
+  "Sign up for Rook": "注册 Rook",
   "Sign-in": "登录",
   "Sign-up": "注册",
   "Sign-in did not return a session": "登录未返回会话",
@@ -674,7 +674,7 @@ export const ZH_MESSAGES: Record<string, string> = {
   Team: "团队",
   "Team Computer": "团队电脑",
   "That doesn’t look like a URL": "这看起来不像 URL",
-  "That URL did not look like a Corvo server": "该地址看起来不是 Corvo 服务器",
+  "That URL did not look like a Rook server": "该地址看起来不是 Rook 服务器",
   "That URL is missing a host": "该地址缺少主机名",
   "The server changed while starting the request": "请求开始时服务器已更改",
   "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
@@ -761,8 +761,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Open conversation": "打开对话",
   "Open in full window": "在全窗口中打开",
   "OpenAPI JSON": "OpenAPI JSON",
-  "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed.":
-    "粘贴你服务器的 OpenAI 兼容地址。如有需要，Corvo 会自动补上 /v1。",
+  "Paste the OpenAI-compatible address from your server. Rook adds /v1 if needed.":
+    "粘贴你服务器的 OpenAI 兼容地址。如有需要，Rook 会自动补上 /v1。",
   Paused: "已暂停",
   Prompt: "提示词",
   "Recording a live demonstration needs desktop or web with the full computer view. You can still ask this bot to run saved skills from chat.":
@@ -775,8 +775,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Teach a task": "教一个任务",
   "This removes every message and stops current work. The bot, computer, memory, and routines are kept.":
     "这将删除所有消息并停止当前工作。Bot、电脑、记忆和例行任务会保留。",
-  "This subscription sign-in is not available in Corvo yet. Use a deployment credential or choose another provider.":
-    "Corvo 暂不支持此订阅登录。请使用部署凭据或选择其他提供商。",
+  "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider.":
+    "Rook 暂不支持此订阅登录。请使用部署凭据或选择其他提供商。",
   "Tool sources": "工具源",
   Tools: "工具",
   Uninstall: "卸载",
@@ -883,7 +883,7 @@ export const ZH_MESSAGES: Record<string, string> = {
   "AI models": "AI 模型",
   Memory: "记忆",
   "Privacy policies": "隐私政策",
-  Corvo: "Corvo",
+  Rook: "Rook",
   "Withdraw all permissions": "撤销所有权限",
   "Withdraw all permissions?": "撤销所有权限？",
   "New mobile actions won't send data to these services. Runs already in progress and routines keep going until you stop them.":
@@ -1004,7 +1004,7 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Start {days}-day free trial": "开始 {days} 天免费试用",
   "Monthly credits expire at renewal. Top-ups do not expire.":
     "每月额度在续费时到期。单次充值额度不会过期。",
-  "Use Corvo credits": "使用 Corvo 额度",
+  "Use Rook credits": "使用 Rook 额度",
   "1 unread": "1 条未读",
   "{count} unread": "{count} 条未读",
   "{count} need attention": "{count} 个需要处理",
@@ -1012,11 +1012,11 @@ export const ZH_MESSAGES: Record<string, string> = {
   "{label}, below": "{label}，下方",
   Work: "工作",
   Both: "两者都有",
-  "How will you use Corvo?": "你会如何使用 Corvo？",
-  "What do you most want Corvo to help with?": "你最希望 Corvo 帮你做什么？",
+  "How will you use Rook?": "你会如何使用 Rook？",
+  "What do you most want Rook to help with?": "你最希望 Rook 帮你做什么？",
   "How big is your team?": "你的团队有多大？",
   "How did you hear about us?": "你是如何知道我们的？",
-  "Welcome to Corvo": "欢迎使用 Corvo",
+  "Welcome to Rook": "欢迎使用 Rook",
   Messaging: "消息",
   Unlink: "取消关联",
   "Connect a chat app": "连接聊天应用",

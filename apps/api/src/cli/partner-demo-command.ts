@@ -10,7 +10,7 @@ type Env = Record<string, string | undefined>;
 export async function runPartnerDemo(env: Env, fetchFn: typeof fetch = fetch): Promise<string> {
   const base = env.PARTNER_API_URL?.replace(/\/+$/, "");
   const key = env.PARTNER_API_KEY;
-  if (!base) throw new Error("Set PARTNER_API_URL to the Corvo API address.");
+  if (!base) throw new Error("Set PARTNER_API_URL to the Rook API address.");
   if (!key) throw new Error("Set PARTNER_API_KEY to the key printed by `partner create`.");
 
   const call = async (method: string, path: string, body: unknown) => {

@@ -61,7 +61,7 @@ describe("mobile i18n", () => {
     const { resetI18nForTests, t } = await import("./i18n");
     resetI18nForTests("pt-BR");
     expect(t("Account")).toBe("Conta");
-    expect(t("Sign in to Corvo")).toBe("Entrar no Corvo");
+    expect(t("Sign in to Rook")).toBe("Entrar no Rook");
     expect(t("New bot")).toBe("Novo bot");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "3 execuções, 12 tokens",
@@ -70,7 +70,7 @@ describe("mobile i18n", () => {
 
     resetI18nForTests("es");
     expect(t("Account")).toBe("Cuenta");
-    expect(t("Sign in to Corvo")).toBe("Inicia sesión en Corvo");
+    expect(t("Sign in to Rook")).toBe("Inicia sesión en Rook");
     expect(t("New bot")).toBe("Nuevo bot");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "3 ejecuciones, 12 tokens",
@@ -115,7 +115,7 @@ describe("mobile i18n", () => {
       "Your model provider",
       "The model provider returned an error.",
       "Connect a model in Settings before running bots.",
-      "Connect your own API key in Models or choose Corvo credits in Billing.",
+      "Connect your own API key in Models or choose Rook credits in Billing.",
       "{provider} is rate limiting requests. Try again shortly.",
       "{summary} Resets {date}.",
       "{provider} rejected the API key. Check your connection settings.",

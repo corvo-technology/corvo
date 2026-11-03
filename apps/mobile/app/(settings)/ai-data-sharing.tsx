@@ -135,7 +135,7 @@ export default function AiDataSharing() {
               />
             ))}
             <SettingsRow
-              title={t("Corvo")}
+              title={t("Rook")}
               accessibilityRole="link"
               chevron="right"
               onPress={() => void Linking.openURL(status.privacyUrl ?? AI_PRIVACY_URL)}

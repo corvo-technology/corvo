@@ -361,7 +361,7 @@ const FIND_MISSING_DESKTOP_TOOLS = [
 ];
 
 /**
- * Same as infra/sandboxes/computer/browser-policy.json. Corvo keeps credentials itself, so
+ * Same as infra/sandboxes/computer/browser-policy.json. Rook keeps credentials itself, so
  * the browser's save-password, address, and card prompts only cover the page.
  */
 export const BROWSER_POLICY = JSON.stringify({

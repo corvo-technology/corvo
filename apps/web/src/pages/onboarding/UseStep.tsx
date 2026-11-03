@@ -37,7 +37,7 @@ export function UseStep({ onDone }: { onDone: (categories: StoreCategory[]) => v
       }}
     >
       <h1 id={`${fieldId}-use`} className="text-[32px] font-medium text-foreground">
-        <Trans>How will you use Corvo?</Trans>
+        <Trans>How will you use Rook?</Trans>
       </h1>
       <ToggleGroup
         aria-labelledby={`${fieldId}-use`}

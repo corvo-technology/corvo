@@ -31,7 +31,7 @@ export function AuthFrame({
           className="flex items-center gap-2 text-base font-semibold tracking-tight"
         >
           <BotAvatar color={mascotHex("mint")} identity="ana" size={28} />
-          Corvo
+          Rook
         </div>
         <form onSubmit={onSubmit} className="my-auto flex w-full max-w-[400px] flex-col py-12">
           <h1

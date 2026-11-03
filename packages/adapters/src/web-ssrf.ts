@@ -126,7 +126,7 @@ export async function fetchSafeWebBytes(
       resolve,
       dispatcher,
       maxBytes,
-      userAgent: options.userAgent ?? "Corvo/0.1 (+https://bots.corvo.tech)",
+      userAgent: options.userAgent ?? "Rook/0.1 (+https://bots.corvo.tech)",
       headers: options.headers,
       signal,
       redirectsRemaining: options.maxRedirects ?? MAX_REDIRECTS,

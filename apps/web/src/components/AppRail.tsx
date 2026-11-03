@@ -30,7 +30,7 @@ const RAIL_ITEM =
   "app-no-drag relative flex min-h-14 w-16 flex-col items-center justify-start gap-1 rounded-xl px-1 pt-2.5 pb-2 text-muted-foreground outline-none transition-[background-color,color,transform] duration-150 ease-out hover:bg-sidebar-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100";
 const RAIL_LABEL = "text-caption line-clamp-2 w-full text-center leading-3 break-words";
 
-/** The narrow bar that moves between Corvo's areas; only agents bring the wide list with them. */
+/** The narrow bar that moves between Rook's areas; only agents bring the wide list with them. */
 export function AppRail({ ticketBoardEnabled }: { ticketBoardEnabled: boolean }) {
   const { t } = useLingui();
   const navigate = useNavigate();

@@ -76,7 +76,7 @@ import { WorkspaceStep } from "./onboarding/WorkspaceStep";
 import { QuickKeyConnect } from "./onboarding-quick-connect";
 
 const CUSTOM_MODEL_OPTION = "__corvo_custom_model__";
-/** Corvo credits sit among the providers as the one choice that needs no account of its own. */
+/** Rook credits sit among the providers as the one choice that needs no account of its own. */
 const CREDITS_OPTION = "__corvo_credits__";
 /** A provider whose catalog entry offers both sign-in and a key appears once per way to connect. */
 type ProviderAuth = "sign-in" | "key";
@@ -194,7 +194,7 @@ export function OnboardingPage() {
           canChooseHostComputer: me.canChooseHostComputer,
           computerHost: me.computerHost,
           hasDesktopHostChoice: Boolean(desktopBridge()?.computer?.managesHostChoice),
-          // A new space for someone who already uses Corvo skips the questions about themselves.
+          // A new space for someone who already uses Rook skips the questions about themselves.
           returning: Boolean(
             spaces?.spaces.some((row) => row.id !== current?.id && row.hasContent),
           ),
@@ -263,7 +263,7 @@ export function OnboardingPage() {
   const subscriptionSignIn = selected?.signIn !== undefined && providerAuth !== "key";
   const acceptsKey = selected?.auth !== "oauth" && providerAuth !== "sign-in";
   const signInLabel = selected?.oauthLabel ?? t`Sign in`;
-  // The first thing asked is the key; a provider chosen or Corvo credits leaves this shortcut.
+  // The first thing asked is the key; a provider chosen or Rook credits leaves this shortcut.
   const quickConnect = !provider && !credits && !showAllProviders;
   const openAiCompatibleReady = openAiCompatibleConnectReady({
     apiKey,
@@ -289,7 +289,7 @@ export function OnboardingPage() {
       return providerDisplayName(id, byId.get(id)?.providerName ?? id, auth);
     };
     const main = [
-      ...(billingEnabled ? [{ value: CREDITS_OPTION, label: t`Corvo credits` }] : []),
+      ...(billingEnabled ? [{ value: CREDITS_OPTION, label: t`Rook credits` }] : []),
       ...MAIN_PROVIDER_OPTIONS.filter((option) => byId.has(option.provider)).map((option) => ({
         value: providerOptionValue(option.provider, option.auth),
         label: optionLabel(option.provider, option.auth),

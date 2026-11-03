@@ -13,10 +13,6 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/pages/shell/import-status.ts
-msgid "Not in Corvo's catalog"
-msgstr "不在 Corvo 目录中"
-
 #: src/pages/shell/sidebar-roster.tsx
 msgid " (unread)"
 msgstr "（未读）"
@@ -770,10 +766,6 @@ msgstr "全部时间"
 msgid "Allow"
 msgstr "允许"
 
-#: src/components/DesktopControlSettings.tsx
-msgid "Allow Corvo under Accessibility in your system's privacy settings."
-msgstr "请在系统隐私设置的“辅助功能”中允许 Corvo。"
-
 #: src/pages/shell/bot-panel.tsx
 msgid "Allow cross-space bot communication"
 msgstr "允许跨空间机器人通信"
@@ -781,6 +773,10 @@ msgstr "允许跨空间机器人通信"
 #: src/components/AskCard.tsx
 msgid "Allow once"
 msgstr "允许一次"
+
+#: src/components/DesktopControlSettings.tsx
+msgid "Allow Rook under Accessibility in your system's privacy settings."
+msgstr "请在系统隐私设置的“辅助功能”中允许 Rook。"
 
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Allow writing"
@@ -819,8 +815,8 @@ msgid "An API key is stored for this provider, not a subscription sign-in."
 msgstr "此提供方存储的是 API 密钥，不是订阅登录。"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "An existing Honcho peer to read from. Corvo never writes to it."
-msgstr "用于读取数据的现有 Honcho peer。Corvo 绝不会向其写入数据。"
+msgid "An existing Honcho peer to read from. Rook never writes to it."
+msgstr "用于读取数据的现有 Honcho peer。Rook 绝不会向其写入数据。"
 
 #: src/lib/agent-import-errors.ts
 msgid "An imported API key could not be checked. Try again."
@@ -1426,8 +1422,8 @@ msgstr "选择文件夹"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
-msgid "Choose how to use Corvo"
-msgstr "选择如何使用 Corvo"
+msgid "Choose how to use Rook"
+msgstr "选择如何使用 Rook"
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -1739,8 +1735,8 @@ msgstr "连接 Treg"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect your own API key in Models or choose Corvo credits in Billing."
-msgstr "请在“模型”中连接你自己的 API 密钥，或在“账单”中选择 Corvo 额度。"
+msgid "Connect your own API key in Models or choose Rook credits in Billing."
+msgstr "请在“模型”中连接你自己的 API 密钥，或在“账单”中选择 Rook 额度。"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ChatAppsRow.tsx
@@ -1865,13 +1861,9 @@ msgstr "复制提示词"
 msgid "Copy rows"
 msgstr "复制行"
 
-#: src/pages/Onboarding.tsx
-msgid "Corvo credits"
-msgstr "Corvo 额度"
-
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "corvo-shared and IDs starting with bot- are reserved for Corvo."
-msgstr "corvo-shared 和以 bot- 开头的 ID 为 Corvo 保留。"
+msgid "corvo-shared and IDs starting with bot- are reserved for Rook."
+msgstr "corvo-shared 和以 bot- 开头的 ID 为 Rook 保留。"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Usage.tsx
@@ -2411,8 +2403,8 @@ msgid "Create space"
 msgstr "创建工作区"
 
 #: src/pages/Auth.tsx
-msgid "Create your Corvo"
-msgstr "创建你的 Corvo"
+msgid "Create your Rook"
+msgstr "创建你的 Rook"
 
 #: src/components/AskCard.tsx
 msgid "Created"
@@ -3296,8 +3288,8 @@ msgid "How to check"
 msgstr "如何检查"
 
 #: src/pages/onboarding/UseStep.tsx
-msgid "How will you use Corvo?"
-msgstr "你将如何使用 Corvo？"
+msgid "How will you use Rook?"
+msgstr "你将如何使用 Rook？"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -4326,6 +4318,10 @@ msgstr "未导入"
 msgid "Not in a team"
 msgstr "未加入团队"
 
+#: src/pages/shell/import-status.ts
+msgid "Not in Rook's catalog"
+msgstr "不在 Rook 目录中"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
 msgstr "不在插件目录中"
@@ -4338,12 +4334,12 @@ msgstr "暂不"
 
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/import-status.ts
-msgid "Not supported in Corvo"
-msgstr "Corvo 不支持"
+msgid "Not supported in Rook"
+msgstr "Rook 不支持"
 
 #: src/pages/shell/agent-import.tsx
-msgid "Not used by Corvo"
-msgstr "Corvo 不使用"
+msgid "Not used by Rook"
+msgstr "Rook 不使用"
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not working"
@@ -4465,10 +4461,6 @@ msgstr "打开与 {0} 的聊天"
 msgid "Open computer settings"
 msgstr "打开电脑设置"
 
-#: src/lib/mcp-connect.ts
-msgid "Open Corvo directly to connect this app."
-msgstr "请直接打开 Corvo 来连接此应用。"
-
 #: src/components/markdown-link-prompt.tsx
 msgid "Open external link?"
 msgstr "打开外部链接？"
@@ -4485,6 +4477,10 @@ msgstr "打开导航"
 #: src/components/DesktopControlSettings.tsx
 msgid "Open privacy settings"
 msgstr "打开隐私设置"
+
+#: src/lib/mcp-connect.ts
+msgid "Open Rook directly to connect this app."
+msgstr "请直接打开 Rook 来连接此应用。"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4623,8 +4619,8 @@ msgid "Paste the key to let your agent use this server's tools."
 msgstr "粘贴密钥，让你的智能体使用此服务器的工具。"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
-msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."
-msgstr "粘贴服务器的 OpenAI 兼容地址。需要时 Corvo 会补上 /v1。"
+msgid "Paste the OpenAI-compatible address from your server. Rook adds /v1 if needed."
+msgstr "粘贴服务器的 OpenAI 兼容地址。需要时 Rook 会补上 /v1。"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Paste the reply"
@@ -5185,8 +5181,8 @@ msgid "Return to call with {0}"
 msgstr "返回与 {0} 的通话"
 
 #: src/pages/McpOAuthCallback.tsx
-msgid "Return to Corvo"
-msgstr "返回 Corvo"
+msgid "Return to Rook"
+msgstr "返回 Rook"
 
 #: src/components/AskCard.tsx
 msgid "Review before {reviewing}"
@@ -5195,6 +5191,10 @@ msgstr "执行前请确认：{reviewing}"
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
 msgstr "请检查提供方设置并重新测试。"
+
+#: src/pages/Onboarding.tsx
+msgid "Rook credits"
+msgstr "Rook 额度"
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Room guidance"
@@ -5631,8 +5631,8 @@ msgid "Sign in or create your account"
 msgstr "登录或创建账户"
 
 #: src/pages/Auth.tsx
-msgid "Sign in to Corvo"
-msgstr "登录 Corvo"
+msgid "Sign in to Rook"
+msgstr "登录 Rook"
 
 #: src/lib/user-error.ts
 msgid "Sign in to your existing account to link SSO"
@@ -5882,8 +5882,8 @@ msgid "Subscribe for ${0} / month"
 msgstr "以每月 ${0} 订阅"
 
 #: src/components/ModelCredits.tsx
-msgid "Subscribe to Corvo credits"
-msgstr "订阅 Corvo 额度"
+msgid "Subscribe to Rook credits"
+msgstr "订阅 Rook 额度"
 
 #: src/components/ModelCredits.tsx
 msgid "Subscribe with your own AI"
@@ -6189,8 +6189,8 @@ msgid "This server is already connected. Disconnect it first to authorize again.
 msgstr "此服务器已连接。请先断开再重新授权。"
 
 #: src/pages/model-settings/connection-controls.tsx
-msgid "This subscription sign-in is not available in Corvo yet. Use a deployment credential or choose another provider."
-msgstr "此订阅登录在 Corvo 中尚不可用。请使用部署凭据或选择其他提供方。"
+msgid "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider."
+msgstr "此订阅登录在 Rook 中尚不可用。请使用部署凭据或选择其他提供方。"
 
 #: src/pages/Artifacts.tsx
 msgid "This week"
@@ -6479,10 +6479,6 @@ msgstr "使用找到的模型"
 msgid "Use Connect to verify the key."
 msgstr "请使用“连接”验证密钥。"
 
-#: src/components/ModelCredits.tsx
-msgid "Use Corvo credits"
-msgstr "使用 Corvo 额度"
-
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Use default guidance"
 msgstr "使用默认指引"
@@ -6498,6 +6494,10 @@ msgstr "{label}使用默认设置"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "密码请使用受保护输入。"
+
+#: src/components/ModelCredits.tsx
+msgid "Use Rook credits"
+msgstr "使用 Rook 额度"
 
 #: src/pages/model-settings/space-bots-model.tsx
 msgid "Use space default"

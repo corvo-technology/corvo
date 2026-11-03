@@ -1,6 +1,6 @@
 # Content encryption at rest
 
-Corvo encrypts user content before it reaches PostgreSQL or the artifact
+Rook encrypts user content before it reaches PostgreSQL or the artifact
 directory, so a copied database dump, backup or disk does not reveal it.
 
 ## What is encrypted

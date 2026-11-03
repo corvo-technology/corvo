@@ -104,8 +104,8 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "Your model provider": "Seu provedor de modelos",
   "Connect a model in Settings before running bots.":
     "Conecte um modelo em Configurações antes de executar bots.",
-  "Connect your own API key in Models or choose Corvo credits in Billing.":
-    "Conecte sua própria chave de API em Modelos ou escolha créditos Corvo em Faturamento.",
+  "Connect your own API key in Models or choose Rook credits in Billing.":
+    "Conecte sua própria chave de API em Modelos ou escolha créditos Rook em Faturamento.",
   "The model provider returned an error.": "O provedor de modelos retornou um erro.",
   "{provider} is rate limiting requests. Try again shortly.":
     "{provider} está limitando as solicitações. Tente novamente em instantes.",
@@ -162,8 +162,8 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "Chat Settings": "Configurações do chat",
   "Configure a plugin catalog on the server to connect apps.":
     "Configure um catálogo de plugins no servidor para conectar apps.",
-  "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed.":
-    "Cole o endereço compatível com OpenAI do seu servidor. Corvo adiciona /v1 se necessário.",
+  "Paste the OpenAI-compatible address from your server. Rook adds /v1 if needed.":
+    "Cole o endereço compatível com OpenAI do seu servidor. Rook adiciona /v1 se necessário.",
   "Settings: General": "Opções > Geral",
   "Settings: Usage": "Configurações: Uso",
   "Sign-in did not return a session": "O login não retornou uma sessão",
@@ -203,9 +203,9 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "Reset your password": "Redefina sua senha",
   "Send reset link": "Enviar link de redefinição",
   Server: "Servidor",
-  "Sign in to Corvo": "Entrar no Corvo",
+  "Sign in to Rook": "Entrar no Rook",
   "Sign up": "Cadastre-se",
-  "Sign up for Corvo": "Criar conta no Corvo",
+  "Sign up for Rook": "Criar conta no Rook",
   "Use a custom server": "Usar um servidor personalizado",
   "Use default server": "Usar o servidor padrão",
   Activity: "Atividade",
@@ -520,8 +520,8 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "Supports images": "Suporta imagens",
   "Supports thinking": "Suporta raciocínio",
   "Then paste the code here.": "Depois cole o código aqui.",
-  "This subscription sign-in is not available in Corvo yet. Use a deployment credential or choose another provider.":
-    "Este login de assinatura ainda não está disponível no Corvo. Use uma credencial de implantação ou escolha outro provedor.",
+  "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider.":
+    "Este login de assinatura ainda não está disponível no Rook. Use uma credencial de implantação ou escolha outro provedor.",
   "Use a found model": "Usar um modelo encontrado",
   "Waiting for sign-in…": "Aguardando o login…",
   "exact-model-id": "id-exato-do-modelo",
@@ -798,7 +798,7 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "Enter a server URL": "Digite a URL de um servidor",
   "Public servers need https://. HTTP only works on your local network.":
     "Servidores públicos exigem https://. HTTP só funciona na sua rede local.",
-  "That URL did not look like a Corvo server": "Essa URL não parece ser de um servidor Corvo",
+  "That URL did not look like a Rook server": "Essa URL não parece ser de um servidor Rook",
   "That URL is missing a host": "Falta o host nessa URL",
   "That doesn’t look like a URL": "Isso não parece uma URL",
   "Use an http or https URL": "Use uma URL http ou https",
@@ -865,7 +865,7 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "AI models": "Modelos de IA",
   Memory: "Memória",
   "Privacy policies": "Políticas de privacidade",
-  Corvo: "Corvo",
+  Rook: "Rook",
   "Withdraw all permissions": "Retirar todas as permissões",
   "Withdraw all permissions?": "Retirar todas as permissões?",
   "New mobile actions won't send data to these services. Runs already in progress and routines keep going until you stop them.":
@@ -988,7 +988,7 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   Subscribe: "Assinar",
   "Monthly credits expire at renewal. Top-ups do not expire.":
     "Os créditos mensais expiram na renovação. As recargas não expiram.",
-  "Use Corvo credits": "Usar créditos Corvo",
+  "Use Rook credits": "Usar créditos Rook",
   "1 unread": "1 não lida",
   "{count} unread": "{count} não lidas",
   "{count} need attention": "{count} precisam de atenção",
@@ -996,11 +996,11 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "{label}, below": "{label}, abaixo",
   Work: "Trabalho",
   Both: "Ambos",
-  "How will you use Corvo?": "Como você vai usar o Corvo?",
-  "What do you most want Corvo to help with?": "Com o que você mais quer que o Corvo ajude?",
+  "How will you use Rook?": "Como você vai usar o Rook?",
+  "What do you most want Rook to help with?": "Com o que você mais quer que o Rook ajude?",
   "How big is your team?": "Qual o tamanho da sua equipe?",
-  "How did you hear about us?": "Como você conheceu o Corvo?",
-  "Welcome to Corvo": "Boas-vindas ao Corvo",
+  "How did you hear about us?": "Como você conheceu o Rook?",
+  "Welcome to Rook": "Boas-vindas ao Rook",
   Messaging: "Mensagens",
   Unlink: "Desvincular",
   "Connect a chat app": "Conectar um app de chat",

@@ -100,9 +100,9 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
   });
   await page.route("**/rpc/billing/status", (route) => route.fulfill({ json: { json: status } }));
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Choose how to use Corvo" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Choose how to use Rook" })).toBeVisible();
   // One card: credits are on by default, and the switch turns them off for the own-key plan.
-  const useCredits = page.getByRole("switch", { name: "Use Corvo credits", exact: true });
+  const useCredits = page.getByRole("switch", { name: "Use Rook credits", exact: true });
   await expect(useCredits).toBeChecked();
   await expect(page.getByText("Works with your ChatGPT or Claude plan.")).toHaveCount(0);
   await expect(page.getByText(/free trial/i)).toHaveCount(0);
@@ -139,7 +139,7 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
     });
     await route.fulfill({ json: { json: { url: new URL("/app", page.url()).href } } });
   });
-  await page.getByRole("button", { name: "Subscribe to Corvo credits", exact: true }).click();
+  await page.getByRole("button", { name: "Subscribe to Rook credits", exact: true }).click();
   await expect(page.getByText("Chief").first()).toBeVisible();
   expect(purchase).toEqual({ amountCents: 2000, monthly: true });
   const settings = await openUserSettings(page, "billing");
@@ -175,7 +175,7 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
     });
     await route.fulfill({ json: { json: { ok: true } } });
   });
-  await page.getByRole("switch", { name: "Use Corvo credits", exact: true }).click();
+  await page.getByRole("switch", { name: "Use Rook credits", exact: true }).click();
   await page.getByRole("button", { name: "Connect my own", exact: true }).click();
   await expect(page.getByText("Chief").first()).toBeVisible();
 
@@ -193,8 +193,8 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
   await expect(page.getByText("Free plan ends Jan 15, 2030", { exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "sidebar-free-plan-ends");
   await page.getByRole("button", { name: "Upgrade", exact: true }).click();
-  const plans = page.getByRole("dialog", { name: "Choose how to use Corvo" });
-  await plans.getByRole("switch", { name: "Use Corvo credits", exact: true }).click();
+  const plans = page.getByRole("dialog", { name: "Choose how to use Rook" });
+  await plans.getByRole("switch", { name: "Use Rook credits", exact: true }).click();
   await expect(plans.getByText("$10 / month", { exact: true })).toBeVisible();
   await expect(
     plans.getByRole("button", { name: "Subscribe with your own AI", exact: true }),
@@ -212,7 +212,7 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
   // The bare route redirects to the first chat and keeps the link's `plans` param.
   await expect(page).toHaveURL(/\/app\/[^/?]+\?plans$/);
   await expect(plans).toBeVisible();
-  await plans.getByRole("switch", { name: "Use Corvo credits", exact: true }).click();
+  await plans.getByRole("switch", { name: "Use Rook credits", exact: true }).click();
   let selectedFunding = false;
   await page.route("**/rpc/billing/selectFunding", async (route) => {
     selectedFunding = true;
@@ -255,7 +255,7 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
   await captureScreenshot(page, testInfo, "billing-use-existing-credits");
   // Switching reloads the page; the URL keeps Billing open to show the result.
   const creditsSwitch = existingCredits.getByRole("switch", {
-    name: "Use Corvo credits",
+    name: "Use Rook credits",
     exact: true,
   });
   await expect(creditsSwitch).not.toBeChecked();
@@ -264,7 +264,7 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
   await expect(reactivated).toHaveAttribute("data-settings-section", "billing");
   await expect(reactivated.getByText("$12.00", { exact: true })).toBeVisible();
   await expect(
-    reactivated.getByRole("switch", { name: "Use Corvo credits", exact: true }),
+    reactivated.getByRole("switch", { name: "Use Rook credits", exact: true }),
   ).toBeChecked();
   expect(purchase).toEqual({ amountCents: 5000, monthly: false });
 });

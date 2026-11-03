@@ -62,9 +62,9 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
     ) : codeOnly ? (
       <Trans>Sign in or create your account</Trans>
     ) : mode === "in" ? (
-      <Trans>Sign in to Corvo</Trans>
+      <Trans>Sign in to Rook</Trans>
     ) : mode === "up" ? (
-      <Trans>Create your Corvo</Trans>
+      <Trans>Create your Rook</Trans>
     ) : (
       <Trans>Reset your password</Trans>
     );

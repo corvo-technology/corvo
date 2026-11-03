@@ -189,7 +189,7 @@ export class StripeBillingProvider implements BillingProvider {
                 price: await this.monthlyPrice(
                   `corvo_monthly_credits_${input.amountCents}`,
                   input.amountCents,
-                  "Corvo monthly model credits",
+                  "Rook monthly model credits",
                 ),
               }
             : {
@@ -197,7 +197,7 @@ export class StripeBillingProvider implements BillingProvider {
                 price_data: {
                   currency: "usd",
                   unit_amount: input.amountCents,
-                  product_data: { name: "Corvo model credits" },
+                  product_data: { name: "Rook model credits" },
                 },
               },
         ],
@@ -232,7 +232,7 @@ export class StripeBillingProvider implements BillingProvider {
           price: await this.monthlyPrice(
             `corvo_monthly_credits_${amountCents}`,
             amountCents,
-            "Corvo monthly model credits",
+            "Rook monthly model credits",
           ),
           quantity: 1,
         },
@@ -265,7 +265,7 @@ export class StripeBillingProvider implements BillingProvider {
             price: await this.monthlyPrice(
               `corvo_byok_monthly_${input.amountCents}`,
               input.amountCents,
-              "Corvo own-key plan",
+              "Rook own-key plan",
             ),
           },
         ],

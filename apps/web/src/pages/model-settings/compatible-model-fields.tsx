@@ -127,7 +127,7 @@ export function CompatibleModelFields({
           summary={<Trans>Setup help</Trans>}
         >
           <p className="mt-1">
-            {t`Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed.`}
+            {t`Paste the OpenAI-compatible address from your server. Rook adds /v1 if needed.`}
           </p>
         </Disclosure>
       ) : null}

@@ -107,12 +107,12 @@ describe("helpers know who they are talking to", () => {
   });
 
   it("tells the helper its task comes from the parent bot, not the user", () => {
-    expect(seen.helperSystemPrompt).toContain('You are a Corvo subagent named "scout".');
+    expect(seen.helperSystemPrompt).toContain('You are a Rook subagent named "scout".');
     expect(seen.helperSystemPrompt).toContain(
       "Your task comes from the parent bot, not from the human user",
     );
     expect(seen.helperSystemPrompt).toContain(
-      "Messages marked as automated come from Corvo, not from the user.",
+      "Messages marked as automated come from Rook, not from the user.",
     );
     expect(seen.helperPrompt).toBe(
       "Task from the parent bot (not from the user):\ncount the files",

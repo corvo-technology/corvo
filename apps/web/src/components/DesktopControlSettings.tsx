@@ -116,7 +116,7 @@ export function DesktopControlSettings() {
         {needsAccess ? (
           <div className="mt-3">
             <p className="text-[13px] leading-relaxed text-foreground">
-              <Trans>Allow Corvo under Accessibility in your system's privacy settings.</Trans>
+              <Trans>Allow Rook under Accessibility in your system's privacy settings.</Trans>
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <Button

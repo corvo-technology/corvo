@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Corvo",
+    "name": "Rook",
     "slug": "corvo",
     "owner": "inbox-zero",
     "scheme": "corvo",
@@ -26,14 +26,14 @@
         "expo-audio",
         {
           "enableBackgroundPlayback": false,
-          "microphonePermission": "Corvo uses the microphone for voice calls with your bots."
+          "microphonePermission": "Rook uses the microphone for voice calls with your bots."
         }
       ],
       [
         "expo-speech-recognition",
         {
-          "speechRecognitionPermission": "Corvo turns your speech into messages during voice calls.",
-          "microphonePermission": "Corvo uses the microphone for voice calls with your bots."
+          "speechRecognitionPermission": "Rook turns your speech into messages during voice calls.",
+          "microphonePermission": "Rook uses the microphone for voice calls with your bots."
         }
       ],
       "expo-localization",
@@ -48,9 +48,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Corvo uses your photo library so you can attach images to a bot message.",
-          "cameraPermission": "Corvo uses the camera so you can attach photos to a bot message.",
-          "microphonePermission": "Corvo uses the microphone for voice calls with your bots."
+          "photosPermission": "Rook uses your photo library so you can attach images to a bot message.",
+          "cameraPermission": "Rook uses the camera so you can attach photos to a bot message.",
+          "microphonePermission": "Rook uses the microphone for voice calls with your bots."
         }
       ],
       "expo-sharing",
@@ -67,9 +67,9 @@
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "Corvo uses the camera so you can attach photos to a bot message.",
-        "NSPhotoLibraryUsageDescription": "Corvo uses your photo library so you can attach images to a bot message.",
-        "NSLocalNetworkUsageDescription": "Corvo connects to a self-hosted Corvo server on your local network.",
+        "NSCameraUsageDescription": "Rook uses the camera so you can attach photos to a bot message.",
+        "NSPhotoLibraryUsageDescription": "Rook uses your photo library so you can attach images to a bot message.",
+        "NSLocalNetworkUsageDescription": "Rook connects to a self-hosted Rook server on your local network.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }

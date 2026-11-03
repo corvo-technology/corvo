@@ -48,7 +48,7 @@ it("titles the page and keeps the form's own content and submit", async () => {
 it("signs the page with Ana and the name, not an icon on a dark tile", async () => {
   const { container, cleanup } = await render();
   const brand = container.querySelector("[data-testid='auth-brand']");
-  expect(brand?.textContent).toBe("Corvo");
+  expect(brand?.textContent).toBe("Rook");
   expect(brand?.querySelectorAll("[data-testid=avatar]")).toHaveLength(1);
   expect(container.innerHTML).not.toContain("gradient");
   await cleanup();

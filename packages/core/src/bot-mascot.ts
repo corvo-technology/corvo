@@ -1,6 +1,6 @@
 import type { BotColorDef } from "./bot-avatar-colors.js";
 
-/** The Corvo mascot's colors, in the order the avatar picker shows them. `hex` is what a bot saves. */
+/** The Rook mascot's colors, in the order the avatar picker shows them. `hex` is what a bot saves. */
 export const MASCOT_COLORS = [
   { id: "mint", hex: "#10B981" },
   { id: "blue", hex: "#3B82F6" },

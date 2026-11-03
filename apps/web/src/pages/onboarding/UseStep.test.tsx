@@ -53,7 +53,7 @@ describe("UseStep", () => {
     expect(onDone).toHaveBeenCalledWith(["sales", "support"]);
   });
 
-  it("saves how the person will use Corvo", async () => {
+  it("saves how the person will use Rook", async () => {
     await click("Work");
     await click("Continue");
     expect(signupSurvey).toHaveBeenCalledWith({ use: "work" });

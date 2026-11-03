@@ -25,7 +25,7 @@ function fakeCorvo() {
 }
 
 describe("embed demo partner", () => {
-  it("serves a page that loads the SDK from Corvo and embeds the assistant", async () => {
+  it("serves a page that loads the SDK from Rook and embeds the assistant", async () => {
     const demo = createEmbedDemo(env, fakeCorvo().fetchFn);
     const res = await demo(new Request("http://localhost:4310/"));
     const html = await res.text();
@@ -60,7 +60,7 @@ describe("embed demo partner", () => {
     expect(calls.filter((c) => c.path.endsWith("/sessions"))).toHaveLength(3);
   });
 
-  it("answers 502 without detail when Corvo refuses", async () => {
+  it("answers 502 without detail when Rook refuses", async () => {
     const fetchFn = vi.fn(
       async () => new Response("secret detail", { status: 401 }),
     ) as unknown as typeof fetch;

@@ -50,7 +50,7 @@ The installers and the update feeds (`latest-mac.yml`, `latest.yml`, `latest-lin
 
 ```sh
 ( cd release-files && shasum -a 256 * > SHA256SUMS )
-gh release create "v<version>" release-files/* --draft --generate-notes --title "Corvo v<version>" --verify-tag
+gh release create "v<version>" release-files/* --draft --generate-notes --title "Rook v<version>" --verify-tag
 gh release edit "v<version>" --draft=false --latest
 ```
 

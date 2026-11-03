@@ -205,7 +205,7 @@ export default function BillingScreen() {
               }
             >
               <SettingsSwitch
-                label={t("Use Corvo credits")}
+                label={t("Use Rook credits")}
                 value={status.funding !== "byok"}
                 disabled={pending || (canUseCredits && !status.creditPurchasesEnabled)}
                 onChange={(next) =>

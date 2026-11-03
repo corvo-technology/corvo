@@ -14,13 +14,13 @@ export function explainOpenCodeExit(output: string): string | undefined {
 }
 
 /**
- * How to start OpenCode as an ACP agent. Corvo gets a database of its own: its chats stay out of
+ * How to start OpenCode as an ACP agent. Rook gets a database of its own: its chats stay out of
  * the person's OpenCode history, and a database that another OpenCode version changed cannot
  * stop it. Sign-ins for paid providers still come from OpenCode's own auth file.
  */
 export function openCodeCommand(options: {
   binary: string;
-  /** A folder Corvo owns, used for OpenCode's database and as its working directory. */
+  /** A folder Rook owns, used for OpenCode's database and as its working directory. */
   dataDir: string;
 }): AcpCommand {
   return {

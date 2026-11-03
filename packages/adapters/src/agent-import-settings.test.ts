@@ -213,7 +213,7 @@ describe("OpenClaw settings", () => {
     });
   });
 
-  it("maps MCP servers and skips what Corvo cannot express", () => {
+  it("maps MCP servers and skips what Rook cannot express", () => {
     const settings = openclaw(false);
     expect(settings.mcpServers.map((server) => [server.title, server.config])).toEqual([
       [

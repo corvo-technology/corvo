@@ -2,7 +2,7 @@ import type { SkillStoreEntry } from "@corvo/contracts";
 
 /**
  * Money skills for a small business in Brazil: cash, billing, month close, reports, payroll and
- * taxes. Written for Corvo. They prepare the work and never pay, file or decide; anything with
+ * taxes. Written for Rook. They prepare the work and never pay, file or decide; anything with
  * legal or tax weight goes to the person's accountant (contador). Names stay plain (no accents)
  * so the `/` and `@` pickers match them as typed.
  */

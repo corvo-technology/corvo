@@ -1,11 +1,11 @@
 /**
- * Messages that Corvo, or its model library, adds to a conversation in the user's role
+ * Messages that Rook, or its model library, adds to a conversation in the user's role
  * are not from the user: screenshots moved out of tool results, nudges to continue,
  * finished background shell output, a helper's task. Models (local ones especially)
  * took them for the user replying, kept going instead of asking, and confused their
  * helpers with the user. Label them plainly.
  */
-export const AUTOMATED_MESSAGE_LABEL = "[Automated message from Corvo, not from the user]";
+export const AUTOMATED_MESSAGE_LABEL = "[Automated message from Rook, not from the user]";
 
 export function automated(text: string): string {
   return `${AUTOMATED_MESSAGE_LABEL} ${text}`;

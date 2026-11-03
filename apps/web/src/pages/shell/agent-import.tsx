@@ -482,10 +482,10 @@ export function AgentImportForm({
   };
   const skipReason = (reason: AgentImportSkipReason) =>
     ({
-      runtime: t`Not used by Corvo`,
+      runtime: t`Not used by Rook`,
       invalid_skill: t`Not a valid skill`,
       builtin: t`Built-in`,
-      unsupported: t`Not supported in Corvo`,
+      unsupported: t`Not supported in Rook`,
       connected: t`Already connected`,
       invalid_file: t`Could not read these files`,
       default: defaultNote,

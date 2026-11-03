@@ -39,7 +39,7 @@ const page = (webUrl: string) => `<!doctype html>
 
 /**
  * A stand-in for a partner's website and backend, for trying the embed by hand. The page loads the
- * SDK from Corvo; its one route turns the partner key into a one-use code, so the key stays here.
+ * SDK from Rook; its one route turns the partner key into a one-use code, so the key stays here.
  */
 export function createEmbedDemo(
   env: Env,
@@ -47,7 +47,7 @@ export function createEmbedDemo(
 ): (request: Request) => Promise<Response> {
   const api = env.PARTNER_API_URL?.replace(/\/+$/, "");
   const key = env.PARTNER_API_KEY;
-  if (!api) throw new Error("Set PARTNER_API_URL to the Corvo API address.");
+  if (!api) throw new Error("Set PARTNER_API_URL to the Rook API address.");
   if (!key) throw new Error("Set PARTNER_API_KEY to the key from Settings > Partnership.");
   const webUrl = (env.CORVO_WEB_URL ?? api).replace(/\/+$/, "");
   let customerReady = false;
@@ -93,7 +93,7 @@ export function createEmbedDemo(
         // Only the code goes to the browser: never the key, never the redirect address.
         return Response.json({ code: session.code });
       } catch {
-        return new Response("Could not reach Corvo", { status: 502 });
+        return new Response("Could not reach Rook", { status: 502 });
       }
     }
     return new Response("Not found", { status: 404 });

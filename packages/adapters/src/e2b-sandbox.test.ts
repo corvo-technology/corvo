@@ -176,7 +176,7 @@ describe("E2B computer backend", () => {
     expect(sdk.create).not.toHaveBeenCalled();
   });
 
-  it("creates new computers from the Corvo computer template", async () => {
+  it("creates new computers from the Rook computer template", async () => {
     const sdk: E2BSandboxSdk = {
       create: vi.fn().mockResolvedValue({ sandboxId: "fresh" }),
       connect: vi.fn(),

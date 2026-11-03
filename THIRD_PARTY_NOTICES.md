@@ -1,12 +1,12 @@
 # Third-party notices
 
-Corvo's own code is licensed as described in `LICENSE`. This file credits work that shaped parts
+Rook's own code is licensed as described in `LICENSE`. This file credits work that shaped parts
 of the Store's catalogs. Where text was copied or adapted it says so; where only ideas or
 structure were used it says that instead.
 
 ## Agent and skill catalogs
 
-The Store's agents and skills are written for Corvo, in English and Portuguese, and adapted to the
+The Store's agents and skills are written for Rook, in English and Portuguese, and adapted to the
 way small businesses in Brazil work. No text was copied from the sources below unless a line under
 "Adapted from" says so for that item. The sources are credited because their structure and
 ideas helped.

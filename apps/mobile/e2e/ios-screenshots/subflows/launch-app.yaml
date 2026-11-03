@@ -4,7 +4,7 @@ appId: tech.corvo.bots.mobile
 - launchApp:
     stopApp: true
 - extendedWaitUntil:
-    visible: "Account|Sign up for Corvo|Sign in to Corvo"
+    visible: "Account|Sign up for Rook|Sign in to Rook"
     timeout: 40000
 - runFlow:
     when:
@@ -17,5 +17,5 @@ appId: tech.corvo.bots.mobile
           timeout: 15000
       - tapOn: "Sign out"
 - extendedWaitUntil:
-    visible: "Sign up for Corvo|Sign in to Corvo"
+    visible: "Sign up for Rook|Sign in to Rook"
     timeout: 20000

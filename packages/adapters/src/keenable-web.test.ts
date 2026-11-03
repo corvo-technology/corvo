@@ -44,7 +44,7 @@ describe("optional Keenable web provider", () => {
       expect(request.url).toBe("https://api.keenable.ai/mcp");
       expect(request.headers.get("x-keenable-title")).toBe("corvo");
       expect(request.headers.get("user-agent")).toBe(
-        "Corvo/0.1 (+https://bots.corvo.tech; web tools)",
+        "Rook/0.1 (+https://bots.corvo.tech; web tools)",
       );
       expect(request.headers.has("x-api-key")).toBe(false);
       expect(request.headers.has("authorization")).toBe(false);

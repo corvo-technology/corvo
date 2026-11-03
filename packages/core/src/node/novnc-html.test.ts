@@ -353,7 +353,7 @@ describe("noVNC frame state report", () => {
     expect(p.posted.at(-1)).toEqual({ corvoScreen: "failed" });
   });
 
-  it("treats a Corvo embed page that built its viewer as connecting", () => {
+  it("treats a Rook embed page that built its viewer as connecting", () => {
     const p = page({ canvas: true });
     p.mutate();
     expect(p.posted).toEqual([{ corvoScreen: "loading" }, { corvoScreen: "connecting" }]);

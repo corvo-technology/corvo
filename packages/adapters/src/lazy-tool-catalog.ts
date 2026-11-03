@@ -130,7 +130,7 @@ export function isLazyCatalogControlRoute(route: ConnectorRoute | undefined): bo
 
 /**
  * The catalog's own search and load tools. They only describe tools and run no provider action;
- * Corvo builds them, so a provider cannot name one of its tools this way. `execute` is not one:
+ * Rook builds them, so a provider cannot name one of its tools this way. `execute` is not one:
  * it is judged by the tool it resolves to.
  */
 export function isCatalogLookupCall(

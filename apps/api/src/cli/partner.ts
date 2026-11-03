@@ -1,5 +1,5 @@
 // `pnpm partner create|rotate|disable|enable <slug> ...`: manages the SaaS partners that send
-// their customers to Corvo. Run on the server, as the runtime login, with DATABASE_URL set.
+// their customers to Rook. Run on the server, as the runtime login, with DATABASE_URL set.
 import {
   createDb,
   createPartner,
