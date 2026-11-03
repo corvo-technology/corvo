@@ -11,6 +11,7 @@ import {
   Gauge,
   Handshake,
   Monitor,
+  Plug,
   Settings,
   ShieldCheck,
   Volume2,
@@ -31,6 +32,7 @@ import {
   UsageSettingsPanel,
 } from "./AccountSettingsOverlay";
 import { BillingSettingsPanel } from "./BillingSettingsPanel";
+import { ConnectionsSettingsPanel } from "./ConnectionsSettingsPanel";
 import { MemorySettingsOverlay } from "./MemorySettingsOverlay";
 import { ModelSettingsOverlay } from "./ModelSettingsOverlay";
 import { PartnershipSettingsPanel } from "./PartnershipSettingsPanel";
@@ -110,11 +112,13 @@ export function SettingsOverlay({
     managedLocal,
   });
   const showUpdates = Boolean(desktopBridge()?.update);
+  const showConnections = managedLocal && Boolean(desktopBridge()?.connections);
   // A section that isn't available yet (billing before its flag loads) shows General until it is.
   const section =
     (requestedSection === "computer" && !showComputer) ||
     (requestedSection === "billing" && !billingEnabled) ||
     (requestedSection === "partnership" && !partnerAdmin) ||
+    (requestedSection === "connections" && !showConnections) ||
     (requestedSection === "updates" && !showUpdates)
       ? "general"
       : requestedSection;
@@ -160,6 +164,7 @@ export function SettingsOverlay({
     ...(partnerAdmin
       ? [{ id: "partnership" as const, label: t`Partnership`, icon: Handshake }]
       : []),
+    ...(showConnections ? [{ id: "connections" as const, label: t`Connections`, icon: Plug }] : []),
     ...(showUpdates ? [{ id: "updates" as const, label: t`Updates`, icon: CloudDownload }] : []),
   ];
 
@@ -419,6 +424,9 @@ export function SettingsOverlay({
                     <PartnershipSettingsPanel
                       onAddCredit={billingEnabled ? () => onSectionChange("billing") : undefined}
                     />
+                  ) : null}
+                  {section === "connections" && showConnections ? (
+                    <ConnectionsSettingsPanel />
                   ) : null}
                   {section === "updates" && showUpdates ? <UpdatesSettingsPanel /> : null}
                   {section === "models" ? (

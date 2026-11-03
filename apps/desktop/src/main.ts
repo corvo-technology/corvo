@@ -38,6 +38,7 @@ import {
   EmbeddedEngineController,
   engineDir,
   engineResourcePaths,
+  parseConnectionsPatch,
   readEngineToken,
   readEngineWebUrl,
 } from "./embedded-engine.js";
@@ -1388,6 +1389,18 @@ app.whenReady().then(async () => {
   ipcMain.handle("desktop.platform", () => process.platform);
   ipcMain.handle("desktop.passkeys.rpIds", () => passkeyRpIds);
   ipcMain.handle("desktop.tools.detect", () => detectInstalledTools());
+  ipcMain.handle("desktop.connections.status", (event) =>
+    isManagedComputerRequest(event) ? localStack.connectionsStatus() : null,
+  );
+  ipcMain.handle("desktop.connections.save", async (event, patch: unknown) => {
+    if (!isManagedComputerRequest(event))
+      throw new Error("Connections can only be changed in an app-managed local instance.");
+    await localStack.saveConnections(parseConnectionsPatch(patch));
+    // The engine reads its keys only when it starts.
+    await localStack.stop();
+    await localStack.start();
+    return localStack.connectionsStatus();
+  });
   const controlStatus = (event: Electron.IpcMainInvokeEvent) =>
     isManagedComputerRequest(event)
       ? desktopControlStatus(toolsDir(), process.platform, process.arch)

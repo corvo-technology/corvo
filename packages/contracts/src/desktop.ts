@@ -39,6 +39,11 @@ export interface CorvoDesktopOAuthCallback {
 /** The state of the grants desktop control needs from the operating system. */
 export type CorvoDesktopPermission = "granted" | "denied" | "unknown";
 
+export interface CorvoDesktopConnections {
+  composio: boolean;
+  telegram: boolean;
+}
+
 export interface CorvoDesktopControlStatus {
   /** False on a machine the tool does not ship for. */
   supported: boolean;
@@ -59,6 +64,17 @@ export interface CorvoDesktop {
     openPermissionGuide: () => Promise<void>;
   };
   /** Optional for compatibility with older desktop releases. */
+  /**
+   * The keys that connect Telegram and Composio. A key is write-only: the app can set or remove
+   * one and see whether it is saved, never read it back. Saving restarts the local server.
+   */
+  connections?: {
+    status: () => Promise<CorvoDesktopConnections | null>;
+    save: (patch: {
+      composioApiKey?: string | null;
+      telegramBotToken?: string | null;
+    }) => Promise<CorvoDesktopConnections>;
+  };
   tools?: {
     /** Which AI command-line tools are installed on this computer. */
     detect: () => Promise<{ claude: boolean; codex: boolean }>;

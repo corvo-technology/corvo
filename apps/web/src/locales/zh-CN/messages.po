@@ -857,6 +857,7 @@ msgstr "任意模型，使用你自己的密钥"
 
 #: src/components/AskCard.tsx
 #: src/lib/localized-provider-hint.ts
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/model-settings/compatible-key-field.tsx
 #: src/pages/model-settings/connection-controls.tsx
@@ -1129,6 +1130,10 @@ msgstr "Bot 屏幕"
 #: src/pages/shell/computer-panel.tsx
 msgid "Bot screen preview"
 msgstr "Bot 屏幕预览"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Bot token"
+msgstr "机器人令牌"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Bot's model"
@@ -1583,6 +1588,10 @@ msgstr "完成"
 msgid "Completed"
 msgstr "已完成"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Composio"
+msgstr "Composio"
+
 #: src/pages/shell/context-meter.tsx
 msgid "Compress context"
 msgstr "压缩上下文"
@@ -1718,6 +1727,7 @@ msgstr "请在“模型”中连接你自己的 API 密钥，或在“账单”�
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ChatAppsRow.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/message-cards.tsx
@@ -1751,6 +1761,10 @@ msgstr "连接测试失败。"
 #: src/pages/PluginsOverlay.tsx
 msgid "Connection to {0} is still pending. You can close this and check again."
 msgstr "与 {0} 的连接仍在等待。可以关闭此窗口稍后再看。"
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Connections"
+msgstr "连接"
 
 #: src/pages/PartnerTemplateEditor.tsx
 msgid "Connector address"
@@ -2193,6 +2207,7 @@ msgstr "无法运行例行任务"
 msgid "Could not run the routine"
 msgstr "无法运行例行任务"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -2346,6 +2361,10 @@ msgstr "无法更新你的时区"
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "创建"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Create a bot with @BotFather and paste its token."
+msgstr "用 @BotFather 创建机器人，并粘贴它的令牌。"
 
 #. placeholder {0}: bot.name
 #: src/pages/shell/dialogs.tsx
@@ -3047,6 +3066,10 @@ msgstr "财务"
 #: src/pages/Onboarding.tsx
 msgid "Find models"
 msgstr "查找模型"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Find your API key in the Composio dashboard."
+msgstr "在 Composio 控制台中查找你的 API 密钥。"
 
 #: src/lib/activity-label.ts
 msgid "Finding a tool"
@@ -4883,6 +4906,7 @@ msgid "Reload"
 msgstr "重新加载"
 
 #: src/components/ApprovalRulesSettings.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PartnerTemplateEditor.tsx
@@ -5067,6 +5091,10 @@ msgstr "调整面板大小"
 msgid "Restart to update"
 msgstr "重启以更新"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Restarting…"
+msgstr "正在重启…"
+
 #: src/components/InstructionSettings.tsx
 #: src/pages/shell/archived-chats.tsx
 msgid "Restore"
@@ -5222,6 +5250,7 @@ msgstr "周六"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -5891,6 +5920,10 @@ msgstr "Teams 消息"
 #: src/pages/RoutineEditor.tsx
 msgid "Teams not enabled"
 msgstr "未启用 Teams"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Telegram"
+msgstr "Telegram"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Test"

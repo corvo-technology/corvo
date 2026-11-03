@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdir, readFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import path from "node:path";
@@ -9,6 +10,33 @@ export const ENGINE_WEB_URL_FILE = ".desktop-web-url";
 export const ENGINE_HOST_CONFIG_FILE = ".desktop-host-config";
 export const ENGINE_TOKEN_FILE = ".desktop-stack-token";
 export const ENGINE_SECRETS_FILE = "secrets.json";
+/** The keys the person pasted for Telegram and Composio; private to the user, never sent back to the app. */
+export const ENGINE_CONNECTIONS_FILE = "connections.json";
+const CONNECTION_KEY_MAX_LENGTH = 4096;
+
+export interface EngineConnections {
+  composioApiKey?: string;
+  telegramBotToken?: string;
+}
+/** A field set to a string replaces the saved key, null removes it, absent leaves it as it is. */
+export type EngineConnectionsPatch = { [K in keyof EngineConnections]?: string | null };
+
+/** The patch a window sent, with anything unknown dropped; throws when it is not a plain object. */
+export function parseConnectionsPatch(value: unknown): EngineConnectionsPatch {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("That key is not valid.");
+  }
+  const input = value as Record<string, unknown>;
+  const patch: EngineConnectionsPatch = {};
+  for (const key of ["composioApiKey", "telegramBotToken"] as const) {
+    const item = input[key];
+    if (item === undefined) continue;
+    if (item !== null && typeof item !== "string") throw new Error("That key is not valid.");
+    patch[key] = item;
+  }
+  return patch;
+}
+
 export const ENGINE_OUTPUT_LINES = 20;
 export const ENGINE_HEALTH_TIMEOUT_MS = 120_000;
 export const DEFAULT_ENGINE_WEB_URL = "http://127.0.0.1:45173";
@@ -513,6 +541,7 @@ export class EmbeddedEngineController {
           SANDBOX_COMPUTER_IMAGE_BUILD: "off",
         }
       : null;
+    const connections = await this.readConnections();
     const engineEnv: Record<string, string> = {
       ...this.baseEnv(),
       ELECTRON_RUN_AS_NODE: "1",
@@ -537,6 +566,16 @@ export class EmbeddedEngineController {
         : {}),
       SANDBOX_HOST_URL: this.deps.hostComputer?.url ?? "",
       SANDBOX_HOST_TOKEN: this.deps.hostComputer?.token ?? "",
+      ...(connections.composioApiKey ? { COMPOSIO_API_KEY: connections.composioApiKey } : {}),
+      ...(connections.telegramBotToken
+        ? {
+            TELEGRAM_BOT_TOKEN: connections.telegramBotToken,
+            // Telegram updates are polled here, but the adapter only mounts with a signing secret.
+            TELEGRAM_WEBHOOK_SECRET_TOKEN: createHash("sha256")
+              .update(`telegram-webhook:${secrets.authSecret}`)
+              .digest("hex"),
+          }
+        : {}),
       ...(this.deps.localModels
         ? {
             CORVO_LOCAL_MODELS: this.deps.localModels.models.join(","),
@@ -607,6 +646,54 @@ export class EmbeddedEngineController {
     }
     if (this.current.phase === "failed") return;
     throw new Error(signal.aborted ? START_INTERRUPTED : HEALTH_FAILED);
+  }
+
+  /** Whether each key is saved. The keys themselves never leave this process. */
+  async connectionsStatus(): Promise<{ composio: boolean; telegram: boolean }> {
+    const saved = await this.readConnections();
+    return { composio: Boolean(saved.composioApiKey), telegram: Boolean(saved.telegramBotToken) };
+  }
+
+  /** Saves keys for the next start; the caller restarts the engine for them to take effect. */
+  async saveConnections(patch: EngineConnectionsPatch): Promise<void> {
+    const next: EngineConnections = { ...(await this.readConnections()) };
+    for (const key of ["composioApiKey", "telegramBotToken"] as const) {
+      const value = patch[key];
+      if (value === undefined) continue;
+      if (value === null) {
+        delete next[key];
+        continue;
+      }
+      const clean = value.trim();
+      if (!clean || clean.length > CONNECTION_KEY_MAX_LENGTH || /[\r\n\0]/.test(clean)) {
+        throw new Error("That key is not valid.");
+      }
+      next[key] = clean;
+    }
+    await mkdir(this.deps.dataDir, { recursive: true, mode: 0o700 });
+    await writePrivateFile(
+      path.join(this.deps.dataDir, ENGINE_CONNECTIONS_FILE),
+      JSON.stringify(next),
+    );
+  }
+
+  private async readConnections(): Promise<EngineConnections> {
+    const raw = await readPrivateFile(
+      path.join(this.deps.dataDir, ENGINE_CONNECTIONS_FILE),
+      64 * 1024,
+    );
+    if (raw === null) return {};
+    try {
+      const saved = JSON.parse(raw) as Record<string, unknown>;
+      const out: EngineConnections = {};
+      if (typeof saved.composioApiKey === "string" && saved.composioApiKey)
+        out.composioApiKey = saved.composioApiKey;
+      if (typeof saved.telegramBotToken === "string" && saved.telegramBotToken)
+        out.telegramBotToken = saved.telegramBotToken;
+      return out;
+    } catch {
+      return {};
+    }
   }
 
   /** True when the engine's host-computer and local-model settings match what the running engine was given. */

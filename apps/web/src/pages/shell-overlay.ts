@@ -9,6 +9,7 @@ const SETTINGS_SECTIONS = [
   "computer",
   "billing",
   "partnership",
+  "connections",
   "updates",
 ] as const;
 
