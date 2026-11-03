@@ -1065,6 +1065,10 @@ export const UsageAgentSchema = z.object({
   replies: z.number(),
   costUsd: z.number().nullable(),
   models: z.array(z.object({ provider: z.string(), model: z.string(), tokens: z.number() })),
+  /** Runs that ended in failure in the period; absent when none were counted. */
+  failed: z.number().optional(),
+  /** Mean seconds a finished run took; absent when none had both times. */
+  avgSeconds: z.number().nullable().optional(),
 });
 
 /** A period of use: totals, how it compares with the same point of the one before, by agent and by day. */

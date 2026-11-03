@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { UsageRow } from "./usage-overview.js";
-import { buildUsageOverview, rowTokens, usageWindow } from "./usage-overview.js";
+import { buildRunOutcomes, buildUsageOverview, rowTokens, usageWindow } from "./usage-overview.js";
 
 const NOW = new Date("2026-11-15T12:00:00Z");
 
@@ -115,5 +115,45 @@ describe("buildUsageOverview", () => {
     expect(result.tokens).toBe(0);
     expect(result.agents).toEqual([]);
     expect(result.costUsd).toBe(0);
+  });
+});
+
+describe("run outcomes", () => {
+  const at = (iso: string) => new Date(`2026-11-02T${iso}Z`);
+  const run = (status: string, started?: string, done?: string, botId = "a") => ({
+    botId,
+    status,
+    startedAt: started ? at(started) : null,
+    completedAt: done ? at(done) : null,
+  });
+
+  it("counts failed runs per agent and averages how long finished ones took", () => {
+    const outcomes = buildRunOutcomes([
+      run("completed", "10:00:00", "10:00:10"),
+      run("completed", "11:00:00", "11:00:30"),
+      run("failed", "12:00:00", "12:00:05"),
+      run("cancelled"),
+      run("completed", "09:00:00", "09:01:00", "b"),
+    ]);
+    expect(outcomes.get("a")).toEqual({ failed: 1, avgSeconds: 20 });
+    expect(outcomes.get("b")).toEqual({ failed: 0, avgSeconds: 60 });
+  });
+
+  it("has no average when no finished run has both times", () => {
+    expect(buildRunOutcomes([run("failed")]).get("a")).toEqual({ failed: 1, avgSeconds: null });
+  });
+
+  it("puts the outcomes on the agents that have usage and leaves others without", () => {
+    const outcomes = buildRunOutcomes([run("failed", "10:00:00", "10:00:05")]);
+    const result = buildUsageOverview({
+      period: "month",
+      now: NOW,
+      rows: [row({ botId: "a" }), row({ botId: "b", runId: "r2" })],
+      agents,
+      unknownName: "",
+      outcomes,
+    });
+    expect(result.agents.find((agent) => agent.id === "a")?.failed).toBe(1);
+    expect(result.agents.find((agent) => agent.id === "b")?.failed).toBeUndefined();
   });
 });

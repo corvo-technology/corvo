@@ -48,6 +48,7 @@ const data = {
       tokens: 1_000_000,
       replies: 8,
       costUsd: 0,
+      failed: 2,
       models: [{ provider: "anthropic", model: "Sonnet", tokens: 1_000_000 }],
     },
     {
@@ -97,7 +98,9 @@ it("shows the period's tokens, how it compares and who used them", async () => {
   expect(host.textContent).toContain("+50%");
   expect(host.textContent).toContain("vs. the same days last month");
   expect(host.textContent).toContain("Pia");
-  expect(host.textContent).toContain("Sonnet · 8 replies");
+  expect(host.textContent).toContain("Sonnet · 8 replies · 2 failed");
+  // An agent with no failures says nothing about them.
+  expect(host.textContent).not.toContain("0 failed");
   // An agent that no longer exists is still listed, with a name for it.
   expect(host.textContent).toContain("Deleted agent");
   await act(async () => root.unmount());

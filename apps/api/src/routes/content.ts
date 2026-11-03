@@ -18,7 +18,7 @@ import {
 import { listSpaceRuns } from "../runs.js";
 import { querySpaceSearch } from "../search.js";
 import { loadAllMessages } from "../thread-message-pages.js";
-import { buildUsageOverview, usageWindow } from "../usage-overview.js";
+import { buildRunOutcomes, buildUsageOverview, usageWindow } from "../usage-overview.js";
 import type { RouterContext } from "./context.js";
 
 /** More rows than this in a period are left out, so one account cannot make the page heavy. */
@@ -237,7 +237,27 @@ export function contentRoutes(ctx: RouterContext) {
         for (const bot of deleted) agents.set(bot.id, { name: bot.name, color: null });
         for (const bot of bots) agents.set(bot.id, { name: bot.name, color: bot.color });
         // An agent with no name left shows as nothing here; the page words that itself.
-        return buildUsageOverview({ period: input.period, now, rows, agents, unknownName: "" });
+        const ended = await deps.prisma.run.findMany({
+          where: {
+            spaceId: context.actor.spaceId,
+            userId: context.actor.userId,
+            status: { in: ["completed", "failed"] },
+            completedAt: {
+              gte: new Date(window.from),
+              lt: new Date(Math.max(window.to, now.getTime())),
+            },
+          },
+          select: { botId: true, status: true, startedAt: true, completedAt: true },
+          take: USAGE_OVERVIEW_ROW_LIMIT,
+        });
+        return buildUsageOverview({
+          period: input.period,
+          now,
+          rows,
+          agents,
+          unknownName: "",
+          outcomes: buildRunOutcomes(ended),
+        });
       }),
       subscriptions: authed.usage.subscriptions.handler(async ({ context }) => {
         const rows = await deps.prisma.providerQuota.findMany({
