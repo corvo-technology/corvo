@@ -7,10 +7,12 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { AppCatalogGrid } from "./AppCatalogGrid";
 
 const connect = vi.hoisted(() => vi.fn());
+const giveAccess = vi.hoisted(() => vi.fn());
 const bridge = vi.hoisted(() => ({ current: undefined as unknown }));
 vi.mock("../lib/desktop", () => ({ desktopBridge: () => bridge.current }));
 vi.mock("../lib/app-catalog-connect", () => ({
   connectCatalogApp: (...args: unknown[]) => connect(...args),
+  giveAgentAccess: (...args: unknown[]) => giveAccess(...args),
 }));
 vi.mock("@lingui/react/macro", () => ({
   Plural: () => null,
@@ -44,6 +46,7 @@ const onChanged = vi.fn();
 beforeEach(() => {
   bridge.current = undefined;
   connect.mockReset().mockResolvedValue({ server: {}, oauth: "connected" });
+  giveAccess.mockReset().mockResolvedValue({});
   onUsePrompt.mockReset();
   onChanged.mockReset();
 });
@@ -52,7 +55,9 @@ function added(slug: string, endpoint: string, oauthStatus: McpServer["oauthStat
   return { id: `srv_${slug}`, slug, endpoint, oauthStatus } as McpServer;
 }
 
-async function mount(props: { query?: string; servers?: McpServer[]; withPrompts?: boolean } = {}) {
+async function mount(
+  props: { query?: string; servers?: McpServer[]; withPrompts?: boolean; botId?: string } = {},
+) {
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
@@ -63,6 +68,7 @@ async function mount(props: { query?: string; servers?: McpServer[]; withPrompts
         servers={props.servers ?? []}
         onUsePrompt={props.withPrompts === false ? undefined : onUsePrompt}
         onChanged={onChanged}
+        botId={props.botId}
       />,
     ),
   );
@@ -203,5 +209,35 @@ it("renders no catalog chrome when the search has no match", async () => {
   const { host, unmount } = await mount({ query: "zzzz-no-such-app" });
   expect(host.querySelector('[data-testid="app-catalog"]')).toBeNull();
   expect(host.querySelectorAll("button")).toHaveLength(0);
+  await unmount();
+});
+
+it("lets the agent use an app added earlier before sending it an example about the app", async () => {
+  const servers = [added("linear", "https://mcp.linear.app/mcp", "connected")];
+  const { host, unmount } = await mount({ servers, botId: "bot_1" });
+  await act(async () => button(host, "Added", tile(host, "linear"))?.click());
+  await act(async () => button(host, "What is assigned to me this week?")?.click());
+  expect(giveAccess).toHaveBeenCalledWith("bot_1", "srv_linear");
+  expect(onUsePrompt).toHaveBeenCalledWith("What is assigned to me this week?");
+  await unmount();
+});
+
+it("does not send the example when the agent could not be given access", async () => {
+  giveAccess.mockRejectedValue(new Error("no"));
+  const servers = [added("linear", "https://mcp.linear.app/mcp", "connected")];
+  const { host, unmount } = await mount({ servers, botId: "bot_1" });
+  await act(async () => button(host, "Added", tile(host, "linear"))?.click());
+  await act(async () => button(host, "What is assigned to me this week?")?.click());
+  expect(onUsePrompt).not.toHaveBeenCalled();
+  await unmount();
+});
+
+it("passes the agent along when adding an app", async () => {
+  const { host, unmount } = await mount({ botId: "bot_1" });
+  await act(async () => button(host, "Add", tile(host, "linear"))?.click());
+  expect(connect).toHaveBeenCalledWith(
+    expect.objectContaining({ slug: "linear" }),
+    expect.objectContaining({ botId: "bot_1" }),
+  );
   await unmount();
 });
