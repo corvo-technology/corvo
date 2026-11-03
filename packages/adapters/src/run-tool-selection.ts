@@ -69,6 +69,8 @@ export function selectBuiltinToolsForRun(options: {
   fleetManagement?: boolean;
   /** A follow-up run whose source message the user wrote. */
   followUpFromUser?: boolean;
+  /** A routine run with later workflow steps, which may end the chain early. */
+  workflowContinues?: boolean;
 }) {
   const disabled = disabledBuiltinToolSet(options.disabledBuiltinTools);
   const fleetToolsAllowed = isOwnerStartedRun(options.trigger, Boolean(options.followUpFromUser));
@@ -94,6 +96,7 @@ export function selectBuiltinToolsForRun(options: {
       (options.trigger !== "created" || CREATED_RUN_TOOL_NAMES.has(tool.name)) &&
       (!FLEET_TOOL_NAMES_SET.has(tool.name) ||
         (Boolean(options.fleetManagement) && fleetToolsAllowed)) &&
+      (options.workflowContinues || tool.name !== "workflow_stop") &&
       (options.mediaImagesEnabled || tool.name !== "generate_image") &&
       (options.mediaVideoEnabled || tool.name !== "generate_video") &&
       (options.ticketBoardEnabled ||

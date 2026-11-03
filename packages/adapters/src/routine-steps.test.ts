@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ExecutorDeps } from "./executor-deps.js";
-import { startNextRoutineStep, startWorkflowStepAfter, stepPrompt } from "./routine-steps.js";
+import {
+  startNextRoutineStep,
+  startWorkflowStepAfter,
+  stepPrompt,
+  workflowContinuesAfter,
+} from "./routine-steps.js";
 
 const done = {
   id: "run-1",
@@ -25,6 +30,7 @@ function setup(
     run?: Partial<typeof done> | null;
     next?: typeof step2 | null;
     runCreate?: unknown;
+    stopped?: boolean;
   } = {},
 ) {
   const runCreate = vi.fn(async (_args: unknown) => ({ id: "run-2" }));
@@ -41,6 +47,9 @@ function setup(
       findUnique: vi.fn(async () => ({ position: 2 })),
       findFirst: vi.fn(async () => (overrides.next === undefined ? step2 : overrides.next)),
       count: vi.fn(async () => 1),
+    },
+    event: {
+      findFirst: vi.fn(async (_args: unknown) => (overrides.stopped ? { id: "event-1" } : null)),
     },
     bot: { findFirst: vi.fn(async () => ({ id: "bot-2", thread: { id: "thread-2" } })) },
     routine: {
@@ -81,6 +90,20 @@ describe("startNextRoutineStep", () => {
       },
     });
     expect(enqueue).toHaveBeenCalledTimes(1);
+  });
+
+  it("does nothing after a step that called workflow_stop, and looks for that call by name", async () => {
+    const { deps, prisma, runCreate, enqueue } = setup({ stopped: true });
+    await startNextRoutineStep(deps, "run-1");
+    expect(runCreate).not.toHaveBeenCalled();
+    expect(enqueue).not.toHaveBeenCalled();
+    expect(prisma.event.findFirst.mock.calls[0]?.[0]).toMatchObject({
+      where: {
+        runId: "run-1",
+        type: "agent.tool.called",
+        payload: { path: ["name"], equals: "workflow_stop" },
+      },
+    });
   });
 
   it("does nothing after a run that did not complete", async () => {
@@ -128,5 +151,39 @@ describe("startWorkflowStepAfter", () => {
     const { deps, enqueue } = setup();
     enqueue.mockRejectedValue(new Error("queue down"));
     await expect(startWorkflowStepAfter(deps, "routine-1", "run-1")).resolves.toBeUndefined();
+  });
+});
+
+describe("workflowContinuesAfter", () => {
+  const prismaWith = (steps: number, position = 2) =>
+    ({
+      routineStep: {
+        findUnique: vi.fn(async () => ({ position })),
+        count: vi.fn(async (_args: unknown) => steps),
+      },
+    }) as unknown as ExecutorDeps["prisma"] & {
+      routineStep: { count: ReturnType<typeof vi.fn> };
+    };
+
+  it("is true when steps follow the one this run is, counting from step 1 for the first", async () => {
+    const first = prismaWith(1);
+    expect(await workflowContinuesAfter(first, { routineId: "r", routineStepId: null })).toBe(true);
+    expect(first.routineStep.count.mock.calls[0]?.[0]).toMatchObject({
+      where: { routineId: "r", position: { gt: 1 } },
+    });
+    const later = prismaWith(1, 3);
+    await workflowContinuesAfter(later, { routineId: "r", routineStepId: "s3" });
+    expect(later.routineStep.count.mock.calls[0]?.[0]).toMatchObject({
+      where: { routineId: "r", position: { gt: 3 } },
+    });
+  });
+
+  it("is false for the last step and for a run that is not part of a routine", async () => {
+    expect(
+      await workflowContinuesAfter(prismaWith(0), { routineId: "r", routineStepId: "s2" }),
+    ).toBe(false);
+    expect(
+      await workflowContinuesAfter(prismaWith(5), { routineId: null, routineStepId: null }),
+    ).toBe(false);
   });
 });
