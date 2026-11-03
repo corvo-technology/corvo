@@ -2,7 +2,7 @@ import { runContinueJob } from "@corvo/adapter-kit";
 import { displayName } from "@corvo/core";
 import type { PrismaClient } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
-import { returnBotMessageOutcome } from "./bot-messages.js";
+import { returnBotMessageOutcome, runReturnsOutcome } from "./bot-messages.js";
 import { withComputerScreenAvailability } from "./computer-screens.js";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { notifyRun } from "./run-notifications.js";
@@ -86,7 +86,7 @@ export async function failRunBeforeTurn(
       .enqueue(runContinueJob(failed.continuationRunId))
       .catch((error) => getLogger().error("steering continuation enqueue", error));
   }
-  if (run.trigger === "bot_message") {
+  if (await runReturnsOutcome(deps.prisma, run)) {
     await returnBotMessageOutcome(
       deps,
       run,
