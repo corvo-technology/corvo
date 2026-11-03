@@ -5185,6 +5185,10 @@ msgstr "Rutinas"
 msgid "Routines that run while you're away"
 msgstr "Rutinas que se ejecutan mientras estás fuera"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Routing model"
+msgstr "Modelo de enrutamiento"
+
 #: src/components/markdown-copy.tsx
 msgid "Row"
 msgstr "Fila"
