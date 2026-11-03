@@ -731,6 +731,10 @@ msgstr "Computador do agente"
 msgid "Agents"
 msgstr "Agentes"
 
+#: src/pages/AppAgentAccess.tsx
+msgid "Agents that can use it"
+msgstr "Agentes que podem usar"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Agents:"
 msgstr "Agentes:"
@@ -2334,6 +2338,7 @@ msgstr "Não foi possível desfazer a importação"
 msgid "Could not update"
 msgstr "Não foi possível atualizar"
 
+#: src/pages/AppAgentAccess.tsx
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not update agent access"
 msgstr "Não foi possível atualizar o acesso do agente"

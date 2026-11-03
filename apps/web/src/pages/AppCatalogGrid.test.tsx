@@ -9,6 +9,7 @@ import { AppCatalogGrid } from "./AppCatalogGrid";
 const connect = vi.hoisted(() => vi.fn());
 const giveAccess = vi.hoisted(() => vi.fn());
 const bridge = vi.hoisted(() => ({ current: undefined as unknown }));
+vi.mock("./AppAgentAccess", () => ({ AppAgentAccess: () => null }));
 vi.mock("../lib/desktop", () => ({ desktopBridge: () => bridge.current }));
 vi.mock("../lib/app-catalog-connect", () => ({
   connectCatalogApp: (...args: unknown[]) => connect(...args),

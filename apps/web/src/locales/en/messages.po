@@ -731,6 +731,10 @@ msgstr "Agent computer"
 msgid "Agents"
 msgstr "Agents"
 
+#: src/pages/AppAgentAccess.tsx
+msgid "Agents that can use it"
+msgstr "Agents that can use it"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Agents:"
 msgstr "Agents:"
@@ -2334,6 +2338,7 @@ msgstr "Could not undo the import"
 msgid "Could not update"
 msgstr "Could not update"
 
+#: src/pages/AppAgentAccess.tsx
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not update agent access"
 msgstr "Could not update agent access"

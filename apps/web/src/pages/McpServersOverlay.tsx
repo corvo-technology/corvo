@@ -33,6 +33,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { McpServerHealthLine } from "../components/McpServerHealthLine";
+import { setAgentAccess } from "../lib/mcp-access";
 import { connectMcpOauth, MCP_OAUTH_CHANNEL, mcpOAuthRedirectUri } from "../lib/mcp-connect";
 import { useSpaceQueries } from "../lib/query";
 import { rpc } from "../lib/rpc";
@@ -372,14 +373,8 @@ export function McpServersOverlay({
     setError(null);
     const current = botAssignments[botId] ?? [];
     const assigned = current.some((entry) => entry.serverId === server.id);
-    const next = assigned
-      ? current.filter((entry) => entry.serverId !== server.id)
-      : [...current, { serverId: server.id, allowAllTools: true, allowedTools: [] }];
     try {
-      const updated = await rpc.mcp.assignments.replace({
-        botId,
-        assignments: next,
-      });
+      const updated = await setAgentAccess(botId, server.id, current, !assigned);
       await writeSaved(queryClient, assignmentsOptions.queryKey, (all) => [
         ...(all ?? []).filter((entry) => entry.botId !== botId),
         ...updated,

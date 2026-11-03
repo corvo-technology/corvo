@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { connectCatalogApp, giveAgentAccess } from "../lib/app-catalog-connect";
 import { desktopBridge } from "../lib/desktop";
 import { errorText } from "../lib/user-error";
+import { AppAgentAccess } from "./AppAgentAccess";
 
 function AppIcon({ entry }: { entry: AppCatalogEntry }) {
   const [failed, setFailed] = useState(false);
@@ -146,6 +147,7 @@ export function AppCatalogGrid({
             </Button>
           </div>
         ) : null}
+        {server ? <AppAgentAccess server={server} /> : null}
         {signedIn && onUsePrompt ? (
           <div className="flex flex-wrap gap-2">
             {detail.prompts.map((prompt) => (
