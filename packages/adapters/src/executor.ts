@@ -149,6 +149,7 @@ import {
   runtimeFallbackModel,
 } from "./run-model.js";
 import { createReplyState } from "./run-progress.js";
+import { repeatHintForRun } from "./run-repeat.js";
 import { DELEGATED_EMPTY_NOTICE, runAllowsSilentEmpty, runReplyGuidance } from "./run-replies.js";
 import {
   notifyRoutineRetryAttemptsExhausted,
@@ -1302,7 +1303,13 @@ export function createRunExecutor(deps: ExecutorDeps) {
           routesSquads && ownerStartedRun && sourceMessage?.role === "user"
             ? await routingHintForRun(
                 deps,
-                { runId, spaceId: run.spaceId, userId: run.userId, botId: bot.id },
+                {
+                  runId,
+                  spaceId: run.spaceId,
+                  userId: run.userId,
+                  botId: bot.id,
+                  threadId: thread.id,
+                },
                 {
                   request: ((sourceMessage.blocks ?? []) as MessageBlock[])
                     .flatMap((block) => (block.kind === "text" ? [block.text] : []))
@@ -1312,8 +1319,35 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 },
               )
             : undefined;
+        // Only a message the owner typed is worth offering a routine for.
+        const repeatHint =
+          run.trigger === "user" && sourceMessage?.role === "user"
+            ? await repeatHintForRun(
+                deps,
+                {
+                  runId,
+                  spaceId: run.spaceId,
+                  userId: run.userId,
+                  botId: bot.id,
+                  threadId: thread.id,
+                },
+                {
+                  request: ((sourceMessage.blocks ?? []) as MessageBlock[])
+                    .flatMap((block) => (block.kind === "text" ? [block.text] : []))
+                    .join("\n"),
+                  sourceMessageId: run.sourceMessageId ?? "",
+                  own: {
+                    provider: runModelProvider,
+                    modelId: runModelId,
+                    credentialId: credential?.id,
+                  },
+                  context,
+                  registerSecrets: (values) => runSecrets.push(...values),
+                },
+              )
+            : undefined;
         const botDirectory =
-          [renderBotDirectory(teammates), groupDirectory, routingHint]
+          [renderBotDirectory(teammates), groupDirectory, routingHint, repeatHint]
             .filter(Boolean)
             .join("\n\n") || undefined;
 
