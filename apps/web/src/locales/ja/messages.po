@@ -731,6 +731,10 @@ msgstr "エージェントのコンピューター"
 msgid "Agents"
 msgstr "エージェント"
 
+#: src/pages/AppAgentAccess.tsx
+msgid "Agents that can use it"
+msgstr "使用できるエージェント"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Agents:"
 msgstr "エージェント:"
@@ -2334,6 +2338,7 @@ msgstr "インポートを元に戻せませんでした"
 msgid "Could not update"
 msgstr "更新できませんでした"
 
+#: src/pages/AppAgentAccess.tsx
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not update agent access"
 msgstr "エージェントのアクセス権を更新できませんでした"

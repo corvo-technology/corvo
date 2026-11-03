@@ -731,6 +731,10 @@ msgstr "Agent 电脑"
 msgid "Agents"
 msgstr "智能体"
 
+#: src/pages/AppAgentAccess.tsx
+msgid "Agents that can use it"
+msgstr "可以使用它的智能体"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Agents:"
 msgstr "Agent："
@@ -2334,6 +2338,7 @@ msgstr "无法撤销导入"
 msgid "Could not update"
 msgstr "无法更新"
 
+#: src/pages/AppAgentAccess.tsx
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not update agent access"
 msgstr "无法更新 Agent 权限"
