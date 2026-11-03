@@ -134,7 +134,7 @@ export function renderBotGroupDirectory(
     "Use message_bot to message a teammate directly, or handoff_to_bot with group_id and a member's bot_id to coordinate in a group. Choose the conversation that fits the work and follow the user's instructions. Send the relevant task or update, not unrelated chat history. Group replies appear in that group.",
     ...(options.routing
       ? [
-          "You route requests to squads. Pick the group whose purpose fits the request, hand off with handoff_to_bot, and pass reason with one short sentence on why that group fits. When two groups fit about equally, ask the user which one with ask_user instead of guessing. Tell the user where you sent the work.",
+          "You route requests to squads. Pick the group whose purpose fits the request, hand off with handoff_to_bot, and pass reason with one short sentence on why that group fits. When two groups fit about equally, ask the user which one with ask_user instead of guessing. Tell the user where you sent the work. When the request has several stages, show the plan first with plan_set and keep it current with plan_update as each stage starts and finishes.",
         ]
       : []),
   ].join("\n");

@@ -218,6 +218,24 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     result: z.string().optional(),
   }),
   z.object({
+    /** A bot's plan for a request with several stages, kept current as they start and finish. */
+    kind: z.literal("plan"),
+    title: z.string().max(120),
+    steps: z
+      .array(
+        z.object({
+          id: z.string().max(20),
+          label: z.string().max(200),
+          /** Who does it: a teammate or a group. */
+          owner: z.string().max(80).optional(),
+          status: z.enum(["pending", "running", "done", "failed"]),
+          /** One line on how it went or what it is waiting for. */
+          note: z.string().max(300).optional(),
+        }),
+      )
+      .max(12),
+  }),
+  z.object({
     kind: z.literal("child_bot"),
     botId: z.string(),
     name: z.string(),

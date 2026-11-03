@@ -209,6 +209,8 @@ const OWN_STATE_RESULT_TOOLS = new Set([
   "skill_read",
   "skill_install",
   "store_skills",
+  "plan_set",
+  "plan_update",
   "store_agents",
   "list_routines",
   "task_catalog",

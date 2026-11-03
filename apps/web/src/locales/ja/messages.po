@@ -2750,6 +2750,7 @@ msgstr "確認なしですべて実行します。信頼できるボット向け
 msgid "Don’t have an account?"
 msgstr "アカウントをお持ちでないですか？"
 
+#: src/components/PlanCard.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
@@ -3018,6 +3019,7 @@ msgstr "非常に高い"
 msgid "failed"
 msgstr "失敗"
 
+#: src/components/PlanCard.tsx
 #: src/components/SubagentCard.tsx
 #: src/pages/ActivityList.tsx
 #: src/pages/RoutineCard.tsx
@@ -3336,6 +3338,7 @@ msgstr "OpenAPI JSONをインポート"
 msgid "Import this agent as a bot?"
 msgstr "このエージェントをボットとしてインポートしますか？"
 
+#: src/components/PlanCard.tsx
 #: src/lib/ticket-status.ts
 msgid "In progress"
 msgstr "進行中"
@@ -4247,7 +4250,7 @@ msgstr "OpenClaw、Hermes、またはエージェントのドキュメントが�
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
-msgstr"ここには公開アドレスがないため、あなたが承認したスケジュールで受信トレイを確認します。"
+msgstr "ここには公開アドレスがないため、あなたが承認したスケジュールで受信トレイを確認します。"
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "No remote MCP servers found"
@@ -6575,6 +6578,10 @@ msgstr "しばらく待ってから再度テストしてください。"
 
 #: src/pages/shell/message-view.tsx
 msgid "waiting"
+msgstr "待機中"
+
+#: src/components/PlanCard.tsx
+msgid "Waiting"
 msgstr "待機中"
 
 #: src/lib/roster-status.ts

@@ -27,11 +27,16 @@ const openHelpers = new Set<string>();
 
 export type SpecialMessageBlock = Extract<
   MessageBlock,
-  { kind: "subagent" | "child_bot" | "cloud_agent" }
+  { kind: "subagent" | "child_bot" | "cloud_agent" | "plan" }
 >;
 
 export function isSpecialMessageBlock(block: MessageBlock): block is SpecialMessageBlock {
-  return block.kind === "subagent" || block.kind === "child_bot" || block.kind === "cloud_agent";
+  return (
+    block.kind === "subagent" ||
+    block.kind === "child_bot" ||
+    block.kind === "cloud_agent" ||
+    block.kind === "plan"
+  );
 }
 
 type SpecialMessageCardProps = {
@@ -176,6 +181,91 @@ export function SpecialMessageCard(props: SpecialMessageCardProps) {
   const tokens = withUserBubble(mobileTokens(), userBubble);
   const { t } = useI18n();
   if (special.kind === "subagent") return <HelperMessageCard {...props} special={special} />;
+  if (special.kind === "plan") {
+    const label = {
+      pending: t("Waiting"),
+      running: t("In progress"),
+      done: t("Done"),
+      failed: t("Failed"),
+    };
+    return (
+      <View
+        {...actionProps}
+        testID="plan-card"
+        style={{
+          width: "90%",
+          borderRadius: 18,
+          backgroundColor: tokens.card,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          gap: 12,
+        }}
+      >
+        <Text style={{ color: tokens.cardForeground, ...typeScale.cardTitle }}>
+          {special.title}
+        </Text>
+        {special.steps.map((step) => (
+          <View
+            key={step.id}
+            accessible
+            accessibilityLabel={`${label[step.status]}: ${step.label}`}
+            style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}
+          >
+            <View style={{ marginTop: 2 }}>
+              <NativeSymbol
+                ios={
+                  step.status === "done"
+                    ? "checkmark.circle.fill"
+                    : step.status === "failed"
+                      ? "xmark.circle.fill"
+                      : step.status === "running"
+                        ? "arrow.triangle.2.circlepath"
+                        : "circle"
+                }
+                android={
+                  step.status === "done"
+                    ? "checkmark-circle"
+                    : step.status === "failed"
+                      ? "close-circle"
+                      : step.status === "running"
+                        ? "sync-circle"
+                        : "ellipse-outline"
+                }
+                size={18}
+                color={
+                  step.status === "done"
+                    ? tokens.success
+                    : step.status === "failed"
+                      ? tokens.destructive
+                      : tokens.mutedForeground
+                }
+              />
+            </View>
+            <View style={{ flexShrink: 1, gap: 2 }}>
+              <Text
+                style={{
+                  color: step.status === "done" ? tokens.mutedForeground : tokens.cardForeground,
+                  ...typeScale.body,
+                }}
+              >
+                {step.label}
+              </Text>
+              {step.owner ? (
+                <Text style={{ color: tokens.mutedForeground, ...typeScale.caption }}>
+                  {step.owner}
+                </Text>
+              ) : null}
+              {step.note ? (
+                <Text style={{ color: tokens.mutedForeground, ...typeScale.caption }}>
+                  {step.note}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
   if (special.kind === "cloud_agent") {
     const title = special.title || t("Cloud agent");
     const statusLabel =

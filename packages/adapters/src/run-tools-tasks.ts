@@ -2,6 +2,7 @@ import {
   desktopProtectionGuardMessage,
   protectedComputerLifecycleRefusal,
 } from "./desktop-command-guard.js";
+import { setPlanCard, updatePlanCard } from "./plan-card.js";
 import type { ToolHandlers } from "./run-tool-gate.js";
 import {
   cancelScheduleFromTool,
@@ -289,6 +290,14 @@ export const taskTools: ToolHandlers = {
         },
       ),
     );
+  },
+  async plan_set(ctx, call) {
+    const { deps, run } = ctx;
+    return call.finish(await setPlanCard(deps, run, call.args));
+  },
+  async plan_update(ctx, call) {
+    const { deps, run } = ctx;
+    return call.finish(await updatePlanCard(deps, run, call.args));
   },
   async store_skills(ctx, call) {
     const { deps, run } = ctx;

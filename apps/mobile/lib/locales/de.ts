@@ -20,6 +20,8 @@ export const DE_MESSAGES: Record<string, string> = {
     "Füge in den Einstellungen ein Modell hinzu, um dies zu nutzen.",
   "Approval model": "Freigabemodell",
   "Routing model": "Routing-Modell",
+  Waiting: "Wartet",
+  "In progress": "In Arbeit",
   "Main model": "Hauptmodell",
   "Add fallback": "Backup-Modell hinzufügen",
   "Manage {provider}": "{provider} verwalten",

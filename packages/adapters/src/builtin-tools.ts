@@ -1193,6 +1193,71 @@ export const builtinAgentTools: ConnectorTool[] = [
     },
   },
   {
+    name: "plan_set",
+    description:
+      "Show the user the plan for a request that has several stages, as one card in this chat, before you start delegating. Give a short title and 2 to 12 steps, each with a label and, when known, an owner (a teammate or group). Write it once per request, then keep it current with plan_update.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", maxLength: 120 },
+        steps: {
+          type: "array",
+          minItems: 1,
+          maxItems: 12,
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", maxLength: 200 },
+              owner: { type: "string", maxLength: 80 },
+            },
+            required: ["label"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["title", "steps"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "plan_update",
+    description:
+      "Update the plan card in this chat as work moves: set a step's status (pending, running, done, failed) and a one-line note, or add steps when the plan grows. Mark a step running when you hand it off and done or failed when its answer comes back.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        updates: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              step: { type: "string", description: "The step id from plan_set." },
+              status: { type: "string", enum: ["pending", "running", "done", "failed"] },
+              note: { type: "string", maxLength: 300 },
+              owner: { type: "string", maxLength: 80 },
+              label: { type: "string", maxLength: 200 },
+            },
+            required: ["step"],
+            additionalProperties: false,
+          },
+        },
+        add: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", maxLength: 200 },
+              owner: { type: "string", maxLength: 80 },
+            },
+            required: ["label"],
+            additionalProperties: false,
+          },
+        },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: "store_skills",
     description:
       "Find ready-made skills the owner can add from the Store: slug, name, what it is for, and whether it is already added. Call it with query (words describing the task) when a multi-step task is not covered by your skills, before writing one yourself. Pass language: the language you are speaking with the owner.",
