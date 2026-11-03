@@ -20,7 +20,7 @@ const input = {
 
 describe("repeatHintForRun", () => {
   it("looks only at the owner's earlier typed requests in this thread, not the new one", async () => {
-    const findMany = vi.fn(async () => []);
+    const findMany = vi.fn(async (_query: unknown) => []);
     const deps = { prisma: { message: { findMany } } } as unknown as ExecutorDeps;
     expect(await repeatHintForRun(deps, scope, input)).toBeUndefined();
     expect(findMany.mock.calls[0]?.[0]).toMatchObject({
