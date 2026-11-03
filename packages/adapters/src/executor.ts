@@ -1296,11 +1296,14 @@ export function createRunExecutor(deps: ExecutorDeps) {
               }),
           !thread.groupId
             ? loadBotGroups(deps.prisma, run, {
-                allGroups: bot.squadRouting && mayRouteWithoutOwner(run.trigger, ownerStartedRun),
+                allGroups:
+                  bot.squadRouting &&
+                  mayRouteWithoutOwner(run.trigger, ownerStartedRun, peerMessage),
               })
             : [],
         ]);
-        const routesSquads = bot.squadRouting && mayRouteWithoutOwner(run.trigger, ownerStartedRun);
+        const routesSquads =
+          bot.squadRouting && mayRouteWithoutOwner(run.trigger, ownerStartedRun, peerMessage);
         const groupDirectory = renderBotGroupDirectory(groups, { routing: routesSquads });
         // The routing model only advises: the bot still hands off, or asks, as before.
         const routingHint =

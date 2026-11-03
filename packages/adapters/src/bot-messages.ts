@@ -69,7 +69,7 @@ export async function loadBotMessageContext(
 export async function handoffReturnTarget(
   prisma: PrismaClient,
   sourceMessageId: string | null | undefined,
-): Promise<{ fromBotId: string } | undefined> {
+): Promise<{ fromBotId: string; continuesRouting: boolean } | undefined> {
   if (!sourceMessageId) return undefined;
   const source = await prisma.message.findUnique({
     where: { id: sourceMessageId },
@@ -80,7 +80,9 @@ export async function handoffReturnTarget(
     (block): block is Extract<MessageBlock, { kind: "handoff" }> =>
       block.kind === "handoff" && block.returnsToSender === true,
   );
-  return handoff ? { fromBotId: handoff.fromBotId } : undefined;
+  return handoff
+    ? { fromBotId: handoff.fromBotId, continuesRouting: handoff.routedWithAuthority === true }
+    : undefined;
 }
 
 /** Whether a finished run owes its outcome to the bot that sent it the work. */
@@ -117,7 +119,7 @@ export async function messageBot(
     intent?: BotMessageIntent;
     deliveryKey?: string;
   },
-  options?: { allowTerminalSource?: boolean; forceUnread?: boolean },
+  options?: { allowTerminalSource?: boolean; forceUnread?: boolean; continuesRouting?: boolean },
 ) {
   const message = String(input.message ?? "").trim();
   if (!message) return { ok: false as const, error: "message is required" };
@@ -263,6 +265,7 @@ export async function messageBot(
           hop,
           intent,
           returnToMessageId: outbound.id,
+          ...(options?.continuesRouting ? { continuesRouting: true as const } : {}),
         };
         const inbound = await createThreadMessageInTransaction(tx, {
           threadId: targetThreadId,
@@ -374,7 +377,9 @@ export async function returnBotMessageOutcome(
   intent: "result" | "status" = "result",
   options?: { forceUnread?: boolean },
 ) {
-  const source: { fromBotId: string; intent?: BotMessageIntent } | undefined =
+  const source:
+    | { fromBotId: string; intent?: BotMessageIntent; continuesRouting?: boolean }
+    | undefined =
     (await loadBotMessageContext(deps.prisma, run.sourceMessageId)) ??
     (await handoffReturnTarget(deps.prisma, run.sourceMessageId));
   if (!source) {
@@ -419,6 +424,7 @@ export async function returnBotMessageOutcome(
     {
       allowTerminalSource: true,
       forceUnread: options?.forceUnread,
+      continuesRouting: source.continuesRouting,
     },
   );
   if (outcome.ok) await markBotOutcomeReturned(deps.prisma, run.id);

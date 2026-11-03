@@ -627,6 +627,38 @@ describe("squad routing authority", () => {
     expect(h.runCreate).not.toHaveBeenCalled();
   });
 
+  it("marks a handoff made with squad authority, so its answer may route on, and not one made without", async () => {
+    const routerTurn = outsideTurn();
+    await handoffToGroupBot(
+      routerTurn.deps as never,
+      run,
+      "group-1",
+      { bot_id: "bot-b", message: "Avaliar o hero" },
+      routing,
+    );
+    expect(routerTurn.messageCreate.mock.calls[0]?.[0]).toMatchObject({
+      data: { blocks: [expect.objectContaining({ routedWithAuthority: true })] },
+    });
+    // The same sender as a member of the group, in its private chat: no squad authority.
+    const memberTurn = outsideTurn();
+    memberTurn.tx.chatGroup.findFirst.mockResolvedValue({
+      id: "group-1",
+      name: "Project",
+      thread: { id: "group-thread" },
+      members: ["bot-a", "bot-b"].map((id) => ({ bot: { id, name: id } })),
+    } as never);
+    await handoffToGroupBot(
+      memberTurn.deps as never,
+      run,
+      "group-1",
+      { bot_id: "bot-b", message: "Review it" },
+      MEMBER_ONLY,
+    );
+    expect(memberTurn.messageCreate.mock.calls[0]?.[0]).toMatchObject({
+      data: { blocks: [expect.not.objectContaining({ routedWithAuthority: true })] },
+    });
+  });
+
   it("a handoff from outside the group expects the stage's result back", async () => {
     const h = outsideTurn();
     await handoffToGroupBot(

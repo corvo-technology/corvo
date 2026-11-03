@@ -772,6 +772,38 @@ describe("a stage handed off by a router outside the group", () => {
     expect(harness.enqueue).toHaveBeenCalledOnce();
   });
 
+  it("tells the router it may route the next stage only when it routed with the owner's authority", async () => {
+    const withAuthority = deps({ hopBlocks: [{ ...routed, routedWithAuthority: true }] });
+    await returnBotMessageOutcome(
+      withAuthority.deps,
+      { ...run, sourceMessageId: "message-handoff" },
+      sender,
+      "Here are five bios.",
+    );
+    expect(
+      withAuthority.tx.message.create.mock.calls.some(([args]) =>
+        JSON.stringify((args as { data: { blocks: unknown } }).data.blocks).includes(
+          '"continuesRouting":true',
+        ),
+      ),
+    ).toBe(true);
+
+    const withoutAuthority = deps({ hopBlocks: [routed] });
+    await returnBotMessageOutcome(
+      withoutAuthority.deps,
+      { ...run, sourceMessageId: "message-handoff" },
+      sender,
+      "Here are five bios.",
+    );
+    expect(
+      withoutAuthority.tx.message.create.mock.calls.some(([args]) =>
+        JSON.stringify((args as { data: { blocks: unknown } }).data.blocks).includes(
+          "continuesRouting",
+        ),
+      ),
+    ).toBe(false);
+  });
+
   it("returns nothing for a handoff between group members, which passes the baton", async () => {
     const { returnsToSender: _omitted, ...transfer } = routed;
     const harness = deps({ hopBlocks: [transfer] });
