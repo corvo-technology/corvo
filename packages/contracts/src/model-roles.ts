@@ -4,7 +4,7 @@ import { ModelBackupChoiceSchema, modelChoiceListSchema, ThinkingLevelSchema } f
 import { Id } from "./ids.js";
 
 /** Add purposes here; connections, persistence, pickers and backups stay shared. */
-export const ModelRoleSchema = z.enum(["main", "approval"]);
+export const ModelRoleSchema = z.enum(["main", "approval", "routing"]);
 export type ModelRole = z.infer<typeof ModelRoleSchema>;
 export const ModelRoleChoiceSchema = ModelBackupChoiceSchema.extend({
   thinkingLevel: ThinkingLevelSchema.nullable().optional(),
@@ -25,5 +25,7 @@ export const ModelRoleViewSchema = ModelRoleSettingsSchema.extend({
 export type ModelRoleView = z.infer<typeof ModelRoleViewSchema>;
 
 export function modelSupportsRole(entry: ModelCatalogEntry, role: ModelRole): boolean {
-  return role === "approval" || entry.protocol !== "decisions";
+  if (role === "main") return entry.protocol !== "decisions";
+  // Routing only ever picks among a few named options, which is what decision models do.
+  return role === "approval" || entry.protocol === "decisions";
 }

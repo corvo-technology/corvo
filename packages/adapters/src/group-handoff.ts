@@ -280,13 +280,20 @@ export async function loadGroupContext(
   );
 }
 
+type DirectoryGroup = {
+  id: string;
+  name: string;
+  purpose: string | null;
+  members: { id: string; name: string }[];
+};
+
 /** Only the current bot's active groups in the same owner/space are discoverable. */
-export async function loadBotGroupDirectory(
+export async function loadBotGroups(
   prisma: PrismaClient,
   actor: { botId: string; userId: string; spaceId: string },
   /** `allGroups`: a squad-routing bot sees every active group of the owner in this space. */
   options: { allGroups?: boolean } = {},
-): Promise<string | undefined> {
+): Promise<DirectoryGroup[]> {
   const groups = await prisma.chatGroup.findMany({
     where: {
       userId: actor.userId,
@@ -310,13 +317,20 @@ export async function loadBotGroupDirectory(
     orderBy: { createdAt: "asc" },
     take: 40,
   });
-  return renderBotGroupDirectory(
-    groups.map((group) => ({
-      id: group.id,
-      name: group.name,
-      purpose: group.purpose,
-      members: group.members.map((member) => member.bot),
-    })),
-    { routing: options.allGroups },
-  );
+  return groups.map((group) => ({
+    id: group.id,
+    name: group.name,
+    purpose: group.purpose,
+    members: group.members.map((member) => member.bot),
+  }));
+}
+
+export async function loadBotGroupDirectory(
+  prisma: PrismaClient,
+  actor: { botId: string; userId: string; spaceId: string },
+  options: { allGroups?: boolean } = {},
+): Promise<string | undefined> {
+  return renderBotGroupDirectory(await loadBotGroups(prisma, actor, options), {
+    routing: options.allGroups,
+  });
 }

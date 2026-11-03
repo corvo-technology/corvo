@@ -215,7 +215,7 @@ export function createRouterContext(deps: RouterDeps) {
   };
   const modelRoleCatalog = async (actor: Actor, role: ModelRole): Promise<ModelCatalogEntry[]> => {
     const catalog = await chatCatalog(actor);
-    const decisions = role === "approval" ? decisionModelCatalog() : [];
+    const decisions = role === "main" ? [] : decisionModelCatalog();
     const managedProviders = new Set(
       catalog.filter((entry) => "managed" in entry && entry.managed).map((entry) => entry.provider),
     );

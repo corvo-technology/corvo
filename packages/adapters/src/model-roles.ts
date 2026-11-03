@@ -27,6 +27,8 @@ export function deploymentModelRole(
   role: ModelRole,
   defaults: DeploymentModelDefaults,
 ): ModelRoleSettings {
+  // Routing has no deployment default: without a member's choice, the router bot decides.
+  if (role === "routing") return { primary: null, backups: [] };
   if (role === "approval") {
     const checker = resolveAutoReviewChecker(defaults.env);
     return {

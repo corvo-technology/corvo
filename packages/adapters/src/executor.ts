@@ -24,6 +24,7 @@ import {
   promptInvokesSkill,
   redactSecrets,
   renderBotDirectory,
+  renderBotGroupDirectory,
   userRunError,
   userTurnMessageForRun,
 } from "@corvo/core";
@@ -78,7 +79,7 @@ import { formatCurrentTimeInstruction } from "./current-time.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
 import type { ExecutorDeps } from "./executor-deps.js";
 import type { FleetRun } from "./fleet-tools.js";
-import { loadBotGroupDirectory, loadGroupContext } from "./group-handoff.js";
+import { loadBotGroups, loadGroupContext } from "./group-handoff.js";
 import {
   formatCompactedSummary,
   formatRecalledMemory,
@@ -154,6 +155,7 @@ import {
   retryRoutineRun,
   wakeRoutine,
 } from "./run-routines.js";
+import { routingHintForRun } from "./run-routing.js";
 import {
   BUILTIN_AGENT_TOOL_NAMES,
   offeredFleetTools,
@@ -1272,7 +1274,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
           : history;
         const runtimeHistory = [...historicalContext, ...historyWithImages];
         // Without a roster a bot only knows the bots it spawned itself.
-        const [teammates, groupDirectory] = await Promise.all([
+        const [teammates, groups] = await Promise.all([
           thread.groupId
             ? []
             : deps.prisma.bot.findMany({
@@ -1288,13 +1290,32 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 take: BOT_DIRECTORY_LIMIT,
               }),
           !thread.groupId
-            ? loadBotGroupDirectory(deps.prisma, run, {
+            ? loadBotGroups(deps.prisma, run, {
                 allGroups: bot.squadRouting && mayRouteWithoutOwner(run.trigger, ownerStartedRun),
               })
-            : undefined,
+            : [],
         ]);
+        const routesSquads = bot.squadRouting && mayRouteWithoutOwner(run.trigger, ownerStartedRun);
+        const groupDirectory = renderBotGroupDirectory(groups, { routing: routesSquads });
+        // The routing model only advises: the bot still hands off, or asks, as before.
+        const routingHint =
+          routesSquads && ownerStartedRun && sourceMessage?.role === "user"
+            ? await routingHintForRun(
+                deps,
+                { runId, spaceId: run.spaceId, userId: run.userId, botId: bot.id },
+                {
+                  request: ((sourceMessage.blocks ?? []) as MessageBlock[])
+                    .flatMap((block) => (block.kind === "text" ? [block.text] : []))
+                    .join("\n"),
+                  groups,
+                  context,
+                },
+              )
+            : undefined;
         const botDirectory =
-          [renderBotDirectory(teammates), groupDirectory].filter(Boolean).join("\n\n") || undefined;
+          [renderBotDirectory(teammates), groupDirectory, routingHint]
+            .filter(Boolean)
+            .join("\n\n") || undefined;
 
         if (heldForTakeover) {
           const releasedCheckpoint = takeoverCheckpointOf(

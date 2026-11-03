@@ -266,6 +266,10 @@ describe("model roles", () => {
         env: { CORVO_AUTO_REVIEW_PROVIDER: "local-provider", CORVO_AUTO_REVIEW_MODEL: "judge" },
       }),
     ).toEqual({ primary: { provider: "local-provider", modelId: "judge" }, backups: [] });
+    expect(deploymentModelRole("routing", deploymentDefaults)).toEqual({
+      primary: null,
+      backups: [],
+    });
   });
 
   it("uses the deployment's defaults for a member who chose nothing", async () => {
