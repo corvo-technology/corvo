@@ -410,6 +410,10 @@ interface RetryScenario {
   archivedBeforeCreate?: boolean;
   invalidDestination?: boolean;
   retryStartedBeforeCleanup?: boolean;
+  /** The failed run is this step of a workflow. */
+  stepId?: string;
+  /** Steps after the failed one. */
+  laterSteps?: number;
 }
 
 function retryHarness(scenario: RetryScenario = {}) {
@@ -426,6 +430,7 @@ function retryHarness(scenario: RetryScenario = {}) {
     trigger: "routine",
     routineId: "routine-1",
     retryOfRunId: scenario.retryOfRunId ?? null,
+    routineStepId: scenario.stepId ?? null,
     modelProvider: "routine-provider",
     modelId: "routine-model",
     thinkingLevel: "low",
@@ -485,6 +490,10 @@ function retryHarness(scenario: RetryScenario = {}) {
               bot: { archivedAt: scenario.archived ? failedAt : null },
             },
       ),
+    },
+    routineStep: {
+      findUnique: vi.fn(async () => ({ position: 2 })),
+      count: vi.fn(async () => scenario.laterSteps ?? 0),
     },
     task: {
       findUnique: vi.fn(async () => (scenario.missingTask ? null : { prompt: "Sweep the inbox" })),
@@ -697,6 +706,38 @@ describe("running a routine retry", () => {
       payload: { runId: "run-2" },
       replaceKey: "run:run-2",
     });
+  });
+
+  it("keeps a retried workflow step the step it was, so the chain goes on after it", async () => {
+    const { executor, tx } = retryHarness({ stepId: "step-2" });
+
+    await executor.retryRoutineRun("run-1");
+
+    expect(tx.run.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ retryOfRunId: "run-1", routineStepId: "step-2" }),
+    });
+  });
+
+  it("tells the owner the next steps did not run when a workflow step is given up on", async () => {
+    const { executor, send } = retryHarness({ active: false, stepId: "step-2", laterSteps: 1 });
+
+    await executor.retryRoutineRun("run-1");
+
+    expect(send).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        kind: "failure",
+        body: expect.stringContaining("The next steps of this workflow did not run."),
+      }),
+      expect.anything(),
+    );
+  });
+
+  it("says nothing about steps when the failed run was the last one or the routine has none", async () => {
+    const { executor, send } = retryHarness({ active: false, stepId: "step-2", laterSteps: 0 });
+
+    await executor.retryRoutineRun("run-1");
+
+    expect(send.mock.calls[0]?.[0].body).not.toContain("workflow");
   });
 
   it.each([

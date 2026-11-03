@@ -89,22 +89,55 @@ export async function scheduleRoutineRetry(
   }
 }
 
+const WORKFLOW_ENDED_NOTICE = "The next steps of this workflow did not run.";
+
+/** Whether the failed run is a workflow step with steps after it; the notice never waits on this. */
+async function workflowEndedHere(
+  deps: ExecutorDeps,
+  failed: { routineId?: string | null; routineStepId?: string | null },
+): Promise<boolean> {
+  if (!failed.routineId) return false;
+  try {
+    const current = failed.routineStepId
+      ? await deps.prisma.routineStep.findUnique({
+          where: { id: failed.routineStepId },
+          select: { position: true },
+        })
+      : null;
+    return (
+      (await deps.prisma.routineStep.count({
+        where: { routineId: failed.routineId, position: { gt: current?.position ?? 1 } },
+      })) > 0
+    );
+  } catch (error) {
+    getLogger().warn("routine.workflow_notice_skipped", { error: String(error) });
+    return false;
+  }
+}
+
 async function notifyFailedRoutineRun(
   deps: ExecutorDeps,
-  failed: Parameters<typeof notifyRun>[1] & { error: string | null },
+  failed: Parameters<typeof notifyRun>[1] & {
+    error: string | null;
+    routineId?: string | null;
+    routineStepId?: string | null;
+  },
   options: { retryOnFailure?: boolean } = {},
 ) {
   const bot = await deps.prisma.bot.findUniqueOrThrow({
     where: { id: failed.botId },
     select: { name: true },
   });
+  const chainStopped = await workflowEndedHere(deps, failed);
   await notifyRun(
     deps,
     failed,
     {
       kind: "failure",
       title: `${displayName(bot.name, "Bot")} failed`,
-      body: failed.error ?? "",
+      body: [failed.error ?? "", chainStopped ? WORKFLOW_ENDED_NOTICE : ""]
+        .filter(Boolean)
+        .join("\n\n"),
       botId: failed.botId,
       threadId: failed.threadId,
     },
@@ -424,6 +457,8 @@ export async function retryRoutineRun(deps: ExecutorDeps, runId: string) {
           trigger: "routine",
           routineId: failed.routineId,
           retryOfRunId: failed.id,
+          // A retried step is still that step, so the chain goes on after it.
+          ...(failed.routineStepId ? { routineStepId: failed.routineStepId } : {}),
           ...(failed.modelPinned
             ? {
                 modelProvider: failed.modelProvider,

@@ -77,7 +77,7 @@ describe("startNextRoutineStep", () => {
       data: {
         botId: "bot-2",
         threadId: "thread-2",
-        prompt: stepPrompt("Summarize it", "Scout", "Three leads found."),
+        prompt: stepPrompt("Summarize it", [{ bot: "Scout", answer: "Three leads found." }]),
       },
     });
     expect(runCreate.mock.calls[0]![0]).toMatchObject({
