@@ -345,6 +345,22 @@ export function ModelSettingsOverlay({
             }
             panel={connectionAt === "routing" ? panelFor(true) : null}
           />
+          <ModelRoleSettings
+            userId={me.userId}
+            spaceId={me.spaceId}
+            scope={scope}
+            credentials={credentials}
+            modelRole="fast"
+            title={t`Light tasks model`}
+            defaultLabel={t`Choose a model`}
+            providers={providers}
+            providerLabel={providerLabel}
+            onConnect={(next, intent) => openConnection(next, intent, null, "fast")}
+            onManage={(id, credentialId) =>
+              openConnection({ id, name: id }, null, credentialId, "fast")
+            }
+            panel={connectionAt === "fast" ? panelFor(true) : null}
+          />
           {scope === "space" ? null : (
             <ProvidersSection
               credentials={credentials}

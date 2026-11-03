@@ -270,6 +270,27 @@ describe("model roles", () => {
       primary: null,
       backups: [],
     });
+    // The fast role has no default: without a member's choice the main model does the chores.
+    expect(deploymentModelRole("fast", deploymentDefaults)).toEqual({ primary: null, backups: [] });
+  });
+
+  it("keeps a member's fast model apart from their main one", async () => {
+    const prisma = roleClient([
+      { role: "main", position: 0, provider: "a", modelId: "big", thinkingLevel: null },
+      { role: "fast", position: 0, provider: "d", modelId: "small", thinkingLevel: null },
+    ]);
+    await expect(effectiveModelRole(prisma, scope, "fast", deploymentDefaults)).resolves.toEqual({
+      primary: { provider: "d", modelId: "small" },
+      backups: [],
+      primarySource: "member",
+    });
+    await expect(
+      effectiveModelRole(roleClient([]), scope, "fast", deploymentDefaults),
+    ).resolves.toEqual({
+      primary: null,
+      backups: [],
+      primarySource: null,
+    });
   });
 
   it("uses the deployment's defaults for a member who chose nothing", async () => {

@@ -3557,6 +3557,10 @@ msgstr "Permite a los bots guardar y recordar datos por significado, además de 
 msgid "Light"
 msgstr "Claro"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr"Modelo para tareas ligeras"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "Límite total"

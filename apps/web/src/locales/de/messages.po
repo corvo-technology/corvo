@@ -3557,6 +3557,10 @@ msgstr "Bots können Fakten nach Bedeutung speichern und abrufen, zusätzlich zu
 msgid "Light"
 msgstr "Hell"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr"Modell für leichte Aufgaben"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "Gesamtlimit"

@@ -3557,6 +3557,10 @@ msgstr "Permet aux bots d’enregistrer et de retrouver des faits par leur sens,
 msgid "Light"
 msgstr "Clair"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr"Modèle pour les tâches légères"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "Limite totale"

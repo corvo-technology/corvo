@@ -20,6 +20,7 @@ export const DE_MESSAGES: Record<string, string> = {
     "Füge in den Einstellungen ein Modell hinzu, um dies zu nutzen.",
   "Approval model": "Freigabemodell",
   "Routing model": "Routing-Modell",
+  "Light tasks model": "Modell für leichte Aufgaben",
   Waiting: "Wartet",
   "In progress": "In Arbeit",
   "Main model": "Hauptmodell",

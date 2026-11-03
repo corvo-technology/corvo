@@ -3557,6 +3557,10 @@ msgstr "Lets bots save and recall facts by meaning, alongside MEMORY.md."
 msgid "Light"
 msgstr "Light"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr "Light tasks model"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "Limit in total"

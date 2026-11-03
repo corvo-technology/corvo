@@ -3557,6 +3557,10 @@ msgstr "MEMORY.md に加えて、ボットが意味に基づいて事実を保�
 msgid "Light"
 msgstr "ライト"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr"軽いタスク用モデル"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "合計の上限"

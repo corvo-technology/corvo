@@ -17,6 +17,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "Add a model in Settings to use this.": "使用するには設定でモデルを追加してください。",
   "Approval model": "承認モデル",
   "Routing model": "ルーティングモデル",
+  "Light tasks model": "軽いタスク用モデル",
   Waiting: "待機中",
   "In progress": "進行中",
   "Main model": "メインモデル",

@@ -249,6 +249,10 @@ function compactionHarness(
       spaceId: string;
       botId?: string;
     }) => Promise<AgentRunRequest["model"]>;
+    resolveFastModel?: (scope: {
+      userId: string;
+      spaceId: string;
+    }) => Promise<AgentRunRequest["model"] | undefined>;
     withMemoryProvider?: boolean;
     memoryConfig?: {
       defaultMemoryScope: string;
@@ -404,6 +408,7 @@ function compactionHarness(
     deploymentModelConfigured:
       options.deploymentModelConfigured ?? options.deploymentModelKey !== undefined,
     ...(options.resolveModel ? { resolveModel: options.resolveModel } : {}),
+    ...(options.resolveFastModel ? { resolveFastModel: options.resolveFastModel } : {}),
   };
   return {
     thread,
@@ -734,6 +739,45 @@ describe("compactHistory", () => {
       id: "claude-sonnet",
       apiKey: "user-model-key",
     });
+  });
+
+  it("summarizes with the member's fast model when they chose one, without resolving the main model", async () => {
+    const resolveModel = vi.fn(async () => ({ provider: "anthropic", id: "claude-opus" }));
+    const resolveFastModel = vi.fn(async () => ({
+      provider: "deepseek",
+      id: "deepseek-chat",
+      apiKey: "fast-key",
+    }));
+    const harness = compactionHarness({
+      deploymentModelKey: "deployment-key",
+      resolveModel,
+      resolveFastModel,
+    });
+
+    await compactHistory(harness.deps, "thread-1");
+
+    expect(resolveFastModel).toHaveBeenCalledWith({ userId: "user-1", spaceId: "workspace-1" });
+    expect(resolveModel).not.toHaveBeenCalled();
+    expect(harness.runtime.run.mock.calls[0]![0].model).toEqual({
+      provider: "deepseek",
+      id: "deepseek-chat",
+      apiKey: "fast-key",
+    });
+  });
+
+  it("uses the main model when the member has no usable fast model", async () => {
+    const resolveModel = vi.fn(async () => ({ provider: "anthropic", id: "claude-opus" }));
+    const resolveFastModel = vi.fn(async () => undefined);
+    const harness = compactionHarness({
+      deploymentModelKey: "deployment-key",
+      resolveModel,
+      resolveFastModel,
+    });
+
+    await compactHistory(harness.deps, "thread-1");
+
+    expect(resolveModel).toHaveBeenCalled();
+    expect(harness.runtime.run.mock.calls[0]![0].model).toMatchObject({ id: "claude-opus" });
   });
 
   it("rebuilds local coverage without regressing the legacy cursor", async () => {
