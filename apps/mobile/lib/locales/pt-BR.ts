@@ -18,6 +18,7 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "Add a model in Settings to use this.": "Adicione um modelo em Configurações para usar isto.",
   "Approval model": "Modelo de aprovação",
   "Routing model": "Modelo de roteamento",
+  "Light tasks model": "Modelo para tarefas leves",
   "Main model": "Modelo principal",
   "Add fallback": "Adicionar alternativo",
   "Manage {provider}": "Gerenciar {provider}",

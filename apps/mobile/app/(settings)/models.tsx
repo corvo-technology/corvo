@@ -284,6 +284,12 @@ export default function Models() {
               title={t("Routing model")}
               defaultLabel={t("Choose a model")}
             />
+            <ModelRoleSettings
+              {...shared}
+              modelRole="fast"
+              title={t("Light tasks model")}
+              defaultLabel={t("Choose a model")}
+            />
             {/* Connections are the account's in every Space, so a Space's override lists only its models. */}
             {target.scope === "account" ? (
               <ModelProviders

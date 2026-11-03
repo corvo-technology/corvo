@@ -3554,6 +3554,10 @@ msgstr "MEMORY.md に加えて、ボットが意味に基づいて事実を保�
 msgid "Light"
 msgstr "ライト"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr"軽いタスク用モデル"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "合計の上限"
@@ -4247,7 +4251,7 @@ msgstr "OpenClaw、Hermes、またはエージェントのドキュメントが�
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
-msgstr"ここには公開アドレスがないため、あなたが承認したスケジュールで受信トレイを確認します。"
+msgstr "ここには公開アドレスがないため、あなたが承認したスケジュールで受信トレイを確認します。"
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "No remote MCP servers found"

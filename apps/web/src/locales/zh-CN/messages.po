@@ -3554,6 +3554,10 @@ msgstr "让机器人在 MEMORY.md 之外，按语义保存和回忆事实。"
 msgid "Light"
 msgstr "浅色"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Light tasks model"
+msgstr"轻量任务模型"
+
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
 msgstr "总上限"
@@ -4247,7 +4251,7 @@ msgstr "未找到 OpenClaw、Hermes 或 Agent 文档。"
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
-msgstr"此处没有公开地址，因此它会按你批准的时间表检查收件箱。"
+msgstr "此处没有公开地址，因此它会按你批准的时间表检查收件箱。"
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "No remote MCP servers found"

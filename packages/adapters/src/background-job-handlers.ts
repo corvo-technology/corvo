@@ -194,6 +194,7 @@ export function createBackgroundJobHandlers(deps: {
         deploymentModelKey: deps.deploymentModelKey,
         deploymentModelConfigured: deps.deploymentModelConfigured,
         ...(deps.executor.resolveModel ? { resolveModel: deps.executor.resolveModel } : {}),
+        resolveFastModel: deps.executor.resolveFastModel,
       };
       if (payload.keepRecent === undefined) {
         await compactHistory(compaction, payload.threadId);

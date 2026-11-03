@@ -252,6 +252,11 @@ export interface CompactHistoryDeps {
     spaceId: string;
     botId?: string;
   }) => Promise<AgentRunRequest["model"]>;
+  /** The member's fast model for chores like this one; absent or undefined means the main model. */
+  resolveFastModel?: (scope: {
+    userId: string;
+    spaceId: string;
+  }) => Promise<AgentRunRequest["model"] | undefined>;
 }
 
 export async function compactHistory(
@@ -376,29 +381,35 @@ export async function compactHistory(
   // text keyed off the prompt, so summarizing with it would save nonsense to external memory and
   // advance the cursor past messages that are then lost from both stores. Skip instead.
   const deploymentFallback = resolveDeploymentModel();
-  const model = deps.resolveModel
-    ? await deps.resolveModel({
-        userId: thread.userId,
-        spaceId: thread.spaceId,
-        botId: thread.botId,
-      })
-    : deps.deploymentModelConfigured
-      ? {
-          // Provider must come from the same resolver as the key, not a hardcoded one.
-          provider: deploymentFallback.provider,
-          id: deploymentFallback.model,
-          apiKey: deps.deploymentModelKey,
-        }
-      : await (async () => {
-          const settings = await deps.prisma.deploymentSettings.findUnique({
-            where: { id: "default" },
-          });
-          return {
-            provider: settings?.defaultModelProvider ?? "scripted",
-            id: settings?.defaultModelId ?? "scripted",
-            apiKey: undefined,
-          };
-        })();
+  const fastModel = await deps.resolveFastModel?.({
+    userId: thread.userId,
+    spaceId: thread.spaceId,
+  });
+  const model = fastModel
+    ? fastModel
+    : deps.resolveModel
+      ? await deps.resolveModel({
+          userId: thread.userId,
+          spaceId: thread.spaceId,
+          botId: thread.botId,
+        })
+      : deps.deploymentModelConfigured
+        ? {
+            // Provider must come from the same resolver as the key, not a hardcoded one.
+            provider: deploymentFallback.provider,
+            id: deploymentFallback.model,
+            apiKey: deps.deploymentModelKey,
+          }
+        : await (async () => {
+            const settings = await deps.prisma.deploymentSettings.findUnique({
+              where: { id: "default" },
+            });
+            return {
+              provider: settings?.defaultModelProvider ?? "scripted",
+              id: settings?.defaultModelId ?? "scripted",
+              apiKey: undefined,
+            };
+          })();
   if (!deps.runtime.describe().capabilities.compaction || model.provider === "scripted") {
     getLogger().info(`history.compact skipped for thread ${threadId}: no usable summarizer model`);
     return;
