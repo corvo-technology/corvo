@@ -177,6 +177,10 @@ msgstr "{count} 个代理"
 msgid "{count} days"
 msgstr "{count} 天"
 
+#: src/pages/Usage.tsx
+msgid "{count} failed"
+msgstr "{count} 次失败"
+
 #: src/lib/billing.ts
 msgid "{count} months"
 msgstr "{count} 个月"

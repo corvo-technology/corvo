@@ -52,6 +52,34 @@ export function usageWindow(period: UsagePeriod, now: Date) {
 export const rowTokens = (row: UsageRow): number =>
   row.totalTokens ?? (row.inputTokens ?? 0) + (row.outputTokens ?? 0);
 
+export interface RunOutcomeRow {
+  botId: string;
+  status: string;
+  startedAt: Date | null;
+  completedAt: Date | null;
+}
+export type RunOutcome = { failed: number; avgSeconds: number | null };
+
+/** How each agent's ended runs went: how many failed, and how long the finished ones took. */
+export function buildRunOutcomes(runs: readonly RunOutcomeRow[]): Map<string, RunOutcome> {
+  const totals = new Map<string, { failed: number; seconds: number; timed: number }>();
+  for (const run of runs) {
+    const total = totals.get(run.botId) ?? { failed: 0, seconds: 0, timed: 0 };
+    if (run.status === "failed") total.failed += 1;
+    if (run.status === "completed" && run.startedAt && run.completedAt) {
+      total.seconds += (run.completedAt.getTime() - run.startedAt.getTime()) / 1000;
+      total.timed += 1;
+    }
+    totals.set(run.botId, total);
+  }
+  return new Map(
+    [...totals].map(([botId, total]) => [
+      botId,
+      { failed: total.failed, avgSeconds: total.timed ? total.seconds / total.timed : null },
+    ]),
+  );
+}
+
 /** Folds a period's usage rows into the overview the usage page draws. Pure, so it is easy to check. */
 export function buildUsageOverview(input: {
   period: UsagePeriod;
@@ -61,8 +89,9 @@ export function buildUsageOverview(input: {
   agents: ReadonlyMap<string, { name: string; color: string | null }>;
   /** What to call spend whose agent no longer exists. */
   unknownName: string;
+  outcomes?: ReadonlyMap<string, RunOutcome>;
 }): UsageOverview {
-  const { period, now, rows, agents, unknownName } = input;
+  const { period, now, rows, agents, unknownName, outcomes } = input;
   const window = usageWindow(period, now);
   const end = Math.max(window.to, window.from + 1);
   const inWindow = rows.filter((row) => {
@@ -157,6 +186,7 @@ export function buildUsageOverview(input: {
           replies: bucket.runs.size,
           costUsd: bucket.costKnown ? bucket.cost : null,
           models: [...bucket.models.values()].sort((a, b) => b.tokens - a.tokens),
+          ...(bucket.id && outcomes?.get(bucket.id) ? outcomes.get(bucket.id) : {}),
         };
       })
       .sort((a, b) => b.tokens - a.tokens),

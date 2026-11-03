@@ -49,6 +49,10 @@ export function UsagePage() {
     const count = formatTokens(tokens, locale);
     return t`${count} tokens`;
   };
+  const failedText = (failed: number) => {
+    const count = new Intl.NumberFormat(locale).format(failed);
+    return t`${count} failed`;
+  };
   const repliesText = (replies: number) => {
     const count = new Intl.NumberFormat(locale).format(replies);
     return t`${count} replies`;
@@ -180,7 +184,11 @@ export function UsagePage() {
                                   {agentName(item.name)}
                                 </span>
                                 <span className="block truncate text-[12.5px] text-muted-foreground">
-                                  {[model?.model, repliesText(item.replies)]
+                                  {[
+                                    model?.model,
+                                    repliesText(item.replies),
+                                    item.failed ? failedText(item.failed) : undefined,
+                                  ]
                                     .filter(Boolean)
                                     .join(" · ")}
                                 </span>

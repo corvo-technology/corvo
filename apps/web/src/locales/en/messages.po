@@ -177,6 +177,10 @@ msgstr ""
 msgid "{count} days"
 msgstr "{count} days"
 
+#: src/pages/Usage.tsx
+msgid "{count} failed"
+msgstr "{count} failed"
+
 #: src/lib/billing.ts
 msgid "{count} months"
 msgstr "{count} months"
