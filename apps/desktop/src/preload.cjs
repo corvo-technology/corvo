@@ -46,6 +46,10 @@ contextBridge.exposeInMainWorld("corvoDesktop", {
     prepare: () => ipcRenderer.invoke("desktop.control.prepare"),
     openPermissionGuide: () => ipcRenderer.invoke("desktop.control.openPermissionGuide"),
   },
+  connections: {
+    status: () => ipcRenderer.invoke("desktop.connections.status"),
+    save: (patch) => ipcRenderer.invoke("desktop.connections.save", patch),
+  },
   tools: {
     detect: () => ipcRenderer.invoke("desktop.tools.detect"),
   },

@@ -8,6 +8,7 @@ import {
   EmbeddedEngineController,
   engineResourcePaths,
   initdbLocaleArgs,
+  parseConnectionsPatch,
   postgresPackage,
   postgresProgram,
   readEngineToken,
@@ -148,6 +149,48 @@ describe("EmbeddedEngineController", () => {
       deps({ localModels: { ...localModels, url: "http://127.0.0.1:45901/secret/v1" } }),
     );
     expect(await moved.hostConfigMatches()).toBe(false);
+  });
+
+  it("gives the API the saved Telegram and Composio keys, and reports only whether each is set", async () => {
+    const engine = new EmbeddedEngineController(deps());
+    expect(await engine.connectionsStatus()).toEqual({ composio: false, telegram: false });
+    await engine.saveConnections({ composioApiKey: " ck_test ", telegramBotToken: "123:abc" });
+    expect(await engine.connectionsStatus()).toEqual({ composio: true, telegram: true });
+    await engine.start();
+    const api = children.find((child) => base(child) === "api.mjs");
+    expect(api?.env).toMatchObject({ COMPOSIO_API_KEY: "ck_test", TELEGRAM_BOT_TOKEN: "123:abc" });
+    // Telegram refuses unsigned updates, so the engine signs them with a secret of its own.
+    expect(api?.env.TELEGRAM_WEBHOOK_SECRET_TOKEN).toMatch(/^[0-9a-f]{32,}$/);
+    const worker = children.find((child) => base(child) === "worker.mjs");
+    expect(worker?.env.TELEGRAM_BOT_TOKEN).toBe("123:abc");
+  });
+
+  it("leaves the keys out when none is saved, and removes one when asked", async () => {
+    const engine = new EmbeddedEngineController(deps());
+    await engine.saveConnections({ telegramBotToken: "123:abc" });
+    await engine.saveConnections({ telegramBotToken: null });
+    expect(await engine.connectionsStatus()).toEqual({ composio: false, telegram: false });
+    await engine.start();
+    const api = children.find((child) => base(child) === "api.mjs");
+    expect(api?.env).not.toHaveProperty("TELEGRAM_BOT_TOKEN");
+    expect(api?.env).not.toHaveProperty("COMPOSIO_API_KEY");
+  });
+
+  it("refuses a key that is empty, too long or has line breaks", async () => {
+    const engine = new EmbeddedEngineController(deps());
+    for (const bad of ["   ", "a".repeat(5000), "abc\ndef"]) {
+      await expect(engine.saveConnections({ composioApiKey: bad })).rejects.toThrow();
+    }
+  });
+
+  it("reads a patch from a window and drops anything it does not know", () => {
+    expect(parseConnectionsPatch({ telegramBotToken: "1:a", extra: "x" })).toEqual({
+      telegramBotToken: "1:a",
+    });
+    expect(parseConnectionsPatch({ composioApiKey: null })).toEqual({ composioApiKey: null });
+    expect(() => parseConnectionsPatch({ composioApiKey: 5 })).toThrow();
+    expect(() => parseConnectionsPatch("key")).toThrow();
+    expect(() => parseConnectionsPatch(null)).toThrow();
   });
 
   it("lets the API start the desktop control launcher and nothing else as an MCP server", async () => {

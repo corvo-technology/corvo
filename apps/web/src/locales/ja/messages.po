@@ -857,6 +857,7 @@ msgstr "自分のキーで、あらゆるモデルを"
 
 #: src/components/AskCard.tsx
 #: src/lib/localized-provider-hint.ts
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/model-settings/compatible-key-field.tsx
 #: src/pages/model-settings/connection-controls.tsx
@@ -1129,6 +1130,10 @@ msgstr "ボットの画面"
 #: src/pages/shell/computer-panel.tsx
 msgid "Bot screen preview"
 msgstr "ボットの画面プレビュー"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Bot token"
+msgstr "ボットのトークン"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Bot's model"
@@ -1583,6 +1588,10 @@ msgstr "完了"
 msgid "Completed"
 msgstr "完了"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Composio"
+msgstr "Composio"
+
 #: src/pages/shell/context-meter.tsx
 msgid "Compress context"
 msgstr "コンテキストを圧縮"
@@ -1718,6 +1727,7 @@ msgstr "モデルで自分のAPIキーを接続するか、請求でCorvoクレ�
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ChatAppsRow.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/message-cards.tsx
@@ -1751,6 +1761,10 @@ msgstr "接続テストに失敗しました。"
 #: src/pages/PluginsOverlay.tsx
 msgid "Connection to {0} is still pending. You can close this and check again."
 msgstr "{0}への接続はまだ保留中です。閉じてから後で再確認できます。"
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Connections"
+msgstr "接続"
 
 #: src/pages/PartnerTemplateEditor.tsx
 msgid "Connector address"
@@ -2193,6 +2207,7 @@ msgstr "ルーティンを実行できませんでした"
 msgid "Could not run the routine"
 msgstr "ルーティンを実行できませんでした"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -2346,6 +2361,10 @@ msgstr "タイムゾーンを更新できませんでした"
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "作成"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Create a bot with @BotFather and paste its token."
+msgstr "@BotFather でボットを作成し、そのトークンを貼り付けます。"
 
 #. placeholder {0}: bot.name
 #: src/pages/shell/dialogs.tsx
@@ -3047,6 +3066,10 @@ msgstr "財務"
 #: src/pages/Onboarding.tsx
 msgid "Find models"
 msgstr "モデルを検索"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Find your API key in the Composio dashboard."
+msgstr "APIキーは Composio のダッシュボードで確認できます。"
 
 #: src/lib/activity-label.ts
 msgid "Finding a tool"
@@ -4883,6 +4906,7 @@ msgid "Reload"
 msgstr "再読み込み"
 
 #: src/components/ApprovalRulesSettings.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PartnerTemplateEditor.tsx
@@ -5067,6 +5091,10 @@ msgstr "パネルのサイズを変更"
 msgid "Restart to update"
 msgstr "再起動してアップデート"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Restarting…"
+msgstr "再起動中…"
+
 #: src/components/InstructionSettings.tsx
 #: src/pages/shell/archived-chats.tsx
 msgid "Restore"
@@ -5222,6 +5250,7 @@ msgstr "土曜日"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -5891,6 +5920,10 @@ msgstr "Teamsメッセージ"
 #: src/pages/RoutineEditor.tsx
 msgid "Teams not enabled"
 msgstr "Teamsが有効になっていません"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Telegram"
+msgstr "Telegram"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Test"

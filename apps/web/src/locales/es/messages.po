@@ -857,6 +857,7 @@ msgstr "Cualquier modelo, con tu propia clave"
 
 #: src/components/AskCard.tsx
 #: src/lib/localized-provider-hint.ts
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/model-settings/compatible-key-field.tsx
 #: src/pages/model-settings/connection-controls.tsx
@@ -1129,6 +1130,10 @@ msgstr "Pantalla del bot"
 #: src/pages/shell/computer-panel.tsx
 msgid "Bot screen preview"
 msgstr "Vista previa de la pantalla del bot"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Bot token"
+msgstr "Token del bot"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Bot's model"
@@ -1583,6 +1588,10 @@ msgstr "Completado"
 msgid "Completed"
 msgstr "Completado"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Composio"
+msgstr "Composio"
+
 #: src/pages/shell/context-meter.tsx
 msgid "Compress context"
 msgstr "Comprimir contexto"
@@ -1718,6 +1727,7 @@ msgstr "Conecta tu propia clave de API en Modelos o elige créditos de Corvo en 
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/ChatAppsRow.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/shell/message-cards.tsx
@@ -1751,6 +1761,10 @@ msgstr "La prueba de conexión falló."
 #: src/pages/PluginsOverlay.tsx
 msgid "Connection to {0} is still pending. You can close this and check again."
 msgstr "La conexión con {0} sigue pendiente. Puedes cerrar esto y volver a comprobar."
+
+#: src/pages/SettingsOverlay.tsx
+msgid "Connections"
+msgstr "Conexiones"
 
 #: src/pages/PartnerTemplateEditor.tsx
 msgid "Connector address"
@@ -2193,6 +2207,7 @@ msgstr "No se pudo ejecutar la rutina"
 msgid "Could not run the routine"
 msgstr "No se pudo ejecutar la rutina"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -2346,6 +2361,10 @@ msgstr "No se pudo actualizar tu zona horaria"
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "Crear"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Create a bot with @BotFather and paste its token."
+msgstr "Crea un bot con @BotFather y pega su token."
 
 #. placeholder {0}: bot.name
 #: src/pages/shell/dialogs.tsx
@@ -3047,6 +3066,10 @@ msgstr "Finanzas"
 #: src/pages/Onboarding.tsx
 msgid "Find models"
 msgstr "Buscar modelos"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Find your API key in the Composio dashboard."
+msgstr "Encuentra tu clave de API en el panel de Composio."
 
 #: src/lib/activity-label.ts
 msgid "Finding a tool"
@@ -4883,6 +4906,7 @@ msgid "Reload"
 msgstr "Recargar"
 
 #: src/components/ApprovalRulesSettings.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PartnerTemplateEditor.tsx
@@ -5067,6 +5091,10 @@ msgstr "Cambiar tamaño del panel"
 msgid "Restart to update"
 msgstr "Reiniciar para actualizar"
 
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Restarting…"
+msgstr "Reiniciando…"
+
 #: src/components/InstructionSettings.tsx
 #: src/pages/shell/archived-chats.tsx
 msgid "Restore"
@@ -5222,6 +5250,7 @@ msgstr "sábado"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -5891,6 +5920,10 @@ msgstr "Mensaje de Teams"
 #: src/pages/RoutineEditor.tsx
 msgid "Teams not enabled"
 msgstr "Teams no activado"
+
+#: src/pages/ConnectionsSettingsPanel.tsx
+msgid "Telegram"
+msgstr "Telegram"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Test"
