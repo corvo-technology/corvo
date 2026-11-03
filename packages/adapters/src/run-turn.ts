@@ -466,7 +466,7 @@ async function stopStuckToolLoop(ctx: RunContext, toolName: string) {
       { id: bot.id, name: bot.name },
       stuckText,
       "result",
-      { forceUnread: true },
+      { forceUnread: true, failed: true },
     ).catch((error) => getLogger().error("bot message loop-guard return", error));
   }
   ctx.abortController.abort();

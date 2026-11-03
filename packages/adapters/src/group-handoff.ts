@@ -35,6 +35,8 @@ export async function handoffToGroupBot(
     confirm_name?: string;
     message: string;
     reason?: string;
+    /** The step of the sender's plan this stage carries. */
+    planStep?: string;
     deliveryKey?: string;
   },
   /** Who may reach a group the sender does not belong to: a squad-routing bot in a run its owner started. */
@@ -179,6 +181,7 @@ export async function handoffToGroupBot(
       text,
       ...(reason ? { reason } : {}),
       hop,
+      ...(input.planStep?.trim() ? { planStep: input.planStep.trim().slice(0, 20) } : {}),
       // A router outside the group delegates and waits for the answer; a member passes the baton.
       ...(inGroup ? {} : { returnsToSender: true as const }),
       ...(!inGroup && authority.squadRouting && authority.ownerStarted

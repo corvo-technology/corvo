@@ -8,6 +8,9 @@ import {
   runReturnsOutcome,
 } from "./bot-messages.js";
 import type { ExecutorDeps } from "./executor-deps.js";
+import { updatePlanCard } from "./plan-card.js";
+
+vi.mock("./plan-card.js", () => ({ updatePlanCard: vi.fn(async () => ({ ok: true })) }));
 
 const run = {
   id: "run-1",
@@ -860,5 +863,85 @@ describe("runReturnsOutcome", () => {
     expect(await runReturnsOutcome(failing, { trigger: "follow_up", sourceMessageId: "m" })).toBe(
       false,
     );
+  });
+});
+
+describe("the plan step a stage carries", () => {
+  const routedWithStep = {
+    kind: "handoff",
+    fromBotId: "bot-target",
+    toBotId: "bot-sender",
+    text: "write five bios",
+    hop: 1,
+    returnsToSender: true,
+    planStep: "2",
+  };
+  const withThread = (harness: ReturnType<typeof deps>) => {
+    (harness.deps.prisma as unknown as { thread: unknown }).thread = {
+      findUnique: vi.fn(async () => ({ id: "thread-router", spaceId: "workspace-1" })),
+    };
+    return harness;
+  };
+  const finish = (
+    harness: ReturnType<typeof deps>,
+    intent: "result" | "status",
+    failed?: boolean,
+  ) =>
+    returnBotMessageOutcome(
+      harness.deps,
+      { ...run, sourceMessageId: "message-handoff" },
+      sender,
+      "text",
+      intent,
+      failed === undefined ? undefined : { failed },
+    );
+
+  beforeEach(() => vi.mocked(updatePlanCard).mockClear());
+
+  it("marks the step done on the sender's plan when the answer comes back", async () => {
+    const harness = withThread(deps({ hopBlocks: [routedWithStep] }));
+    await finish(harness, "result");
+    expect(updatePlanCard).toHaveBeenCalledWith(
+      harness.deps,
+      { spaceId: "workspace-1", threadId: "thread-router", botId: "bot-target" },
+      { updates: [{ step: "2", status: "done" }] },
+    );
+  });
+
+  it("marks it failed when the stage failed, and leaves it alone for a progress note", async () => {
+    const failed = withThread(deps({ hopBlocks: [routedWithStep] }));
+    await finish(failed, "status", true);
+    expect(updatePlanCard).toHaveBeenCalledWith(failed.deps, expect.anything(), {
+      updates: [{ step: "2", status: "failed" }],
+    });
+    vi.mocked(updatePlanCard).mockClear();
+    const progress = withThread(deps({ hopBlocks: [routedWithStep] }));
+    await finish(progress, "status");
+    expect(updatePlanCard).not.toHaveBeenCalled();
+  });
+
+  it("touches no plan when the stage carried no step, and a plan failure never fails the return", async () => {
+    const noStep = withThread(deps({ hopBlocks: [{ ...routedWithStep, planStep: undefined }] }));
+    await finish(noStep, "result");
+    expect(updatePlanCard).not.toHaveBeenCalled();
+    vi.mocked(updatePlanCard).mockRejectedValueOnce(new Error("down"));
+    const throwing = withThread(deps({ hopBlocks: [routedWithStep] }));
+    expect(await finish(throwing, "result")).toBe(true);
+  });
+
+  it("carries the step in the request a direct message sends", async () => {
+    const harness = deps();
+    await messageBot(harness.deps, run, sender, {
+      bot_id: "bot-target",
+      message: "chart it",
+      planStep: " 3 ",
+    });
+    expect(
+      harness.tx.message.create.mock.calls.some(([args]) =>
+        JSON.stringify((args as { data: { blocks: unknown } }).data.blocks).includes(
+          '"planStep":"3"',
+        ),
+      ),
+    ).toBe(true);
   });
 });
