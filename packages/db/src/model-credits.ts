@@ -93,6 +93,25 @@ export async function reconcileCreditPurchase(
   });
 }
 
+/** Start of the UTC day a bot's daily limit counts from. */
+export function utcDayStart(now: Date) {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+/**
+ * What a bot's runs have taken from hosted credits since a moment: settled calls at their real
+ * cost and calls still in flight at the amount held for them. Refunds and grants are not spend.
+ */
+export async function botCreditSpendMicros(prisma: PrismaClient, botId: string, since: Date) {
+  const rows = await prisma.$queryRaw<{ spent: bigint | null }[]>`
+    SELECT COALESCE(SUM(-e."amountMicros"), 0)::bigint AS spent
+    FROM model_credit_entries e
+    JOIN runs r ON r."id" = e."runId"
+    WHERE r."botId" = ${botId} AND e."callId" IS NOT NULL
+      AND e."amountMicros" < 0 AND e."createdAt" >= ${since}`;
+  return rows[0]?.spent ?? 0n;
+}
+
 /** Atomic debit prevents concurrent calls from reserving the same available funds. */
 export async function reserveModelCredits(
   prisma: PrismaClient,

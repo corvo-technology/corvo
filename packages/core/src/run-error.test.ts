@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ACCOUNT_PAUSED_RUN_ERROR,
   APPROVED_ACTION_NOT_RUN_ERROR,
+  BOT_DAILY_LIMIT_RUN_ERROR,
   HOSTED_MODEL_CREDITS_REQUIRED_ERROR,
   isImageInputConfirmation,
   isModelRequiredSendError,
@@ -32,7 +33,7 @@ describe("normalizeRunError", () => {
     });
   });
 
-  it.each([ACCOUNT_PAUSED_RUN_ERROR, PARTNER_CREDIT_USED_UP_RUN_ERROR])(
+  it.each([ACCOUNT_PAUSED_RUN_ERROR, PARTNER_CREDIT_USED_UP_RUN_ERROR, BOT_DAILY_LIMIT_RUN_ERROR])(
     "keeps the app's own message %s as it is",
     (message) => {
       expect(normalizeRunError(message)).toEqual({ summary: message, details: message });

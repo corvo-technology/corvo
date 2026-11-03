@@ -35,6 +35,9 @@ export const ACCOUNT_PAUSED_RUN_ERROR = "This account is paused.";
 /** A partner's customer has spent its credit for the period. */
 export const PARTNER_CREDIT_USED_UP_RUN_ERROR = "This month's credit is used up.";
 
+/** The owner capped what this bot may spend in a day, and it has. */
+export const BOT_DAILY_LIMIT_RUN_ERROR = "This bot reached its daily limit.";
+
 /** The API rejects a send with this message until the user can reach a model. */
 export const MODEL_REQUIRED_SEND_ERROR = "Connect a model to start a run.";
 
@@ -111,6 +114,7 @@ const APP_RUN_ERRORS = new Set([
   MODEL_ACCESS_REQUIRED_RUN_ERROR,
   ACCOUNT_PAUSED_RUN_ERROR,
   PARTNER_CREDIT_USED_UP_RUN_ERROR,
+  BOT_DAILY_LIMIT_RUN_ERROR,
   COMPUTER_RATE_LIMIT_ERROR,
   ...stuckWorkStatusMessages(),
 ]);

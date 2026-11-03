@@ -2487,6 +2487,10 @@ msgstr "{label}をカスタマイズ"
 msgid "Customize bot avatar"
 msgstr "ボットのアバターをカスタマイズ"
 
+#: src/pages/shell/bot-panel.tsx
+msgid "Daily spending limit"
+msgstr "1日の利用上限"
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Dark"
 msgstr "ダーク"
@@ -3559,7 +3563,7 @@ msgstr "ライト"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Light tasks model"
-msgstr"軽いタスク用モデル"
+msgstr "軽いタスク用モデル"
 
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
@@ -4209,6 +4213,10 @@ msgstr "ボットなし"
 #: src/pages/shell/bot-picker.tsx
 msgid "No bots match"
 msgstr "一致するボットはありません"
+
+#: src/pages/shell/bot-panel.tsx
+msgid "No limit"
+msgstr "上限なし"
 
 #: src/components/AskCard.tsx
 msgid "No longer active"
