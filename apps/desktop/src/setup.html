@@ -6,13 +6,13 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; form-action 'none'; base-uri 'none'"
     />
-    <title data-i18n="title">Set up Corvo</title>
+    <title data-i18n="title">Set up Rook</title>
     <link rel="stylesheet" href="tokens.css" />
     <link rel="stylesheet" href="setup.css" />
   </head>
   <body>
     <header class="titlebar">
-      <span class="titlebar-name">Corvo</span>
+      <span class="titlebar-name">Rook</span>
       <div class="titlebar-actions">
       <button id="change-language" class="titlebar-quit" type="button" data-i18n="language" hidden>
         Language
@@ -38,12 +38,12 @@
 
     <main id="step-setup" class="shell" hidden>
       <img class="mascot" src="mascot.svg" width="84" height="84" alt="" />
-      <h1 class="heading" data-i18n="welcome">Welcome to Corvo</h1>
-      <p class="subheading" data-i18n="where">Where should Corvo run?</p>
+      <h1 class="heading" data-i18n="welcome">Welcome to Rook</h1>
+      <p class="subheading" data-i18n="where">Where should Rook run?</p>
 
       <form id="setup" novalidate>
         <fieldset class="choices">
-          <legend class="sr-only" data-i18n="instance">Where Corvo runs</legend>
+          <legend class="sr-only" data-i18n="instance">Where Rook runs</legend>
 
           <label class="choice" for="mode-new">
             <input id="mode-new" type="radio" name="mode" value="new" checked />
@@ -56,7 +56,7 @@
           <label class="choice" for="mode-cloud">
             <input id="mode-cloud" type="radio" name="mode" value="cloud" disabled />
             <span class="choice-copy">
-              <span class="choice-title" data-i18n="cloud">Corvo Cloud</span>
+              <span class="choice-title" data-i18n="cloud">Rook Cloud</span>
               <span class="choice-desc" data-i18n="cloudDesc">We host it for you.</span>
             </span>
             <span class="choice-soon" data-i18n="soon">Soon</span>
