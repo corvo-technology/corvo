@@ -427,7 +427,9 @@
 /* Closing */
 .lp-cta {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  /* fit-content, not auto: Firefox and Safari size the flock by its chicks' intrinsic width and
+     leave the text no room. */
+  grid-template-columns: minmax(0, 1fr) fit-content(30rem);
   align-items: center;
   gap: 32px;
   margin-top: clamp(80px, 12vw, 160px);
@@ -459,6 +461,17 @@
   height: auto;
   min-width: 0;
   aspect-ratio: 1;
+}
+
+/* Below this width the text column would be squeezed next to the chicks, so they stack. */
+@media (max-width: 1120px) {
+  .lp-cta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-cta__flock {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 960px) {
