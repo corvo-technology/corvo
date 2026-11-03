@@ -9,7 +9,7 @@ describe("release-watch guidance", () => {
     const schema = tool?.inputSchema as {
       oneOf?: Array<{ required?: string[]; additionalProperties?: boolean }>;
     };
-    expect(schema.oneOf).toHaveLength(6);
+    expect(schema.oneOf).toHaveLength(7);
     expect(schema.oneOf?.map((branch) => branch.required)).toEqual([
       ["name", "prompt", "cron"],
       ["name", "prompt", "every", "unit"],
@@ -17,6 +17,7 @@ describe("release-watch guidance", () => {
       ["name", "prompt", "delayMinutes"],
       ["name", "prompt", "delaySeconds"],
       ["name", "prompt", "watch"],
+      ["name", "prompt", "onMessage"],
     ]);
     expect(schema.oneOf?.every((branch) => branch.additionalProperties === false)).toBe(true);
   });

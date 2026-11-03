@@ -317,6 +317,16 @@ export async function createScheduleFromTool(
   if (input.schedule.watch !== undefined) {
     return createWatchFromTool(deps, { ...input, name, prompt, timezone });
   }
+  if (input.schedule.onMessage !== undefined) {
+    return createMessageRoutineFromTool(deps, {
+      ...input,
+      botId: routineBotId,
+      threadId: routineThreadId,
+      name,
+      prompt,
+      timezone,
+    });
+  }
   const resolved = resolveScheduleTiming(input.schedule, timezone);
   if (!resolved.ok) return { error: resolved.error };
 
@@ -371,6 +381,64 @@ export async function createScheduleFromTool(
     nextRunAt: row.nextRunAt?.toISOString() ?? null,
     oneShot: resolved.oneShot,
     ...describeRoutineTiming(row),
+  };
+}
+
+/** A routine that runs when a message arrives on a channel, from `schedule_create` with `onMessage`. */
+async function createMessageRoutineFromTool(
+  deps: ScheduleToolDeps,
+  input: {
+    spaceId: string;
+    botId: string;
+    userId: string;
+    threadId: string;
+    name: string;
+    prompt: string;
+    timezone: string;
+    schedule: Record<string, unknown>;
+  },
+) {
+  if (Object.keys(input.schedule).some((key) => key !== "onMessage")) {
+    return {
+      error: "onMessage runs when a message arrives; do not combine it with a schedule.",
+    };
+  }
+  const provider = String(input.schedule.onMessage).trim().toLowerCase();
+  if (!/^[a-z0-9._-]{1,50}$/.test(provider)) {
+    return { error: "onMessage must be a channel name such as telegram." };
+  }
+  const row = await deps.prisma.routine.create({
+    data: {
+      spaceId: input.spaceId,
+      botId: input.botId,
+      userId: input.userId,
+      threadId: input.threadId,
+      name: input.name,
+      prompt: input.prompt,
+      crons: [],
+      timezone: input.timezone,
+      notify: true,
+      active: true,
+      messageProvider: provider,
+    },
+  });
+  try {
+    await deps.events.append({
+      spaceId: input.spaceId,
+      threadId: input.threadId,
+      botId: input.botId,
+      type: "routine.created",
+      payload: { name: row.name },
+    });
+  } catch {
+    // The routine is live even if the thread signal fails.
+  }
+  return {
+    ok: true as const,
+    routineId: row.id,
+    name: row.name,
+    onMessage: provider,
+    note: `Runs each time a message arrives on ${provider}.`,
   };
 }
 

@@ -101,6 +101,7 @@ const scheduleTimingNames = [
   "delayMinutes",
   "delaySeconds",
   "watch",
+  "onMessage",
 ] as const;
 
 /**
@@ -109,6 +110,12 @@ const scheduleTimingNames = [
  */
 const blankScheduleTiming = {
   anyOf: [{ type: "null" }, { type: "string", pattern: "^\\s*$" }],
+};
+
+const onMessageSpec = {
+  type: "string",
+  description:
+    'Run each time a message arrives on a connected channel, for example "telegram", instead of at a time. Use it for "when a customer writes, answer" style requests.',
 };
 
 const scheduleTimingSpecs = {
@@ -131,6 +138,7 @@ const scheduleTimingSpecs = {
     type: "number",
     description: "Seconds from now for a one-shot schedule (may be under one minute).",
   },
+  onMessage: onMessageSpec,
   watch: {
     type: "object",
     description:
@@ -191,6 +199,7 @@ const scheduleCreateInputSchema = {
     scheduleCreateBranch(["delayMinutes"]),
     scheduleCreateBranch(["delaySeconds"]),
     scheduleCreateBranch(["watch"]),
+    scheduleCreateBranch(["onMessage"]),
   ],
 };
 

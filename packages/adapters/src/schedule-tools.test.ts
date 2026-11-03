@@ -1248,3 +1248,62 @@ describe("updateScheduleFromTool", () => {
     await expect(update({ name: "Inbox" })).resolves.toMatchObject({ ok: true, name: "Inbox" });
   });
 });
+
+describe("a routine that runs when a message arrives", () => {
+  const base = {
+    spaceId: "ws-1",
+    botId: "bot-1",
+    userId: "user-1",
+    threadId: "thread-1",
+    name: "Answer customers",
+    prompt: "Answer the message",
+    timezone: "UTC",
+  };
+  function setup() {
+    const create = vi.fn(async (args: { data: Record<string, unknown> }) => ({
+      id: "routine-1",
+      ...args.data,
+    }));
+    const enqueue = vi.fn(async () => undefined);
+    const deps = {
+      prisma: {
+        routine: { create, findMany: noRoutines },
+        user: { findUnique: async () => null },
+      },
+      events: { append: vi.fn(async () => undefined) },
+      jobs: { enqueue },
+    } as unknown as Parameters<typeof createScheduleFromTool>[0];
+    return { create, enqueue, deps };
+  }
+
+  it("is saved active for the channel, with no schedule and no timer to wake it", async () => {
+    const { create, enqueue, deps } = setup();
+    const result = await createScheduleFromTool(deps, {
+      ...base,
+      schedule: { onMessage: "Telegram" },
+    });
+    expect(result).toMatchObject({ ok: true, routineId: "routine-1" });
+    expect(create.mock.calls[0]?.[0].data).toMatchObject({
+      messageProvider: "telegram",
+      crons: [],
+      active: true,
+    });
+    expect(enqueue).not.toHaveBeenCalled();
+  });
+
+  it("refuses a channel name that is not one, and mixing it with a schedule", async () => {
+    const { create, deps } = setup();
+    expect(
+      await createScheduleFromTool(deps, { ...base, schedule: { onMessage: "tele gram!" } }),
+    ).toEqual({ error: "onMessage must be a channel name such as telegram." });
+    expect(
+      await createScheduleFromTool(deps, {
+        ...base,
+        schedule: { onMessage: "telegram", cron: "0 9 * * *" },
+      }),
+    ).toEqual({
+      error: "onMessage runs when a message arrives; do not combine it with a schedule.",
+    });
+    expect(create).not.toHaveBeenCalled();
+  });
+});

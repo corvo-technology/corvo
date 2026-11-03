@@ -195,6 +195,7 @@ export const taskTools: ToolHandlers = {
         delaySeconds: args.delaySeconds,
         startAt: args.startAt,
         watch: args.watch,
+        onMessage: args.onMessage,
       }),
     });
     return call.finish(created);
