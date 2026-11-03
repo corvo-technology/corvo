@@ -138,6 +138,7 @@ function bot(description = "Billing", overrides: Partial<Bot> = {}): Bot {
     teamChatRules: "",
     fleetManagement: false,
     squadRouting: false,
+    dailyCapUsd: null,
     disabledBuiltinTools: [],
     webhookConfigured: false,
     spawnKey: null,
@@ -461,6 +462,54 @@ describe("BotSettings squad routing saves", () => {
       toggle.click();
     });
     expect(toggle.getAttribute("aria-checked")).toBe("false");
+  });
+});
+
+describe("BotSettings daily spending limit", () => {
+  const field = () => {
+    const input = container.querySelector<HTMLInputElement>('input[id$="-daily-cap"]');
+    if (!input) throw new Error("Missing field");
+    return input;
+  };
+  async function type(value: string) {
+    const input = field();
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      input.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    });
+  }
+
+  it("saves only the limit, in dollars, when the field loses focus", async () => {
+    await render();
+    await expandAdvanced();
+    await type("2.5");
+    expect(onSave).toHaveBeenCalledExactlyOnceWith({ dailyCapUsd: 2.5 });
+  });
+
+  it("clears the limit when the field is emptied", async () => {
+    await render("Billing", { dailyCapUsd: 5 });
+    await expandAdvanced();
+    expect(field().value).toBe("5");
+    await type("");
+    expect(onSave).toHaveBeenCalledExactlyOnceWith({ dailyCapUsd: null });
+  });
+
+  it("ignores an amount that cannot be a limit and shows the saved one again", async () => {
+    await render("Billing", { dailyCapUsd: 5 });
+    await expandAdvanced();
+    for (const bad of ["abc", "0", "-3", "20000"]) await type(bad);
+    expect(onSave).not.toHaveBeenCalled();
+    expect(field().value).toBe("5");
+  });
+
+  it("does not save an unchanged limit", async () => {
+    await render("Billing", { dailyCapUsd: 5 });
+    await expandAdvanced();
+    await type("5");
+    expect(onSave).not.toHaveBeenCalled();
   });
 });
 

@@ -376,6 +376,14 @@ export function botsRoutes(ctx: RouterContext) {
               ? { fleetManagement: input.fleetManagement }
               : {}),
             ...(input.squadRouting !== undefined ? { squadRouting: input.squadRouting } : {}),
+            ...(input.dailyCapUsd !== undefined
+              ? {
+                  dailyCapMicros:
+                    input.dailyCapUsd === null
+                      ? null
+                      : BigInt(Math.round(input.dailyCapUsd * 1_000_000)),
+                }
+              : {}),
             ...(input.disabledBuiltinTools !== undefined
               ? { disabledBuiltinTools: input.disabledBuiltinTools }
               : {}),

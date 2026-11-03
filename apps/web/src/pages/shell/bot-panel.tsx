@@ -74,6 +74,18 @@ function advancedValues(bot: Bot) {
   ] as const;
 }
 
+function dailyCapText(value: number | null | undefined) {
+  return value == null ? "" : String(value);
+}
+
+/** Dollars typed in the limit field: null for empty, undefined when it is not a usable amount. */
+function parseDailyCap(text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const value = Number(trimmed);
+  return Number.isFinite(value) && value > 0 && value <= 10_000 ? value : undefined;
+}
+
 export function ComputerModePicker({
   value,
   onChange,
@@ -129,6 +141,7 @@ export function BotSettings({
     fleetManagement?: boolean;
     squadRouting?: boolean;
     crossSpaceCommunication?: boolean;
+    dailyCapUsd?: number | null;
     voiceId?: string | null;
     modelProvider?: string | null;
     modelId?: string | null;
@@ -180,6 +193,8 @@ export function BotSettings({
     () => setCrossSpaceCommunication(bot.crossSpaceCommunication ?? false),
     [bot.crossSpaceCommunication],
   );
+  const [dailyCap, setDailyCap] = useState(dailyCapText(bot.dailyCapUsd));
+  useEffect(() => setDailyCap(dailyCapText(bot.dailyCapUsd)), [bot.dailyCapUsd]);
   const [fleetManagement, setFleetManagement] = useState(bot.fleetManagement);
   useEffect(() => setFleetManagement(bot.fleetManagement), [bot.fleetManagement]);
   const [squadRouting, setSquadRouting] = useState(bot.squadRouting);
@@ -247,6 +262,7 @@ export function BotSettings({
         fleetManagement?: boolean;
         squadRouting?: boolean;
         crossSpaceCommunication?: boolean;
+        dailyCapUsd?: number | null;
         disabledBuiltinTools?: string[];
         baseDisabledBuiltinTools?: string[];
       },
@@ -332,6 +348,7 @@ export function BotSettings({
       fleetManagement?: boolean;
       squadRouting?: boolean;
       crossSpaceCommunication?: boolean;
+      dailyCapUsd?: number | null;
       disabledBuiltinTools?: string[];
       baseDisabledBuiltinTools?: string[];
     },
@@ -342,6 +359,10 @@ export function BotSettings({
       setError(null);
       if (patchOverrides?.crossSpaceCommunication !== undefined) {
         await onSave({ crossSpaceCommunication: patchOverrides.crossSpaceCommunication });
+        return;
+      }
+      if (patchOverrides?.dailyCapUsd !== undefined) {
+        await onSave({ dailyCapUsd: patchOverrides.dailyCapUsd });
         return;
       }
       if (patchOverrides?.fleetManagement !== undefined) {
@@ -444,6 +465,7 @@ export function BotSettings({
         setNotifyOnFinish(acceptedAutomatic.current.notifyOnFinish);
       if (patchOverrides?.crossSpaceCommunication !== undefined)
         setCrossSpaceCommunication(!patchOverrides.crossSpaceCommunication);
+      if (patchOverrides?.dailyCapUsd !== undefined) setDailyCap(dailyCapText(bot.dailyCapUsd));
       if (patchOverrides?.fleetManagement !== undefined)
         setFleetManagement(!patchOverrides.fleetManagement);
       if (patchOverrides?.squadRouting !== undefined) setSquadRouting(!patchOverrides.squadRouting);
@@ -478,6 +500,7 @@ export function BotSettings({
     fleetManagement?: boolean;
     squadRouting?: boolean;
     crossSpaceCommunication?: boolean;
+    dailyCapUsd?: number | null;
     disabledBuiltinTools?: string[];
   }) {
     // Serialize full-object auto-saves so an older in-flight request cannot
@@ -762,6 +785,29 @@ export function BotSettings({
                     void enqueueSave({ squadRouting: checked });
                   }}
                 />
+              </div>
+              <div className="flex min-h-11 items-center justify-between gap-3 text-sm">
+                <label htmlFor={`${ids}-daily-cap`} className={rowLabelClass}>
+                  <Trans>Daily spending limit</Trans>
+                </label>
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  $
+                  <Input
+                    id={`${ids}-daily-cap`}
+                    inputMode="decimal"
+                    className="w-24 text-right"
+                    value={dailyCap}
+                    disabled={saving}
+                    placeholder={t`No limit`}
+                    onChange={(event) => setDailyCap(event.target.value)}
+                    onBlur={() => {
+                      const next = parseDailyCap(dailyCap);
+                      if (next === undefined) return setDailyCap(dailyCapText(bot.dailyCapUsd));
+                      if (next !== (bot.dailyCapUsd ?? null))
+                        void enqueueSave({ dailyCapUsd: next });
+                    }}
+                  />
+                </span>
               </div>
             </SettingsGroup>
             <SettingsGroup label={t`Description`} plain>

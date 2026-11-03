@@ -2487,6 +2487,10 @@ msgstr "Personalizar {label}"
 msgid "Customize bot avatar"
 msgstr "Personalizar avatar do bot"
 
+#: src/pages/shell/bot-panel.tsx
+msgid "Daily spending limit"
+msgstr "Limite diário de gasto"
+
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Dark"
 msgstr "Escuro"
@@ -3559,7 +3563,7 @@ msgstr "Claro"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Light tasks model"
-msgstr"Modelo para tarefas leves"
+msgstr "Modelo para tarefas leves"
 
 #: src/pages/PartnershipSettingsPanel.tsx
 msgid "Limit in total"
@@ -4209,6 +4213,10 @@ msgstr "Nenhum bot"
 #: src/pages/shell/bot-picker.tsx
 msgid "No bots match"
 msgstr "Nenhum bot corresponde"
+
+#: src/pages/shell/bot-panel.tsx
+msgid "No limit"
+msgstr "Sem limite"
 
 #: src/components/AskCard.tsx
 msgid "No longer active"

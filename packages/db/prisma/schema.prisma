@@ -531,6 +531,8 @@ model Bot {
   crossSpaceCommunication  Boolean           @default(false)
   fleetManagement          Boolean           @default(true)
   squadRouting             Boolean           @default(false)
+  /// Most a bot may spend on hosted model credits in a UTC day; null means no limit.
+  dailyCapMicros           BigInt?
   routines                 Routine[]
   routineSteps             RoutineStep[]
   scratchpadItems          ScratchpadItem[]

@@ -126,6 +126,8 @@ export const BotSchema = z.object({
   crossSpaceCommunication: z.boolean().optional(),
   fleetManagement: z.boolean().default(false),
   squadRouting: z.boolean().default(false),
+  /** Most the bot may spend on hosted credits in a UTC day, in US dollars; null means no limit. */
+  dailyCapUsd: z.number().nullable().default(null),
   disabledBuiltinTools: z.array(z.string()).default([]),
   webhookConfigured: z.boolean(),
   /** Present when created with an idempotency key (e.g. onboarding:first). */
@@ -443,6 +445,7 @@ export const UpdateBotInput = z
     modelId: z.string().trim().min(1).max(200).nullable().optional(),
     thinkingLevel: ThinkingLevelSchema.nullable().optional(),
     teamChatAmbientEnabled: z.boolean().optional(),
+    dailyCapUsd: z.number().positive().max(10_000).nullable().optional(),
     teamChatRules: z.string().max(TEAM_CHAT_RULES_MAX_LENGTH).optional(),
     crossSpaceCommunication: z.boolean().optional(),
     fleetManagement: z.boolean().optional(),

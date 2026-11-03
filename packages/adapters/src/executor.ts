@@ -5,6 +5,7 @@ import { disabledBuiltinToolSet } from "@corvo/contracts";
 import {
   ACCOUNT_PAUSED_RUN_ERROR,
   assertTransition,
+  BOT_DAILY_LIMIT_RUN_ERROR,
   botMessageAllowsSilence,
   expandSkillReferencesInPrompt,
   formatSkillRunPrompt,
@@ -45,6 +46,7 @@ import { sanitizedError } from "@corvo/logging/monitoring";
 import { decryptAgentEnvironment, formatAgentEnvironmentInstruction } from "./agent-environment.js";
 import { createApprovedEffectReplayQueue } from "./approval-effect.js";
 import { PARTIAL_REPLY_NOTE } from "./automated-messages.js";
+import { botDailyLimitReached } from "./bot-daily-limit.js";
 import { loadBotMessageContext } from "./bot-messages.js";
 import {
   commandCredentialRedactions,
@@ -739,6 +741,10 @@ export function createRunExecutor(deps: ExecutorDeps) {
         const partnerState = await deps.spacePartnerState?.(run.spaceId);
         if (partnerState === "suspended") {
           await failRunBeforeModel(ACCOUNT_PAUSED_RUN_ERROR, true);
+          return;
+        }
+        if (await botDailyLimitReached(deps.prisma, bot)) {
+          await failRunBeforeModel(BOT_DAILY_LIMIT_RUN_ERROR, true);
           return;
         }
         if (pinError) {
