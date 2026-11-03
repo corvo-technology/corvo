@@ -425,6 +425,14 @@ msgstr "{toolCount, plural, one {# Tool} other {# Tools}}"
 msgid "{used} tokens"
 msgstr "{used} Tokens"
 
+#: src/pages/Usage.tsx
+msgid "{value} min avg"
+msgstr "Ø {value} Min."
+
+#: src/pages/Usage.tsx
+msgid "{value} s avg"
+msgstr "Ø {value} Sek."
+
 #: src/pages/TeamPage.tsx
 msgid "{working} working"
 msgstr "{working} arbeiten"

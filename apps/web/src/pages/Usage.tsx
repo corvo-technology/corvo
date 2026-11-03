@@ -58,6 +58,12 @@ export function UsagePage() {
       ? `${failures}: ${normalizeRunError(topError, translateRunError, locale).summary}`
       : failures;
   };
+  const avgText = (seconds: number) => {
+    const value = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(
+      seconds >= 60 ? seconds / 60 : seconds,
+    );
+    return seconds >= 60 ? t`${value} min avg` : t`${value} s avg`;
+  };
   const repliesText = (replies: number) => {
     const count = new Intl.NumberFormat(locale).format(replies);
     return t`${count} replies`;
@@ -192,6 +198,7 @@ export function UsagePage() {
                                   {[
                                     model?.model,
                                     repliesText(item.replies),
+                                    item.avgSeconds != null ? avgText(item.avgSeconds) : undefined,
                                     item.failed
                                       ? failedText(item.failed, item.topError)
                                       : undefined,
