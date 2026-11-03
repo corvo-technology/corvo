@@ -2,16 +2,16 @@ import type { LaunchCopy } from "./types";
 
 const COPY: LaunchCopy = {
   meta: {
-    title: "Corvo | 以团队方式工作的开源 AI 智能体",
+    title: "Rook | 以团队方式工作的开源 AI 智能体",
     description:
-      "Corvo 是一支开源的 AI 智能体团队。每个智能体都有自己的工作、工具和对话。它们在你电脑上的频道里协作，并在行动前先问你。",
-    ogImageAlt: "Corvo。以团队方式工作、行动前先询问的 AI 智能体。",
+      "Rook 是一支开源的 AI 智能体团队。每个智能体都有自己的工作、工具和对话。它们在你电脑上的频道里协作，并在行动前先问你。",
+    ogImageAlt: "Rook。以团队方式工作、行动前先询问的 AI 智能体。",
     ogTagline: "开源。在你的电脑上运行。",
     availableLanguage: "简体中文",
     skipToContent: "跳到正文",
   },
   nav: {
-    home: "Corvo 首页",
+    home: "Rook 首页",
     primary: "主导航",
     menu: "菜单",
     demo: "智能体",
@@ -50,7 +50,7 @@ const COPY: LaunchCopy = {
   hero: {
     line1: "以团队方式工作的 AI 智能体。",
     line2: "行动之前，它们先问你。",
-    lead: "Corvo 是一支开源的 AI 智能体团队。每个智能体都有自己的工作、工具和对话。它们在你电脑上的频道里协作，并在碰任何真实的东西之前先和你确认。",
+    lead: "Rook 是一支开源的 AI 智能体团队。每个智能体都有自己的工作、工具和对话。它们在你电脑上的频道里协作，并在碰任何真实的东西之前先和你确认。",
     githubLabel: "在 GitHub 上加星标",
     note: "也支持 {windows} 和 {linux}",
     tags: [
@@ -92,7 +92,7 @@ const COPY: LaunchCopy = {
     },
   },
   preview: {
-    window: "Corvo",
+    window: "Rook",
     rail: { agents: "智能体", routines: "例行任务", workflows: "工作流", more: "更多", store: "商店" },
     workspace: "Pedro",
     chief: "总管",
@@ -324,7 +324,7 @@ const COPY: LaunchCopy = {
   },
   install: {
     heading: "装到你的电脑上。",
-    copy: "Corvo 在你的机器上运行，带着自己的数据库。无需配置，也无需创建账号。",
+    copy: "Rook 在你的机器上运行，带着自己的数据库。无需配置，也无需创建账号。",
     download: "下载 Mac 版",
     alsoFor: "也支持 Windows 和 Linux",
     macLinux: "macOS 和 Linux",
