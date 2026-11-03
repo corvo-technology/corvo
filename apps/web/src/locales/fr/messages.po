@@ -2750,6 +2750,7 @@ msgstr "Fait tout sans demander. Idéal pour les bots de confiance."
 msgid "Don’t have an account?"
 msgstr "Vous n'avez pas de compte ?"
 
+#: src/components/PlanCard.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
@@ -3018,6 +3019,7 @@ msgstr "Très élevé"
 msgid "failed"
 msgstr "échoué"
 
+#: src/components/PlanCard.tsx
 #: src/components/SubagentCard.tsx
 #: src/pages/ActivityList.tsx
 #: src/pages/RoutineCard.tsx
@@ -3336,6 +3338,7 @@ msgstr "Importer OpenAPI JSON"
 msgid "Import this agent as a bot?"
 msgstr "Importer cet agent comme bot ?"
 
+#: src/components/PlanCard.tsx
 #: src/lib/ticket-status.ts
 msgid "In progress"
 msgstr "En cours"
@@ -6580,6 +6583,10 @@ msgstr "Patientez un instant et testez à nouveau."
 #: src/pages/shell/message-view.tsx
 msgid "waiting"
 msgstr "en attente"
+
+#: src/components/PlanCard.tsx
+msgid "Waiting"
+msgstr "En attente"
 
 #: src/lib/roster-status.ts
 msgid "Waiting in line…"

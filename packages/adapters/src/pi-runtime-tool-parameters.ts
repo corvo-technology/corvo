@@ -119,6 +119,41 @@ function builtinParameters(tool: ConnectorTool) {
   if (tool.name === "list_routines") return Type.Object({});
   if (tool.name === "store_agents")
     return Type.Object({ language: Type.Optional(stringEnum(["en", "pt-BR"], {})) });
+  if (tool.name === "plan_set") {
+    return Type.Object({
+      title: Type.String({ minLength: 1, maxLength: 120 }),
+      steps: Type.Array(
+        Type.Object({
+          label: Type.String({ minLength: 1, maxLength: 200 }),
+          owner: Type.Optional(Type.String({ maxLength: 80 })),
+        }),
+        { minItems: 1, maxItems: 12 },
+      ),
+    });
+  }
+  if (tool.name === "plan_update") {
+    return Type.Object({
+      updates: Type.Optional(
+        Type.Array(
+          Type.Object({
+            step: Type.String(),
+            status: Type.Optional(stringEnum(["pending", "running", "done", "failed"], {})),
+            note: Type.Optional(Type.String({ maxLength: 300 })),
+            owner: Type.Optional(Type.String({ maxLength: 80 })),
+            label: Type.Optional(Type.String({ maxLength: 200 })),
+          }),
+        ),
+      ),
+      add: Type.Optional(
+        Type.Array(
+          Type.Object({
+            label: Type.String({ minLength: 1, maxLength: 200 }),
+            owner: Type.Optional(Type.String({ maxLength: 80 })),
+          }),
+        ),
+      ),
+    });
+  }
   if (tool.name === "store_skills") {
     return Type.Object({
       query: Type.Optional(Type.String({ maxLength: 100 })),

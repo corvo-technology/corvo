@@ -17,6 +17,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Approval model": "审批模型",
   "Routing model": "路由模型",
   "Light tasks model": "轻量任务模型",
+  Waiting: "等待中",
+  "In progress": "进行中",
   "Main model": "主模型",
   "Add fallback": "添加备用模型",
   "Manage {provider}": "管理 {provider}",

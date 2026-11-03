@@ -2750,6 +2750,7 @@ msgstr "无需询问即可完成所有操作。适合你信任的机器人。"
 msgid "Don’t have an account?"
 msgstr "还没有账户？"
 
+#: src/components/PlanCard.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
@@ -3018,6 +3019,7 @@ msgstr "极高"
 msgid "failed"
 msgstr "失败"
 
+#: src/components/PlanCard.tsx
 #: src/components/SubagentCard.tsx
 #: src/pages/ActivityList.tsx
 #: src/pages/RoutineCard.tsx
@@ -3336,6 +3338,7 @@ msgstr "导入 OpenAPI JSON"
 msgid "Import this agent as a bot?"
 msgstr "将此智能体导入为机器人？"
 
+#: src/components/PlanCard.tsx
 #: src/lib/ticket-status.ts
 msgid "In progress"
 msgstr "进行中"
@@ -6579,6 +6582,10 @@ msgstr "请稍候并重新测试。"
 
 #: src/pages/shell/message-view.tsx
 msgid "waiting"
+msgstr "等待中"
+
+#: src/components/PlanCard.tsx
+msgid "Waiting"
 msgstr "等待中"
 
 #: src/lib/roster-status.ts

@@ -19,6 +19,8 @@ export const PT_BR_MESSAGES: Record<string, string> = {
   "Approval model": "Modelo de aprovação",
   "Routing model": "Modelo de roteamento",
   "Light tasks model": "Modelo para tarefas leves",
+  Waiting: "Aguardando",
+  "In progress": "Em andamento",
   "Main model": "Modelo principal",
   "Add fallback": "Adicionar alternativo",
   "Manage {provider}": "Gerenciar {provider}",
