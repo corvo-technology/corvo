@@ -247,7 +247,7 @@ export function contentRoutes(ctx: RouterContext) {
               lt: new Date(Math.max(window.to, now.getTime())),
             },
           },
-          select: { botId: true, status: true, startedAt: true, completedAt: true },
+          select: { botId: true, status: true, startedAt: true, completedAt: true, error: true },
           take: USAGE_OVERVIEW_ROW_LIMIT,
         });
         return buildUsageOverview({

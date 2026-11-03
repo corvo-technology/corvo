@@ -1,10 +1,12 @@
 import type { UsagePeriod } from "@corvo/contracts";
+import { normalizeRunError } from "@corvo/core";
 import { BotAvatar, Button, Spinner } from "@corvo/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { formatTokens } from "../lib/context-meter";
 import { useSpaceQueries } from "../lib/query";
+import { translateRunError } from "../lib/run-error";
 import {
   usageAgentKey,
   usageBars,
@@ -49,9 +51,12 @@ export function UsagePage() {
     const count = formatTokens(tokens, locale);
     return t`${count} tokens`;
   };
-  const failedText = (failed: number) => {
+  const failedText = (failed: number, topError?: string | null) => {
     const count = new Intl.NumberFormat(locale).format(failed);
-    return t`${count} failed`;
+    const failures = t`${count} failed`;
+    return topError
+      ? `${failures}: ${normalizeRunError(topError, translateRunError, locale).summary}`
+      : failures;
   };
   const repliesText = (replies: number) => {
     const count = new Intl.NumberFormat(locale).format(replies);
@@ -187,7 +192,9 @@ export function UsagePage() {
                                   {[
                                     model?.model,
                                     repliesText(item.replies),
-                                    item.failed ? failedText(item.failed) : undefined,
+                                    item.failed
+                                      ? failedText(item.failed, item.topError)
+                                      : undefined,
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")}

@@ -1069,6 +1069,8 @@ export const UsageAgentSchema = z.object({
   failed: z.number().optional(),
   /** Mean seconds a finished run took; absent when none had both times. */
   avgSeconds: z.number().nullable().optional(),
+  /** The error behind the agent's most common failure; absent when there was none to read. */
+  topError: z.string().nullable().optional(),
 });
 
 /** A period of use: totals, how it compares with the same point of the one before, by agent and by day. */
