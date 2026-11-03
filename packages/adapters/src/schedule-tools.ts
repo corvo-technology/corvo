@@ -407,6 +407,14 @@ async function createMessageRoutineFromTool(
   if (!/^[a-z0-9._-]{1,50}$/.test(provider)) {
     return { error: "onMessage must be a channel name such as telegram." };
   }
+  // "webhook" is the agent's own inbound URL, not a channel; its secret never reaches the model.
+  const viaWebhook = provider === "webhook";
+  const bot = viaWebhook
+    ? await deps.prisma.bot.findUnique({
+        where: { id: input.botId },
+        select: { webhookSecretId: true },
+      })
+    : null;
   const row = await deps.prisma.routine.create({
     data: {
       spaceId: input.spaceId,
@@ -419,7 +427,7 @@ async function createMessageRoutineFromTool(
       timezone: input.timezone,
       notify: true,
       active: true,
-      messageProvider: provider,
+      ...(viaWebhook ? { webhookEnabled: true } : { messageProvider: provider }),
     },
   });
   try {
@@ -438,7 +446,11 @@ async function createMessageRoutineFromTool(
     routineId: row.id,
     name: row.name,
     onMessage: provider,
-    note: `Runs each time a message arrives on ${provider}.`,
+    note: viaWebhook
+      ? bot?.webhookSecretId
+        ? "Runs each time the agent's webhook is called. The user copies the URL from the agent's page."
+        : "Runs each time the agent's webhook is called, but the agent has no webhook yet. Tell the user to turn it on in the agent's page and copy the URL from there."
+      : `Runs each time a message arrives on ${provider}.`,
   };
 }
 

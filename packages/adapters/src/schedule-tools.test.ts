@@ -1307,3 +1307,53 @@ describe("a routine that runs when a message arrives", () => {
     expect(create).not.toHaveBeenCalled();
   });
 });
+
+describe("a routine that runs when the agent's webhook is called", () => {
+  const base = {
+    spaceId: "space-1",
+    botId: "bot-1",
+    userId: "user-1",
+    threadId: "thread-1",
+    name: "Payment failed",
+    prompt: "Tell me which payment failed",
+    timezone: "UTC",
+  };
+  function setup(webhookSecretId: string | null) {
+    const create = vi.fn(async (args: { data: Record<string, unknown> }) => ({
+      id: "routine-1",
+      ...args.data,
+    }));
+    const deps = {
+      prisma: {
+        routine: { create, findMany: async () => [] },
+        user: { findUnique: async () => null },
+        bot: { findUnique: async () => ({ webhookSecretId }) },
+      },
+      events: { append: vi.fn(async () => undefined) },
+      jobs: { enqueue: vi.fn(async () => undefined) },
+    } as unknown as Parameters<typeof createScheduleFromTool>[0];
+    return { create, deps };
+  }
+
+  it("is saved active with the webhook on and no channel, and never returns a secret", async () => {
+    const { create, deps } = setup("secret-1");
+    const result = await createScheduleFromTool(deps, {
+      ...base,
+      schedule: { onMessage: "webhook" },
+    });
+    expect(result).toMatchObject({ ok: true, routineId: "routine-1" });
+    expect(JSON.stringify(result)).not.toContain("secret-1");
+    const data = create.mock.calls[0]?.[0].data;
+    expect(data).toMatchObject({ webhookEnabled: true, crons: [], active: true });
+    expect(data).not.toHaveProperty("messageProvider");
+  });
+
+  it("tells the bot to ask the user to turn the webhook on when the agent has none", async () => {
+    const { deps } = setup(null);
+    const result = await createScheduleFromTool(deps, {
+      ...base,
+      schedule: { onMessage: "webhook" },
+    });
+    expect(result).toMatchObject({ ok: true, note: expect.stringContaining("no webhook yet") });
+  });
+});
