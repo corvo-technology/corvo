@@ -2,7 +2,7 @@ import type { MessageBlock } from "@corvo/contracts";
 import { APP_CATALOG } from "@corvo/core";
 import { getLogger } from "@corvo/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
-import { persistMessageInTransaction } from "./run-messages.js";
+import { isUniqueViolation, persistMessageInTransaction } from "./run-messages.js";
 
 const RECENT_MESSAGES = 50;
 
@@ -11,10 +11,11 @@ type Target = { id: string; spaceId: string; userId: string; threadId: string; b
 const normalize = (value: string) => value.trim().toLowerCase();
 
 /**
- * connect_app for an app the owner already added to the workspace, or that the app catalog has:
- * an added server this agent cannot use yet gets the approval card that assigns it, and an app
- * that was never added is named so the agent does not say it does not exist. Undefined when the
- * name matches neither, so the connector catalog is searched as before.
+ * connect_app for an app the owner already added to the workspace, or that the app catalog has.
+ * An added server this agent cannot use yet gets the approval card that assigns it. A catalog app
+ * that signs in with OAuth is added first, so the card can lead with the sign-in; one that needs a
+ * key or the desktop app is named, with where the user adds it. Undefined when the name matches
+ * neither, so the connector catalog is searched as before.
  */
 export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app: string) {
   const wanted = normalize(app);
@@ -30,18 +31,50 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
       assignments: { where: { botId: run.botId }, select: { id: true } },
     },
   });
-  const server =
+  let server =
     servers.find((item) => normalize(item.slug) === wanted || normalize(item.name) === wanted) ??
     servers.find((item) => normalize(item.name).includes(wanted));
   if (!server) {
     const known = APP_CATALOG.find(
       (entry) => normalize(entry.slug) === wanted || normalize(entry.name) === wanted,
     );
-    return known
-      ? {
-          error: `${known.name} is in the app catalog but has not been added to this workspace. Ask the user to add it from the Integrations screen, then call connect_app again.`,
-        }
-      : undefined;
+    if (!known) return undefined;
+    // A key is typed into the Store, never into the chat, and a desktop-only sign-in needs the app.
+    if (known.auth.kind === "key" || known.desktopOnly) {
+      return {
+        error: `${known.name} is in the app catalog but has not been added to this workspace, and ${known.auth.kind === "key" ? "it needs an API key" : "its sign-in needs the desktop app"}. Ask the user to add it from the Store (Apps, ${known.name}, Add), never to paste a key in chat, then call connect_app again.`,
+      };
+    }
+    try {
+      server = {
+        ...(await deps.prisma.mcpServer.create({
+          data: {
+            spaceId: run.spaceId,
+            userId: run.userId,
+            slug: known.slug,
+            name: known.name,
+            description: known.tagline,
+            transport: known.transport,
+            endpoint: known.endpoint,
+            enabled: true,
+          },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            transport: true,
+            endpoint: true,
+            secretId: true,
+          },
+        })),
+        assignments: [],
+      };
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error;
+      return {
+        error: `${known.name} already exists in this workspace but is turned off. Ask the user to turn it on in the MCP servers settings.`,
+      };
+    }
   }
   if (server.assignments.length > 0) {
     return {
