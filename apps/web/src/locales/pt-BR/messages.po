@@ -4295,6 +4295,10 @@ msgstr "Normal"
 msgid "Not a valid skill"
 msgstr "Não é uma habilidade válida"
 
+#: src/pages/AgentsStore.tsx
+msgid "Not available here: it needs a public https address to receive mail."
+msgstr"Indisponível aqui: precisa de um endereço https público para receber e-mails."
+
 #: src/components/McpServerHealthLine.tsx
 msgid "Not checked yet"
 msgstr "Ainda não verificado"
@@ -4601,7 +4605,7 @@ msgstr "Cole uma chave de substituição"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Paste the key to let your agent use this server's tools."
-msgstr"Cole a chave para que seu agente use as ferramentas deste servidor."
+msgstr "Cole a chave para que seu agente use as ferramentas deste servidor."
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."

@@ -43,7 +43,9 @@ describe("email agent routes", () => {
   });
 
   it("refuses to install where the feature is unavailable", async () => {
-    await expect(routes(undefined)("install", { serverId: "srv-1" })).rejects.toThrow();
+    await expect(routes(undefined)("install", { serverId: "srv-1" })).rejects.toThrow(
+      "public https address",
+    );
   });
 
   it("refuses a server that is not an inbox service", async () => {

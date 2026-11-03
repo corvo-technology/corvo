@@ -4295,6 +4295,10 @@ msgstr "普通"
 msgid "Not a valid skill"
 msgstr "不是有效的技能"
 
+#: src/pages/AgentsStore.tsx
+msgid "Not available here: it needs a public https address to receive mail."
+msgstr"此处不可用：接收邮件需要公开的 https 地址。"
+
 #: src/components/McpServerHealthLine.tsx
 msgid "Not checked yet"
 msgstr "尚未检查"
@@ -4601,7 +4605,7 @@ msgstr "粘贴替换密钥"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Paste the key to let your agent use this server's tools."
-msgstr"粘贴密钥，让你的智能体使用此服务器的工具。"
+msgstr "粘贴密钥，让你的智能体使用此服务器的工具。"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Paste the OpenAI-compatible address from your server. Corvo adds /v1 if needed."

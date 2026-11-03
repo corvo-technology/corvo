@@ -42,6 +42,10 @@ export function AgentsStore({
   const queries = useSpaceQueries();
   const bots = useQuery(queries.bots.list.queryOptions());
   const skills = useQuery(queries.agentSkills.list.queryOptions());
+  const emailStatus = useQuery(queries.emailAgent.status.queryOptions());
+  // Mail reaches the agent through a callback to this server, so the server needs a public https
+  // address. Treated as available until the server says otherwise, so the button does not flicker.
+  const emailUnavailable = emailStatus.data?.available === false;
   const [category, setCategory] = useState<StoreCategory | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +95,7 @@ export function AgentsStore({
             connectedServersFor(entry, servers).map((server) => server.slug),
           );
           // The email agent needs any one inbox service; every other agent needs each of its apps.
+          const blocked = entry.setup === "email" && emailUnavailable && !added;
           const missing =
             entry.setup === "email"
               ? connected.size > 0
@@ -125,7 +130,9 @@ export function AgentsStore({
                     variant="secondary"
                     size="sm"
                     disabled={
-                      pending === entry.slug || (entry.setup === "email" && missing.length > 0)
+                      pending === entry.slug ||
+                      blocked ||
+                      (entry.setup === "email" && missing.length > 0)
                     }
                     onClick={() => void add(entry)}
                   >
@@ -137,6 +144,13 @@ export function AgentsStore({
               <p className="text-[14px] leading-snug text-foreground/75">
                 {entry.description[locale]}
               </p>
+              {blocked ? (
+                <p className="text-[13px] text-muted-foreground">
+                  <Trans>
+                    Not available here: it needs a public https address to receive mail.
+                  </Trans>
+                </p>
+              ) : null}
               {missing.length > 0 && (added || entry.setup === "email") ? (
                 <div className="flex flex-wrap gap-1.5">
                   {missing.map((slug) => (
