@@ -1,4 +1,5 @@
 import type { UsageOverview, UsagePeriod } from "@corvo/contracts";
+import { normalizeRunError } from "@corvo/core";
 
 export interface UsageRow {
   botId: string | null;
@@ -57,15 +58,40 @@ export interface RunOutcomeRow {
   status: string;
   startedAt: Date | null;
   completedAt: Date | null;
+  error?: string | null;
 }
-export type RunOutcome = { failed: number; avgSeconds: number | null };
+export type RunOutcome = {
+  failed: number;
+  avgSeconds: number | null;
+  /** The error text behind the most common kind of failure, for the page to put in words. */
+  topError: string | null;
+};
+const TOP_ERROR_CHARS = 1_000;
 
 /** How each agent's ended runs went: how many failed, and how long the finished ones took. */
 export function buildRunOutcomes(runs: readonly RunOutcomeRow[]): Map<string, RunOutcome> {
-  const totals = new Map<string, { failed: number; seconds: number; timed: number }>();
+  const totals = new Map<
+    string,
+    {
+      failed: number;
+      seconds: number;
+      timed: number;
+      reasons: Map<string, { count: number; error: string }>;
+    }
+  >();
   for (const run of runs) {
-    const total = totals.get(run.botId) ?? { failed: 0, seconds: 0, timed: 0 };
-    if (run.status === "failed") total.failed += 1;
+    const total = totals.get(run.botId) ?? { failed: 0, seconds: 0, timed: 0, reasons: new Map() };
+    if (run.status === "failed") {
+      total.failed += 1;
+      const error = run.error?.trim();
+      if (error) {
+        // Runs fail for the same reason in different words; the app's own summary groups them.
+        const reason = normalizeRunError(error).summary;
+        const seen = total.reasons.get(reason);
+        if (seen) seen.count += 1;
+        else total.reasons.set(reason, { count: 1, error: error.slice(0, TOP_ERROR_CHARS) });
+      }
+    }
     if (run.status === "completed" && run.startedAt && run.completedAt) {
       total.seconds += (run.completedAt.getTime() - run.startedAt.getTime()) / 1000;
       total.timed += 1;
@@ -75,7 +101,11 @@ export function buildRunOutcomes(runs: readonly RunOutcomeRow[]): Map<string, Ru
   return new Map(
     [...totals].map(([botId, total]) => [
       botId,
-      { failed: total.failed, avgSeconds: total.timed ? total.seconds / total.timed : null },
+      {
+        failed: total.failed,
+        avgSeconds: total.timed ? total.seconds / total.timed : null,
+        topError: [...total.reasons.values()].sort((a, b) => b.count - a.count)[0]?.error ?? null,
+      },
     ]),
   );
 }

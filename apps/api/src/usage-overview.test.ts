@@ -135,12 +135,16 @@ describe("run outcomes", () => {
       run("cancelled"),
       run("completed", "09:00:00", "09:01:00", "b"),
     ]);
-    expect(outcomes.get("a")).toEqual({ failed: 1, avgSeconds: 20 });
-    expect(outcomes.get("b")).toEqual({ failed: 0, avgSeconds: 60 });
+    expect(outcomes.get("a")).toEqual({ failed: 1, avgSeconds: 20, topError: null });
+    expect(outcomes.get("b")).toEqual({ failed: 0, avgSeconds: 60, topError: null });
   });
 
   it("has no average when no finished run has both times", () => {
-    expect(buildRunOutcomes([run("failed")]).get("a")).toEqual({ failed: 1, avgSeconds: null });
+    expect(buildRunOutcomes([run("failed")]).get("a")).toEqual({
+      failed: 1,
+      avgSeconds: null,
+      topError: null,
+    });
   });
 
   it("puts the outcomes on the agents that have usage and leaves others without", () => {
@@ -155,5 +159,31 @@ describe("run outcomes", () => {
     });
     expect(result.agents.find((agent) => agent.id === "a")?.failed).toBe(1);
     expect(result.agents.find((agent) => agent.id === "b")?.failed).toBeUndefined();
+  });
+});
+
+describe("buildRunOutcomes top error", () => {
+  const run = (error: string | null, status = "failed") => ({
+    botId: "a",
+    status,
+    startedAt: null,
+    completedAt: null,
+    error,
+  });
+  const limit = (id: string) => `429 {"error":{"message":"rate limit ${id}"}}`;
+
+  it("keeps the error of the most common kind of failure, however its words differ", () => {
+    const outcomes = buildRunOutcomes([
+      run("The model hit its output limit before writing a response."),
+      run(limit("one")),
+      run(limit("two")),
+    ]);
+    expect(outcomes.get("a")?.failed).toBe(3);
+    expect(outcomes.get("a")?.topError).toContain("rate limit");
+  });
+
+  it("has none when no failed run left an error, and ignores the errors of runs that did not fail", () => {
+    expect(buildRunOutcomes([run(null), run("   ")]).get("a")?.topError).toBeNull();
+    expect(buildRunOutcomes([run(limit("x"), "completed")]).get("a")?.topError).toBeNull();
   });
 });

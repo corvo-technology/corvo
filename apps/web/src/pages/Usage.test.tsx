@@ -14,6 +14,10 @@ vi.mock("../lib/rpc", () => ({
   createSpaceRpc: () => rpcClient,
   selectedSpaceId: () => null,
 }));
+vi.mock("../lib/run-error", () => ({
+  translateRunError: (message: string, values: Record<string, string> = {}) =>
+    message.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? ""),
+}));
 vi.mock("@lingui/react/macro", () => {
   const t = (parts: TemplateStringsArray, ...values: unknown[]) =>
     parts.reduce((text, part, index) => text + part + (values[index] ?? ""), "");
@@ -50,6 +54,7 @@ const data = {
       costUsd: 0,
       failed: 2,
       avgSeconds: 12,
+      topError: '429 {"error":{"message":"rate limit"}}',
       models: [{ provider: "anthropic", model: "Sonnet", tokens: 1_000_000 }],
     },
     {
@@ -99,7 +104,8 @@ it("shows the period's tokens, how it compares and who used them", async () => {
   expect(host.textContent).toContain("+50%");
   expect(host.textContent).toContain("vs. the same days last month");
   expect(host.textContent).toContain("Pia");
-  expect(host.textContent).toContain("Sonnet · 8 replies · 12 s avg · 2 failed");
+  expect(host.textContent).toContain("Sonnet · 8 replies · 12 s avg · 2 failed: ");
+  expect(host.textContent).toContain("rate limiting requests");
   // An agent with no failures says nothing about them.
   expect(host.textContent).not.toContain("0 failed");
   // An agent that no longer exists is still listed, with a name for it.
