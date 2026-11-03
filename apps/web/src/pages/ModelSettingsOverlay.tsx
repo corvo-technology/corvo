@@ -329,6 +329,22 @@ export function ModelSettingsOverlay({
             }
             panel={connectionAt === "approval" ? panelFor(true) : null}
           />
+          <ModelRoleSettings
+            userId={me.userId}
+            spaceId={me.spaceId}
+            scope={scope}
+            credentials={credentials}
+            modelRole="routing"
+            title={t`Routing model`}
+            defaultLabel={t`Choose a model`}
+            providers={providers}
+            providerLabel={providerLabel}
+            onConnect={(next, intent) => openConnection(next, intent, null, "routing")}
+            onManage={(id, credentialId) =>
+              openConnection({ id, name: id }, null, credentialId, "routing")
+            }
+            panel={connectionAt === "routing" ? panelFor(true) : null}
+          />
           {scope === "space" ? null : (
             <ProvidersSection
               credentials={credentials}

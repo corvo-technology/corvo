@@ -5185,6 +5185,10 @@ msgstr "例行任务"
 msgid "Routines that run while you're away"
 msgstr "你不在时也会运行的例行任务"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Routing model"
+msgstr "路由模型"
+
 #: src/components/markdown-copy.tsx
 msgid "Row"
 msgstr "行"

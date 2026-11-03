@@ -5185,6 +5185,10 @@ msgstr "ルーティン"
 msgid "Routines that run while you're away"
 msgstr "不在中に実行されるルーティン"
 
+#: src/pages/ModelSettingsOverlay.tsx
+msgid "Routing model"
+msgstr "ルーティングモデル"
+
 #: src/components/markdown-copy.tsx
 msgid "Row"
 msgstr "行"
