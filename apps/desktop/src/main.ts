@@ -153,7 +153,7 @@ function withUnsignedMacInstall(updater: ElectronAutoUpdater): ElectronAutoUpdat
       accessSync(path.dirname(bundle), constants.W_OK);
     } catch {
       throw new Error(
-        "Corvo cannot replace itself where it is. Move it to Applications and try again.",
+        "Rook cannot replace itself where it is. Move it to Applications and try again.",
       );
     }
     const log = path.join(app.getPath("home"), "Library", "Logs", "Corvo", "update.log");
@@ -189,6 +189,12 @@ let localStack: EmbeddedEngineController;
 /** The program the engine may start as the desktop control server, and the server script it runs. */
 let desktopControlLauncher: string | undefined;
 let desktopControlScript = "";
+/**
+ * What people see. The package keeps the name Corvo (`productName`) because the app bundle, the
+ * data folder and the update path all derive from it; menus and dialogs say this instead.
+ */
+const PRODUCT_NAME = "Rook";
+
 const toolsDir = () => path.join(app.getPath("userData"), "tools");
 let hostComputer: Awaited<ReturnType<typeof prepareHostComputer>> | undefined;
 let openCodeModels: Awaited<ReturnType<typeof prepareOpenCodeModels>>;
@@ -701,7 +707,7 @@ async function runMenuUpdateCheck() {
       : dialog.showMessageBox(options);
   if (state.phase === "ready") {
     const { response } = await alert({
-      message: `Corvo ${state.availableVersion} is ready to install.`,
+      message: `Rook ${state.availableVersion} is ready to install.`,
       buttons: ["Restart", "Later"],
       defaultId: 0,
       cancelId: 1,
@@ -724,7 +730,7 @@ async function runMenuUpdateCheck() {
       detail: state.message,
     });
   } else if (state.phase === "idle") {
-    await alert({ message: "Corvo is up to date.", detail: `Version ${state.currentVersion}` });
+    await alert({ message: "Rook is up to date.", detail: `Version ${state.currentVersion}` });
   }
 }
 
@@ -770,7 +776,7 @@ function installApplicationMenu() {
   };
   const changeServer: Electron.MenuItemConstructorOptions = {
     id: "change-corvo-server",
-    label: "Change Corvo Server…",
+    label: "Change Rook Server…",
     accelerator: "CmdOrCtrl+Shift+K",
     click: () => showSetupWindow(),
   };
@@ -804,9 +810,9 @@ function installApplicationMenu() {
     process.platform === "darwin"
       ? [
           {
-            label: app.name,
+            label: PRODUCT_NAME,
             submenu: [
-              { role: "about" },
+              { role: "about", label: `About ${PRODUCT_NAME}` },
               checkForUpdates,
               { type: "separator" },
               {
@@ -820,11 +826,11 @@ function installApplicationMenu() {
               changeServer,
               stopStack,
               { type: "separator" },
-              { role: "hide" },
+              { role: "hide", label: `Hide ${PRODUCT_NAME}` },
               { role: "hideOthers" },
               { role: "unhide" },
               { type: "separator" },
-              { role: "quit" },
+              { role: "quit", label: `Quit ${PRODUCT_NAME}` },
             ],
           },
           { role: "editMenu" },
@@ -862,7 +868,7 @@ function installApplicationMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-/** Setup IPC must only answer the setup window, never a connected Corvo server. */
+/** Setup IPC must only answer the setup window, never a connected Rook server. */
 function fromSetupWindow(event: Electron.IpcMainInvokeEvent) {
   return (
     setupWindow !== null && !setupWindow.isDestroyed() && event.sender === setupWindow.webContents
@@ -889,7 +895,7 @@ async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<Deskto
         ok: false,
         status: response.status,
         url,
-        error: "That address redirects elsewhere. Enter the final Corvo server address.",
+        error: "That address redirects elsewhere. Enter the final Rook server address.",
       };
     }
     if (!response.ok) {
@@ -906,7 +912,7 @@ async function probeServer(rawUrl: string, signal?: AbortSignal): Promise<Deskto
         ok: false,
         status: response.status,
         url,
-        error: "That address did not respond like a Corvo server.",
+        error: "That address did not respond like a Rook server.",
       };
     }
     return {
@@ -1173,6 +1179,7 @@ if (!hasSingleInstanceLock) {
 }
 
 app.whenReady().then(async () => {
+  app.setAboutPanelOptions({ applicationName: PRODUCT_NAME });
   if (!hasSingleInstanceLock) return;
   installSessionPermissions(session.defaultSession, permissionTarget);
   const userDataDir = app.getPath("userData");
@@ -1539,7 +1546,7 @@ app.whenReady().then(async () => {
         if (managedUrl === null || !(await localStack.matchesDesiredStack())) {
           return {
             ok: false,
-            error: "The app-managed Corvo services are not ready. Retry setup.",
+            error: "The app-managed Rook services are not ready. Retry setup.",
           };
         }
         openSetup = { mode: "new", serverUrl: managedUrl };

@@ -294,7 +294,7 @@ const INHERITED_ENV = [
 const START_INTERRUPTED = "Starting was interrupted. Retry.";
 
 /**
- * Runs Corvo on this computer without Docker: a PostgreSQL server, the database migrations, the
+ * Runs Rook on this computer without Docker: a PostgreSQL server, the database migrations, the
  * API and the worker, all as child processes of the app. The setup window polls `state()`.
  */
 export class EmbeddedEngineController {
@@ -832,7 +832,7 @@ export class EmbeddedEngineController {
       if (this.api !== child && this.worker !== child && this.supervisor !== child) return;
       if (this.stopping !== null || this.tearingDown) return;
       this.serving = false;
-      this.fail(`The Corvo ${name} stopped unexpectedly. Retry.`);
+      this.fail(`The Rook ${name} stopped unexpectedly. Retry.`);
     });
   }
 
@@ -876,14 +876,14 @@ export class EmbeddedEngineController {
 const INITDB_FAILED = "Could not create the local database. Retry, and check the output below.";
 const MIGRATE_FAILED = "Could not update the local database. Retry, and check the output below.";
 const DATABASE_FAILED = "The local database did not start. Retry, and check the output below.";
-const HEALTH_FAILED = "Corvo started but did not answer. Retry, and check the output below.";
+const HEALTH_FAILED = "Rook started but did not answer. Retry, and check the output below.";
 const SECRETS_UNREADABLE =
   "The saved keys for the local data cannot be read, so the data stays untouched. Restore the Corvo folder in Application Support or contact support.";
 
 function failureMessage(error: unknown): string {
   return error instanceof Error && error.message
     ? error.message
-    : "Could not start Corvo on this computer. Retry.";
+    : "Could not start Rook on this computer. Retry.";
 }
 
 function databaseUrls(port: number, secrets: EngineSecrets) {

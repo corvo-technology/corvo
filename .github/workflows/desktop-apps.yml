@@ -91,7 +91,7 @@ jobs:
           ls -la files
           gh release create "$GITHUB_REF_NAME" files/* \
             --repo "$GITHUB_REPOSITORY" \
-            --title "Corvo ${GITHUB_REF_NAME#v}" \
+            --title "Rook ${GITHUB_REF_NAME#v}" \
             --generate-notes \
             --latest \
             --notes "These builds are not signed yet, so macOS and Windows warn the first time you open the app. The install commands in the README skip the macOS warning."
