@@ -125,6 +125,46 @@ describe("installEmailAgent", () => {
     expect(f.bot.instructions).toContain("You handle email for your owner");
   });
 
+  describe("on a server with no public address", () => {
+    const installLocal = (f: ReturnType<typeof fixture>, locale?: "en" | "pt-BR") =>
+      installEmailAgent(
+        { prisma: f.prisma, secrets: f.secrets, createBot: f.createBot },
+        actor,
+        "srv-1",
+        locale,
+      );
+
+    it("sets no webhook up: no secret is stored and the bot has none", async () => {
+      const f = fixture();
+      await installLocal(f);
+      expect(f.secrets.put).not.toHaveBeenCalled();
+      expect(f.prisma.secret.create).not.toHaveBeenCalled();
+      expect(f.prisma.bot.update).toHaveBeenCalledWith({
+        where: { id: "bot-1" },
+        data: { instructions: expect.any(String) },
+      });
+      expect(f.bot.webhookSecretId).toBeNull();
+    });
+
+    it("tells the bot to ask its owner how often to check, then create the routine itself", async () => {
+      const f = fixture();
+      await installLocal(f);
+      expect(f.bot.instructions).toContain("no public address");
+      expect(f.bot.instructions).toContain("ask_user");
+      expect(f.bot.instructions).toContain("schedule_create");
+      expect(f.bot.instructions).not.toContain("/api/v1/bots/");
+      expect(f.bot.instructions).not.toContain("inbox.email.received");
+    });
+
+    it("says the same in Portuguese, and still gives the bot the inbox service's tools", async () => {
+      const f = fixture();
+      await installLocal(f, "pt-BR");
+      expect(f.bot.instructions).toContain("não tem endereço público");
+      expect(f.bot.instructions).toContain("schedule_create");
+      expect(f.prisma.botMcpServer.upsert).toHaveBeenCalledOnce();
+    });
+  });
+
   it("refuses a server that is not an inbox service the user added", async () => {
     await expect(install(fixture(null))).rejects.toThrow();
     await expect(

@@ -42,10 +42,13 @@ describe("email agent routes", () => {
     });
   });
 
-  it("refuses to install where the feature is unavailable", async () => {
-    await expect(routes(undefined)("install", { serverId: "srv-1" })).rejects.toThrow(
-      "public https address",
-    );
+  it("does not refuse to install where the deployment has no public address", async () => {
+    const findFirst = vi.fn(async () => null);
+    await expect(
+      routes(undefined, { mcpServer: { findFirst } })("install", { serverId: "srv-1" }),
+    ).rejects.toThrow();
+    // It got as far as looking the inbox service up, instead of stopping at the address.
+    expect(findFirst).toHaveBeenCalled();
   });
 
   it("refuses a server that is not an inbox service", async () => {

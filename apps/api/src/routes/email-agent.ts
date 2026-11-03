@@ -11,10 +11,6 @@ export function emailAgentRoutes(ctx: RouterContext) {
         agent: await findEmailAgent(deps.prisma, context.actor),
       })),
       install: authed.emailAgent.install.handler(async ({ context, input }) => {
-        if (!deps.emailAgentPublicUrl)
-          throw new ORPCError("BAD_REQUEST", {
-            message: "The email agent needs this server to have a public https address.",
-          });
         try {
           return await installEmailAgent(
             {

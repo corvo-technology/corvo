@@ -161,15 +161,15 @@ it("keeps the email agent's Add off until an inbox service is connected", async 
   await withService.unmount();
 });
 
-it("says why the email agent cannot be added when the server has no public address, even with an inbox service connected", async () => {
+it("can still add the email agent when the server has no public address, and says how it will check mail", async () => {
   emailStatus.available = false;
   const { host, unmount } = await mount({
     servers: [{ id: "srv-m", slug: "millionsend", enabled: true, oauthStatus: "connected" }],
   });
   const email = card(host, "email-agent");
-  expect((button(email, "Add") as HTMLButtonElement).disabled).toBe(true);
-  expect(email.textContent).toContain("needs a public https address");
-  expect(card(host, "morning-briefing").textContent).not.toContain("public https address");
+  expect((button(email, "Add") as HTMLButtonElement).disabled).toBe(false);
+  expect(email.textContent).toContain("checks your inbox on a schedule you approve");
+  expect(card(host, "morning-briefing").textContent).not.toContain("on a schedule you approve");
   await unmount();
 });
 
@@ -177,7 +177,7 @@ it("says nothing about an address when the server has one", async () => {
   const { host, unmount } = await mount({
     servers: [{ id: "srv-m", slug: "millionsend", enabled: true, oauthStatus: "connected" }],
   });
-  expect(card(host, "email-agent").textContent).not.toContain("public https address");
+  expect(card(host, "email-agent").textContent).not.toContain("on a schedule you approve");
   await unmount();
 });
 

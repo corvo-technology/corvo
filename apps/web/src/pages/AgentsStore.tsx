@@ -43,9 +43,10 @@ export function AgentsStore({
   const bots = useQuery(queries.bots.list.queryOptions());
   const skills = useQuery(queries.agentSkills.list.queryOptions());
   const emailStatus = useQuery(queries.emailAgent.status.queryOptions());
-  // Mail reaches the agent through a callback to this server, so the server needs a public https
-  // address. Treated as available until the server says otherwise, so the button does not flicker.
-  const emailUnavailable = emailStatus.data?.available === false;
+  // Mail reaches the agent through a callback to this server, which needs a public https address.
+  // Without one the agent checks the inbox on a schedule its owner approves. Assumed instant until
+  // the server says otherwise, so the note does not flash.
+  const emailChecksOnSchedule = emailStatus.data?.available === false;
   const [category, setCategory] = useState<StoreCategory | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +96,6 @@ export function AgentsStore({
             connectedServersFor(entry, servers).map((server) => server.slug),
           );
           // The email agent needs any one inbox service; every other agent needs each of its apps.
-          const blocked = entry.setup === "email" && emailUnavailable && !added;
           const missing =
             entry.setup === "email"
               ? connected.size > 0
@@ -130,9 +130,7 @@ export function AgentsStore({
                     variant="secondary"
                     size="sm"
                     disabled={
-                      pending === entry.slug ||
-                      blocked ||
-                      (entry.setup === "email" && missing.length > 0)
+                      pending === entry.slug || (entry.setup === "email" && missing.length > 0)
                     }
                     onClick={() => void add(entry)}
                   >
@@ -144,10 +142,10 @@ export function AgentsStore({
               <p className="text-[14px] leading-snug text-foreground/75">
                 {entry.description[locale]}
               </p>
-              {blocked ? (
+              {entry.setup === "email" && emailChecksOnSchedule && !added ? (
                 <p className="text-[13px] text-muted-foreground">
                   <Trans>
-                    Not available here: it needs a public https address to receive mail.
+                    No public address here, so it checks your inbox on a schedule you approve.
                   </Trans>
                 </p>
               ) : null}

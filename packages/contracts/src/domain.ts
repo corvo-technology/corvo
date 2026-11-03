@@ -1172,7 +1172,10 @@ export const MessagingInstallationsStatusSchema = z.object({
 export type MessagingInstallationsStatus = z.infer<typeof MessagingInstallationsStatusSchema>;
 
 export const EmailAgentStatusSchema = z.object({
-  /** False where the deployment has no public https address for an inbox service to call. */
+  /**
+   * True where mail reaches the agent as it arrives. False where the deployment has no public
+   * https address for an inbox service to call, so the agent checks the inbox on a schedule.
+   */
   available: z.boolean(),
   agent: z.object({ botId: Id, botName: z.string() }).nullable(),
 });

@@ -4245,6 +4245,10 @@ msgstr "No hay modelos en la lista."
 msgid "No OpenClaw, Hermes or agent document found."
 msgstr "No se encontraron archivos de OpenClaw, Hermes ni un documento de agente."
 
+#: src/pages/AgentsStore.tsx
+msgid "No public address here, so it checks your inbox on a schedule you approve."
+msgstr"Aquí no hay dirección pública, así que revisa tu bandeja de entrada con un horario que tú apruebas."
+
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "No remote MCP servers found"
 msgstr "No se encontraron servidores MCP remotos"
@@ -4294,10 +4298,6 @@ msgstr "Normal"
 #: src/pages/shell/agent-import.tsx
 msgid "Not a valid skill"
 msgstr "No es una habilidad válida"
-
-#: src/pages/AgentsStore.tsx
-msgid "Not available here: it needs a public https address to receive mail."
-msgstr"No disponible aquí: necesita una dirección https pública para recibir correos."
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not checked yet"
