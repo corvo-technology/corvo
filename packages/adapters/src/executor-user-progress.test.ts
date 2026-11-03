@@ -31,6 +31,10 @@ vi.mock("./bot-messages.js", () => ({
     repliesToRequest: false,
   })),
   returnBotMessageOutcome: vi.fn(async () => undefined),
+  // The real one also counts a routed handoff; these runs are plain delegated or routine ones.
+  runReturnsOutcome: vi.fn(
+    async (_prisma: unknown, run: { trigger: string }) => run.trigger === "bot_message",
+  ),
 }));
 
 async function runTurn(

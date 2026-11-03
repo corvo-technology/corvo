@@ -24,11 +24,21 @@ import {
 } from "./user-progress.js";
 
 /**
- * A routine is the owner's own schedule, so its runs route like a run the owner started. Webhook
- * and channel runs do not, and any run that received an outside message is refused per call.
+ * A routine is the owner's own schedule, so its runs route like a run the owner started. So is the
+ * answer to a handoff the bot itself routed with the owner's authority, which lets it send the next
+ * stage on. Webhook and channel runs do not, and any run that received an outside message is
+ * refused per call.
  */
-export function mayRouteWithoutOwner(trigger: string, ownerStartedRun: boolean): boolean {
-  return ownerStartedRun || trigger === "routine";
+export function mayRouteWithoutOwner(
+  trigger: string,
+  ownerStartedRun: boolean,
+  peerMessage?: { continuesRouting?: boolean } | null,
+): boolean {
+  return (
+    ownerStartedRun ||
+    trigger === "routine" ||
+    (trigger === "bot_message" && peerMessage?.continuesRouting === true)
+  );
 }
 
 /**
@@ -40,7 +50,11 @@ export async function squadRoutingAuthority(
   ctx: Pick<RunContext, "deps" | "run" | "source" | "trust">,
   executionId: string,
 ) {
-  const ownerStarted = mayRouteWithoutOwner(ctx.run.trigger, ctx.source.ownerStartedRun);
+  const ownerStarted = mayRouteWithoutOwner(
+    ctx.run.trigger,
+    ctx.source.ownerStartedRun,
+    ctx.source.peerMessage,
+  );
   if (!ownerStarted || isSubagentToolExecution(executionId)) {
     return { squadRouting: false, ownerStarted };
   }
