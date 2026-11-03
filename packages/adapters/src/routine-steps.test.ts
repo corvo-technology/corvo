@@ -48,7 +48,9 @@ function setup(
       findFirst: vi.fn(async () => (overrides.next === undefined ? step2 : overrides.next)),
       count: vi.fn(async () => 1),
     },
-    event: { findFirst: vi.fn(async () => (overrides.stopped ? { id: "event-1" } : null)) },
+    event: {
+      findFirst: vi.fn(async (_args: unknown) => (overrides.stopped ? { id: "event-1" } : null)),
+    },
     bot: { findFirst: vi.fn(async () => ({ id: "bot-2", thread: { id: "thread-2" } })) },
     routine: {
       findUnique: vi.fn(async () => ({ modelProvider: null, modelId: null, thinkingLevel: null })),
