@@ -24,6 +24,7 @@ export const READ_ONLY_AGENT_TOOLS = new Set([
   "board_tickets",
   "ticket_get",
   "skill_read",
+  "store_skills",
   "web_search",
   "web_fetch",
   "browser_snapshot",

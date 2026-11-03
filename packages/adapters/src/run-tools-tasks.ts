@@ -25,6 +25,7 @@ import {
   skillReadFromTool,
   skillUpdateFromTool,
 } from "./skill-tools.js";
+import { installStoreSkillFromTool, listStoreSkills } from "./store-skills.js";
 import { taskCatalogFromTool } from "./task-catalog.js";
 import {
   commentTicket,
@@ -286,6 +287,22 @@ export const taskTools: ToolHandlers = {
           body: args.body ? String(args.body) : undefined,
           content: args.content ? String(args.content) : undefined,
         },
+      ),
+    );
+  },
+  async store_skills(ctx, call) {
+    const { deps, run } = ctx;
+    return call.finish(
+      await listStoreSkills(deps, { spaceId: run.spaceId, userId: run.userId }, call.args),
+    );
+  },
+  async skill_install(ctx, call) {
+    const { deps, run } = ctx;
+    return call.finish(
+      await installStoreSkillFromTool(
+        deps,
+        { spaceId: run.spaceId, userId: run.userId },
+        call.args,
       ),
     );
   },

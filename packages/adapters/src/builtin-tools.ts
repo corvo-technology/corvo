@@ -1193,6 +1193,41 @@ export const builtinAgentTools: ConnectorTool[] = [
     },
   },
   {
+    name: "store_skills",
+    description:
+      "Find ready-made skills the owner can add from the Store: slug, name, what it is for, and whether it is already added. Call it with query (words describing the task) when a multi-step task is not covered by your skills, before writing one yourself. Pass language: the language you are speaking with the owner.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", maxLength: 100, description: "Words describing the task." },
+        language: {
+          type: "string",
+          enum: ["en", "pt-BR"],
+          description: "The language you are speaking with the owner. Defaults to en.",
+        },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "skill_install",
+    description:
+      "Add a Store skill to the owner's skills by its slug from store_skills, when it fits the task you are doing. Then load it with skill_read and follow it. Tell the owner which skill you added.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        slug: { type: "string", description: "The skill's slug from store_skills." },
+        language: {
+          type: "string",
+          enum: ["en", "pt-BR"],
+          description: "The language you are speaking with the owner. Defaults to en.",
+        },
+      },
+      required: ["slug"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "run_subagent",
     description:
       "Run a short-lived helper inside this turn only. It is not a bot: no list entry, no thread, no computer of its own, and it disappears when this turn ends. Use it for short parallel work you will fold into this answer; work that must outlive the turn belongs to a teammate (message_bot) or a schedule. Never call this because the user asked to create a bot — that is spawn_bot, and spawn_bot alone.",

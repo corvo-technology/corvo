@@ -415,6 +415,17 @@ describe("skill prompt helpers", () => {
     expect(line).toContain("- Daily standup: Prepare standup notes");
     expect(line).toContain("skill_read");
     expect(line).toContain("Prefer matching skills");
+    expect(line).toContain("store_skills");
+    expect(line).toContain("skill_install");
+  });
+
+  it("still tells an agent with no skills how to find or write one", () => {
+    const line = formatSkillsCatalogInstruction([]);
+    expect(line).toContain("No Claude Agent Skills are added yet");
+    expect(line).toContain("store_skills");
+    expect(line).toContain("skill_install");
+    expect(line).toContain("skill_create");
+    expect(line).not.toContain("skill_read");
   });
 });
 

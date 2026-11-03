@@ -4,7 +4,7 @@ import type { PrismaClient } from "@corvo/db";
 import { createRepos } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
 import type { FleetRun } from "./fleet-tools.js";
-import { listAgentSkillRecords, skillCreateFromTool } from "./skill-tools.js";
+import { installStoreSkill } from "./store-skills.js";
 
 const appName = (slug: string) => APP_CATALOG.find((app) => app.slug === slug)?.name ?? slug;
 
@@ -138,20 +138,12 @@ export async function installStoreAgent(
     });
   }
 
-  const have = new Set(
-    (await listAgentSkillRecords(deps.prisma, owner)).map((skill) => skill.name.toLowerCase()),
-  );
   const skillsInstalled: string[] = [];
   for (const skill of SKILL_STORE.filter((item) => entry.skills?.includes(item.slug))) {
-    if (have.has(skill.name.en.toLowerCase()) || have.has(skill.name["pt-BR"].toLowerCase()))
-      continue;
-    const result = await skillCreateFromTool(deps.prisma, owner, {
-      name: skill.name[locale],
-      description: skill.description[locale],
-      body: skill.body[locale],
-    });
-    if (result.ok) skillsInstalled.push(skill.name[locale]);
-    else getLogger().warn("store agent skill not installed", { skill: skill.slug });
+    const result = await installStoreSkill(deps, owner, skill, locale);
+    if ("error" in result)
+      getLogger().warn("store agent skill not installed", { skill: skill.slug });
+    else if (!result.already) skillsInstalled.push(result.name);
   }
 
   const connected = new Set(servers.map((server) => server.slug));
