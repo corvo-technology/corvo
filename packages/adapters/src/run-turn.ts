@@ -20,7 +20,7 @@ import { recordUsage } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
 import { sanitizedError } from "@corvo/logging/monitoring";
 import { isToolPauseResult } from "./approval-effect.js";
-import { returnBotMessageOutcome } from "./bot-messages.js";
+import { returnBotMessageOutcome, runReturnsOutcome } from "./bot-messages.js";
 import { scheduleComputerSleep } from "./computer-idle.js";
 import { holdComputerExecutionLeaseForTakeover } from "./computer-lifecycle.js";
 import { resolveBotWorkspacePath } from "./computer-support.js";
@@ -638,10 +638,9 @@ export async function completeRun(ctx: RunContext) {
     throw new Error(TOOL_STEPS_WITHOUT_RESPONSE);
   }
   if (!(await renewRunLease(deps, runId, ctx.workerId, ctx.fence))) return;
-  const botMessageOutcome =
-    run.trigger === "bot_message"
-      ? botMessageOutcomeFromMidTurn(text, reply.midTurnUserTexts)
-      : null;
+  const botMessageOutcome = (await runReturnsOutcome(deps.prisma, run))
+    ? botMessageOutcomeFromMidTurn(text, reply.midTurnUserTexts)
+    : null;
   await ctx.settleRunningHelpers();
   const completed = await deps.events.finalizeRun({
     spaceId: run.spaceId,

@@ -103,6 +103,10 @@ describe("group handoff ownership", () => {
         }),
       }),
     );
+    // A handoff inside the group passes the baton: nothing comes back to the sender.
+    expect(messageCreate.mock.calls[0]?.[0]).toMatchObject({
+      data: { blocks: [expect.not.objectContaining({ returnsToSender: true })] },
+    });
     expect(runCreate).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ trigger: "follow_up" }) }),
     );
@@ -238,6 +242,8 @@ describe("explicit group destinations", () => {
               toBotId: "bot-b",
               text: "Review the public plan",
               hop: 1,
+              // Sent from the bot's private chat, so the result comes back there.
+              returnsToSender: true,
             },
           ],
         }),
@@ -619,6 +625,56 @@ describe("squad routing authority", () => {
     ).resolves.toMatchObject({ error: "source bot is no longer a group member" });
     expect(h.messageCreate).not.toHaveBeenCalled();
     expect(h.runCreate).not.toHaveBeenCalled();
+  });
+
+  it("marks a handoff made with squad authority, so its answer may route on, and not one made without", async () => {
+    const routerTurn = outsideTurn();
+    await handoffToGroupBot(
+      routerTurn.deps as never,
+      run,
+      "group-1",
+      { bot_id: "bot-b", message: "Avaliar o hero" },
+      routing,
+    );
+    expect(routerTurn.messageCreate.mock.calls[0]?.[0]).toMatchObject({
+      data: { blocks: [expect.objectContaining({ routedWithAuthority: true })] },
+    });
+    // The same sender as a member of the group, in its private chat: no squad authority.
+    const memberTurn = outsideTurn();
+    memberTurn.tx.chatGroup.findFirst.mockResolvedValue({
+      id: "group-1",
+      name: "Project",
+      thread: { id: "group-thread" },
+      members: ["bot-a", "bot-b"].map((id) => ({ bot: { id, name: id } })),
+    } as never);
+    await handoffToGroupBot(
+      memberTurn.deps as never,
+      run,
+      "group-1",
+      { bot_id: "bot-b", message: "Review it" },
+      MEMBER_ONLY,
+    );
+    expect(memberTurn.messageCreate.mock.calls[0]?.[0]).toMatchObject({
+      data: { blocks: [expect.not.objectContaining({ routedWithAuthority: true })] },
+    });
+  });
+
+  it("a handoff from outside the group expects the stage's result back", async () => {
+    const h = outsideTurn();
+    await handoffToGroupBot(
+      h.deps as never,
+      run,
+      "group-1",
+      { bot_id: "bot-b", message: "Avaliar o hero" },
+      routing,
+    );
+    expect(h.messageCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          blocks: [expect.objectContaining({ kind: "handoff", returnsToSender: true })],
+        }),
+      }),
+    );
   });
 
   it("a squadRouting bot in an owner-started run hands off into a group it is not in", async () => {

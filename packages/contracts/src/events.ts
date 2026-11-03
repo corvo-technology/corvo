@@ -302,6 +302,10 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     reason: z.string().max(HANDOFF_REASON_MAX_LENGTH).optional(),
     /** Links ownership transfers in one user-started group turn. */
     hop: z.number().int().positive().optional(),
+    /** Set when the sender is outside the group: the stage's result comes back to it. */
+    returnsToSender: z.literal(true).optional(),
+    /** The sender could route to groups it is not in, so the result may let it route on. */
+    routedWithAuthority: z.literal(true).optional(),
   }),
   z.object({
     /** A group-chat message delivered into a member bot's own thread. */
@@ -334,6 +338,8 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     returnToMessageId: Id.optional(),
     /** Links in a bot-started chain; absent when a person started it. */
     hop: z.number().int().nonnegative().optional(),
+    /** The answer to a routed handoff: the router that sent it may route the next stage. */
+    continuesRouting: z.literal(true).optional(),
   }),
 ]);
 export type MessageBlock = z.infer<typeof MessageBlock>;

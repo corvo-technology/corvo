@@ -179,6 +179,11 @@ export async function handoffToGroupBot(
       text,
       ...(reason ? { reason } : {}),
       hop,
+      // A router outside the group delegates and waits for the answer; a member passes the baton.
+      ...(inGroup ? {} : { returnsToSender: true as const }),
+      ...(!inGroup && authority.squadRouting && authority.ownerStarted
+        ? { routedWithAuthority: true as const }
+        : {}),
     };
     const message = await createThreadMessageInTransaction(tx, {
       threadId: targetThreadId,
