@@ -2000,6 +2000,40 @@ describe("Pi runtime ordered model fallback", () => {
     }
   });
 
+  it("leaves the main model's own screenshot tool calls to the executor, which decides for it", async () => {
+    providerState.models.set(`${primary.provider}/${primary.id}`, { ...primary, input: ["text"] });
+    const input = request([]);
+    input.tools = [{ ...input.tools[0]!, name: "computer_observe" }];
+    const executeTool = vi.fn(async () => ({ ok: true }));
+    input.executeTool = executeTool;
+    let calls = 0;
+    providerState.stream.mockImplementation((target: Model<"openai-completions">) => {
+      calls += 1;
+      return calls === 1
+        ? stream(
+            target,
+            message(
+              target,
+              [
+                {
+                  type: "toolCall",
+                  id: "look",
+                  name: "computer_observe",
+                  arguments: { value: "screen" },
+                },
+              ],
+              "toolUse",
+            ),
+          )
+        : stream(target, message(target, [{ type: "text", text: "done" }], "stop"));
+    });
+
+    await run(input);
+
+    // Only a backup is refused here; the main model's calls reach the executor as before.
+    expect(executeTool).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps the screenshot tools for a backup that can see", async () => {
     const input = request([
       { provider: backupA.provider, id: backupA.id, apiKey: "image-backup-key" },

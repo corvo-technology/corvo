@@ -22,6 +22,7 @@ import { sanitizeSensitiveText } from "./pi-runtime-errors.js";
 import { modelCannotSeeImages } from "./pi-runtime-fallback.js";
 import { clipToolResultContent, clipToolResultText } from "./pi-runtime-limits.js";
 import type { RuntimeModelTarget } from "./pi-runtime-models.js";
+import { sameModelTarget } from "./pi-runtime-models.js";
 import { executeSubagent } from "./pi-runtime-subagent.js";
 import { parametersFor, prepareFleetArguments } from "./pi-runtime-tool-parameters.js";
 import { recordPiTelemetryContent, withPiTelemetrySpan } from "./pi-telemetry.js";
@@ -517,8 +518,10 @@ function toAgentTool(
               }
               // The model answering now may be a backup that cannot see, which is never offered
               // these tools; one that calls them anyway gets the same answer a bot without sight does.
+              // The main model is left to the executor, which already decides for it.
               if (
                 IMAGE_RETURNING_COMPUTER_TOOLS.has(tool.name) &&
+                !sameModelTarget(host.activeModel.config, host.request.model) &&
                 modelCannotSeeImages(host.activeModel)
               ) {
                 const refused = { error: MODEL_CANNOT_SEE_MESSAGE };
