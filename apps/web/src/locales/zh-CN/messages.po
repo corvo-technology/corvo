@@ -2455,6 +2455,10 @@ msgstr "Cron 表达式"
 msgid "Current password"
 msgstr "当前密码"
 
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Custom color"
+msgstr "自定义颜色"
+
 #: src/pages/shell/bot-credentials.tsx
 msgid "Custom header"
 msgstr "自定义标头"

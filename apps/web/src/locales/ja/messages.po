@@ -2455,6 +2455,10 @@ msgstr "Cron式"
 msgid "Current password"
 msgstr "現在のパスワード"
 
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Custom color"
+msgstr "カスタムカラー"
+
 #: src/pages/shell/bot-credentials.tsx
 msgid "Custom header"
 msgstr "カスタムヘッダー"

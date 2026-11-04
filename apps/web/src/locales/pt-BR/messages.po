@@ -2455,6 +2455,10 @@ msgstr "Expressão cron"
 msgid "Current password"
 msgstr "Senha atual"
 
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Custom color"
+msgstr "Cor personalizada"
+
 #: src/pages/shell/bot-credentials.tsx
 msgid "Custom header"
 msgstr "Cabeçalho personalizado"

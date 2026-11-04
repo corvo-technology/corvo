@@ -18,13 +18,21 @@ export function MascotFace({
   mood,
   blink,
   detailed,
+  body,
 }: {
   mascot: MascotId;
   mood: MascotMood;
   blink: { every: string; delay: string };
   detailed: boolean;
+  /** The body in a color of one's own; the mascot's own shade when absent. */
+  body?: string;
 }) {
-  const look = MASCOT_LOOKS[mascot];
+  // A color of one's own is the plain chick: the accessory and mood of the nearest mascot belong
+  // to its color, not to the one that was chosen.
+  const look = body
+    ? { ...MASCOT_LOOKS[mascot], accessory: null, blush: false, sleepy: false }
+    : MASCOT_LOOKS[mascot];
+  const shade = body ?? look.color;
   const clip = useId();
   const ry = look.sleepy ? MASCOT_EYES.sleepyRy : MASCOT_EYES.ry;
   const cy = look.sleepy ? MASCOT_EYES.sleepyY : MASCOT_EYES.centers[0].y;
@@ -43,13 +51,13 @@ export function MascotFace({
         </clipPath>
       </defs>
       {detailed ? (
-        <g className="corvo-mascot-crest" fill={look.color}>
+        <g className="corvo-mascot-crest" fill={shade}>
           <polygon points="37,-12 44,8 30,8" transform="rotate(-22 37 -2)" />
           <polygon points="48,-17 55,7 41,7" transform="rotate(-6 48 -5)" />
           <polygon points="58,-11 64,7 52,7" transform="rotate(14 58 -2)" />
         </g>
       ) : null}
-      <rect width="100" height="100" rx="36" fill={look.color} />
+      <rect width="100" height="100" rx="36" fill={shade} />
       <rect
         y="94"
         width="100"
