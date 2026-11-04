@@ -26,6 +26,7 @@ import {
   ToolSteps,
 } from "../../components/ToolActivityDisclosure";
 import { SkillDraftCard } from "../../components/teach/SkillDraftCard";
+import { WikiChangeBlock } from "../../components/WikiChangeBlock";
 import type { ArtifactTarget } from "../../lib/artifact-open";
 import type { DelegationState } from "../../lib/delegation-states";
 import { delegationKey } from "../../lib/delegation-states";
@@ -79,6 +80,7 @@ export const MessageView = memo(function MessageView({
   showToolActivity,
   onReply,
   onMarkUnread,
+  onKeepInWiki,
   markedUnread = false,
   onReact,
 }: {
@@ -122,6 +124,8 @@ export const MessageView = memo(function MessageView({
   showToolActivity: boolean;
   onReply: (message: ThreadMessage) => void;
   onMarkUnread: (message: ThreadMessage) => void;
+  /** Asks the wiki to keep this message; absent where there is no conversation to keep from. */
+  onKeepInWiki?: (message: ThreadMessage) => void;
   markedUnread?: boolean;
   onReact: (message: ThreadMessage, reaction: MessageReaction) => Promise<void>;
 }) {
@@ -231,6 +235,7 @@ export const MessageView = memo(function MessageView({
       side={message.role === "user" ? "start" : "end"}
       onReply={onReply}
       onMarkUnread={onMarkUnread}
+      onKeepInWiki={onKeepInWiki}
       markedUnread={markedUnread}
       onReact={onReact}
     />
@@ -420,6 +425,13 @@ export const MessageView = memo(function MessageView({
           }
           if (block.kind === "subagent") {
             return <SubagentCard key={i} block={block} />;
+          }
+          if (block.kind === "wiki_change") {
+            return (
+              <div key={i} className="flex justify-start">
+                <WikiChangeBlock changeId={block.changeId} />
+              </div>
+            );
           }
           if (block.kind === "child_bot") {
             return (

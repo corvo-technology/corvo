@@ -457,6 +457,10 @@ msgstr "Un peu de tout"
 msgid "A command's output"
 msgstr "La sortie d’une commande"
 
+#: src/components/WikiChangeCard.tsx
+msgid "A page changed since"
+msgstr "Une page a changé depuis"
+
 #: src/components/ApprovalRulesSettings.tsx
 msgid "A second model approves what fits your request. You decide the rest."
 msgstr "Un second modèle approuve ce qui correspond à votre demande. Vous décidez du reste."
@@ -695,6 +699,10 @@ msgstr "Ajouter un déclencheur"
 msgid "Added"
 msgstr "Ajouté"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Added to the wiki"
+msgstr "Ajouté au wiki"
+
 #: src/pages/AppCatalogGrid.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -922,9 +930,14 @@ msgstr "Modèle d’approbation"
 msgid "Approvals"
 msgstr "Approbations"
 
+#: src/components/WikiChangeCard.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "Approuver"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Approve edits"
+msgstr "Approuver les modifications"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -3519,6 +3532,10 @@ msgstr "Aller au message cité : {excerpt}"
 msgid "just now"
 msgstr "à l'instant"
 
+#: src/pages/shell/message-hover-actions.tsx
+msgid "Keep in the wiki"
+msgstr "Garder dans le wiki"
+
 #: src/pages/shell/agent-import.tsx
 msgid "Keep its instructions"
 msgstr "Garder ses instructions"
@@ -3568,6 +3585,10 @@ msgstr "Dernière exécution"
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
 msgstr "Plus tard"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Learn from conversations"
+msgstr "Apprendre des conversations"
 
 #: src/components/DesktopControlSettings.tsx
 msgid "Let bots see and use your apps. Actions ask first."
@@ -4974,6 +4995,14 @@ msgstr "Actualiser la vue"
 msgid "Refreshing…"
 msgstr "Actualisation en cours…"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Refuse"
+msgstr "Refuser"
+
+#: src/components/WikiChangeCard.tsx
+msgid "Refused"
+msgstr "Refusé"
+
 #: src/lib/user-error.ts
 msgid "Registration is closed"
 msgstr "Les inscriptions sont fermées"
@@ -5793,6 +5822,10 @@ msgstr "Trié par {column}, croissant"
 msgid "Sorted by {column}, descending"
 msgstr "Trié par {column}, décroissant"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Source"
+msgstr "Source"
+
 #: src/lib/identity-display.ts
 #: src/pages/SettingsOverlay.tsx
 msgid "Space"
@@ -6393,6 +6426,7 @@ msgid "Type your answer"
 msgstr "Saisissez votre réponse"
 
 #: src/components/AskCard.tsx
+#: src/components/WikiChangeCard.tsx
 msgid "Undo"
 msgstr "Annuler"
 
@@ -6403,6 +6437,10 @@ msgstr "Annuler l'import"
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Undo import?"
 msgstr "Annuler l'import ?"
+
+#: src/components/WikiChangeCard.tsx
+msgid "Undone"
+msgstr "Annulé"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Uninstall"
@@ -6654,6 +6692,10 @@ msgstr "en attente"
 msgid "Waiting"
 msgstr "En attente"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Waiting for approval"
+msgstr "En attente d'approbation"
+
 #: src/lib/roster-status.ts
 msgid "Waiting in line…"
 msgstr "En attente dans la file…"
@@ -6782,6 +6824,10 @@ msgstr "Où importer"
 #: src/pages/WikiPage.tsx
 msgid "Wiki"
 msgstr "Wiki"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Wiki settings"
+msgstr "Réglages du wiki"
 
 #: src/lib/ticket-status.ts
 msgid "Won't do"

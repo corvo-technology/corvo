@@ -1,4 +1,10 @@
-import type { WikiPage, WikiPageInfo, WikiRevision } from "@corvo/contracts";
+import type {
+  WikiChange,
+  WikiPage,
+  WikiPageInfo,
+  WikiRevision,
+  WikiSettings,
+} from "@corvo/contracts";
 import { I18nProvider } from "@lingui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
@@ -96,7 +102,43 @@ const read = (title: string): WikiPage => {
   };
 };
 
+// One edit waits for approval, as the curator leaves it after a conversation; ?changes=none hides it.
+const changes: WikiChange[] =
+  params.get("changes") === "none"
+    ? []
+    : [
+        {
+          id: "change-1",
+          state: "pending",
+          reason: "The quote was approved and the start date is set.",
+          sourceTitle: "Renovation kickoff",
+          pages: [{ title: "Office Renovation", op: "replace" }],
+          createdAt: ago(HOUR),
+          canSeeSource: true,
+          sourceText:
+            "Marina: the quote is approved, we start on Nov 18.\nLeo: noted, I will update the plan.",
+        },
+      ];
+let settings: WikiSettings = { capture: true, edits: "approve" };
+
 const api: WikiApi = {
+  changes: {
+    list: async ({ state } = {}) =>
+      changes.filter((change) => !state || state.includes(change.state)),
+    decide: async ({ changeId, decision }) => {
+      const change = changes.find((item) => item.id === changeId)!;
+      change.state =
+        decision === "apply" ? "applied" : decision === "refuse" ? "refused" : "undone";
+      return change;
+    },
+  },
+  settings: {
+    get: async () => settings,
+    set: async (patch) => {
+      settings = { ...settings, ...patch };
+      return settings;
+    },
+  },
   index: async () => [...pages.keys()].map(infoOf),
   search: async ({ query }) =>
     [...pages.keys()]

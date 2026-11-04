@@ -1,5 +1,12 @@
 // @vitest-environment jsdom
-import type { WikiHit, WikiPage, WikiPageInfo, WikiRevision } from "@corvo/contracts";
+import type {
+  WikiChange,
+  WikiHit,
+  WikiPage,
+  WikiPageInfo,
+  WikiRevision,
+  WikiSettings,
+} from "@corvo/contracts";
 import { ORPCError } from "@orpc/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ComponentProps, ReactElement, ReactNode } from "react";
@@ -17,6 +24,26 @@ vi.mock("@lingui/react/macro", () => ({
   Trans: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@corvo/ui-web", () => ({
+  cn: (...classes: unknown[]) => classes.filter(Boolean).join(" "),
+  Switch: ({
+    checked,
+    onCheckedChange,
+    ...props
+  }: {
+    checked: boolean;
+    onCheckedChange: (value: boolean) => void;
+  } & Omit<ComponentProps<"button">, "onChange">) => (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onCheckedChange(!checked)}
+      {...props}
+    />
+  ),
+  Popover: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  PopoverTrigger: (props: ComponentProps<"button">) => <button type="button" {...props} />,
+  PopoverContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   Button: ({
     variant: _v,
     size: _s,
@@ -98,7 +125,26 @@ function fakeApi(seed: Record<string, { body: string; kind?: string }> = {}) {
       (other) => other !== title && pages.get(other)!.body.includes(`[[${title}]]`),
     ),
   });
+  const changes: WikiChange[] = [];
+  let settings: WikiSettings = { capture: true, edits: "approve" };
   const api = {
+    changes: {
+      list: vi.fn(async ({ state }: { state?: string[] } = {}) =>
+        changes.filter((change) => !state || state.includes(change.state)),
+      ),
+      decide: vi.fn(async ({ changeId, decision }: { changeId: string; decision: string }) => {
+        const change = changes.find((item) => item.id === changeId)!;
+        change.state = decision === "apply" ? "applied" : "refused";
+        return change;
+      }),
+    },
+    settings: {
+      get: vi.fn(async () => settings),
+      set: vi.fn(async (patch: Partial<WikiSettings>) => {
+        settings = { ...settings, ...patch };
+        return settings;
+      }),
+    },
     index: vi.fn(async () => [...pages.keys()].map(info)),
     search: vi.fn(
       async ({ query }: { query: string }): Promise<WikiHit[]> =>
@@ -130,7 +176,7 @@ function fakeApi(seed: Record<string, { body: string; kind?: string }> = {}) {
       return { ok: true as const };
     }),
   };
-  return { api: api as unknown as WikiApi & typeof api, pages };
+  return { api: api as unknown as WikiApi & typeof api, pages, changes };
 }
 
 let host: HTMLDivElement;
@@ -361,5 +407,59 @@ it("searches the text of the pages and shows the matches in place of the kinds",
   expect(q("wiki-kind-Other")).toBeNull();
   await type(host.querySelector('input[aria-label="Search"]')!, "m");
   expect(q("wiki-kind-Other")).toBeTruthy();
+  await unmount();
+});
+
+const waiting = (id: string, title: string): WikiChange => ({
+  id,
+  state: "pending",
+  reason: "Plan moved on",
+  sourceTitle: "Planning call",
+  pages: [{ title, op: "replace" }],
+  createdAt: new Date(NOW).toISOString(),
+  canSeeSource: false,
+});
+
+it("shows nothing about changes while none is waiting", async () => {
+  const { api } = fakeApi({ Plan: { body: "Status: planning." } });
+  const unmount = await mount(api);
+  expect(q("wiki-pending")).toBeNull();
+  await unmount();
+});
+
+it("lists what waits for approval, and approving writes it and clears it", async () => {
+  const { api, changes } = fakeApi({ Plan: { body: "Status: planning." } });
+  changes.push(waiting("c1", "Plan"));
+  const unmount = await mount(api);
+  expect(q("wiki-pending")?.textContent).toContain("Waiting for approval");
+  expect(q("wiki-pending")?.textContent).toContain("Plan");
+  await click(button("Approve"));
+  expect(api.changes.decide).toHaveBeenCalledWith({ changeId: "c1", decision: "apply" });
+  expect(q("wiki-pending")).toBeNull();
+  await unmount();
+});
+
+it("refuses a change from the same list", async () => {
+  const { api, changes } = fakeApi({ Plan: { body: "Status: planning." } });
+  changes.push(waiting("c2", "Plan"));
+  const unmount = await mount(api);
+  await click(button("Refuse"));
+  expect(api.changes.decide).toHaveBeenCalledWith({ changeId: "c2", decision: "refuse" });
+  await unmount();
+});
+
+it("keeps the Space's two wiki settings as two switches, each changed on its own", async () => {
+  const { api } = fakeApi({ Plan: { body: "Status: planning." } });
+  const unmount = await mount(api);
+  const learn = button("Learn from conversations");
+  const approve = button("Approve edits");
+  expect(learn?.getAttribute("aria-checked")).toBe("true");
+  expect(approve?.getAttribute("aria-checked")).toBe("true");
+  await click(approve);
+  expect(api.settings.set).toHaveBeenCalledWith({ edits: "auto" });
+  await click(learn);
+  expect(api.settings.set).toHaveBeenLastCalledWith({ capture: false });
+  expect(button("Approve edits")?.getAttribute("aria-checked")).toBe("false");
+  expect(button("Learn from conversations")?.getAttribute("aria-checked")).toBe("false");
   await unmount();
 });
