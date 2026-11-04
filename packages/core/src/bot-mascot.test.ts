@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { BOT_COLOR_LIST, resolvePersonaColorDef } from "./bot-avatar-colors.js";
-import { MASCOT_COLORS, MASCOT_LOOKS, mascotForColorDef, mascotHex } from "./bot-mascot.js";
+import {
+  customMascotBody,
+  isPresetAvatarColor,
+  MASCOT_COLORS,
+  MASCOT_LOOKS,
+  mascotForColorDef,
+  mascotHex,
+} from "./bot-mascot.js";
 
 describe("mascotForColorDef", () => {
   it("gives every palette color a mascot", () => {
@@ -59,3 +66,59 @@ describe("the chick of each mascot", () => {
     expect(MASCOT_LOOKS.neutral.color).toBe("#55555c");
   });
 });
+
+describe("a color of one's own", () => {
+  it("knows the swatches of both palettes, whatever the case", () => {
+    for (const { hex } of [...MASCOT_COLORS, ...BOT_COLOR_LIST]) {
+      expect(isPresetAvatarColor(hex), hex).toBe(true);
+      expect(isPresetAvatarColor(hex.toLowerCase()), hex).toBe(true);
+    }
+    expect(isPresetAvatarColor("#14B8A6")).toBe(false);
+    expect(isPresetAvatarColor("#123")).toBe(false);
+  });
+
+  it("leaves the swatches the look they were drawn with", () => {
+    for (const { hex } of MASCOT_COLORS) expect(customMascotBody(hex), hex).toBeUndefined();
+  });
+
+  it("gives any other color its own body, in the hue that was chosen", () => {
+    const body = customMascotBody("#14B8A6");
+    expect(body).toMatch(/^#[0-9a-f]{6}$/);
+    expect(hueOf(body!)).toBeCloseTo(hueOf("#14B8A6"), -1);
+  });
+
+  it("keeps the body light enough for the eyes and dark enough for a white page", () => {
+    for (const hex of ["#000000", "#0A0A3A", "#FFF0F0", "#FFFF00", "#7F7F7F", "#FF00FF"]) {
+      const lightness = lightnessOf(customMascotBody(hex)!);
+      expect(lightness, hex).toBeGreaterThanOrEqual(0.4);
+      expect(lightness, hex).toBeLessThanOrEqual(0.8);
+    }
+  });
+
+  it("accepts a short hex and ignores what is not a color", () => {
+    expect(customMascotBody("#1b8")).toMatch(/^#[0-9a-f]{6}$/);
+    expect(customMascotBody("not a color")).toBeUndefined();
+    expect(customMascotBody("")).toBeUndefined();
+  });
+});
+
+function rgb(hex: string) {
+  return [1, 3, 5].map((at) => Number.parseInt(hex.slice(at, at + 2), 16) / 255) as [
+    number,
+    number,
+    number,
+  ];
+}
+function hueOf(hex: string) {
+  const [r, g, b] = rgb(hex);
+  const max = Math.max(r, g, b);
+  const delta = max - Math.min(r, g, b);
+  if (delta === 0) return 0;
+  const sector =
+    max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+  return (sector * 60 + 360) % 360;
+}
+function lightnessOf(hex: string) {
+  const [r, g, b] = rgb(hex);
+  return (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
+}

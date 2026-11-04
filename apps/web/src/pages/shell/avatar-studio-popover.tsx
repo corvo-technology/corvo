@@ -1,4 +1,9 @@
-import { MASCOT_COLORS, mascotForColorDef } from "@corvo/core";
+import {
+  DEFAULT_BOT_AVATAR_COLOR,
+  isPresetAvatarColor,
+  MASCOT_COLORS,
+  mascotForColorDef,
+} from "@corvo/core";
 import {
   BotAvatar,
   Dialog,
@@ -18,11 +23,24 @@ import {
 import { Button } from "@corvo/ui-web/components/ui/button";
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import { Check, Pencil, Upload, X } from "lucide-react";
+import { Check, Pencil, Plus, Upload, X } from "lucide-react";
 import type { ClipboardEvent, DragEvent } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/** The colors a bot can wear; each one is its mascot. */
+/** How long a color chosen with the picker waits for the next step of the drag before it is kept. */
+const CUSTOM_COLOR_SETTLE_MS = 350;
+
+/** `#rgb` or `#rrggbb` as the six digits a color input takes, in lower case. */
+function colorInputValue(hex: string): string {
+  const digits = hex.replace("#", "").toLowerCase();
+  const full = digits.length === 3 ? [...digits].map((digit) => digit + digit).join("") : digits;
+  return /^[0-9a-f]{6}$/.test(full) ? `#${full}` : DEFAULT_BOT_AVATAR_COLOR.toLowerCase();
+}
+
+/**
+ * The colors a bot can wear, each one its own mascot, and one of the person's own: the picker
+ * of the system, kept once the drag settles since each color is saved as it is chosen.
+ */
 export function BotLookPicker({
   value,
   onChange,
@@ -32,33 +50,87 @@ export function BotLookPicker({
 }) {
   const parsed = parseBotAvatar(value);
   const current = mascotForColorDef(resolvePersonaColorDef("preview", parsed.color)).toString();
+  const custom = !parsed.isImage && !isPresetAvatarColor(parsed.color);
+  const [draft, setDraft] = useState<string | null>(null);
+  const settle = useRef<number | undefined>(undefined);
+  const pending = useRef<string | null>(null);
+  const keep = useRef(onChange);
+  keep.current = onChange;
 
+  function commit() {
+    window.clearTimeout(settle.current);
+    const next = pending.current;
+    pending.current = null;
+    setDraft(null);
+    if (next) keep.current(next);
+  }
+  // A choice still waiting when the picker goes away is kept rather than lost.
+  useEffect(() => commit, []);
+
+  const shown = draft ?? (parsed.isImage ? DEFAULT_BOT_AVATAR_COLOR : parsed.color);
+  const customShown = draft !== null || custom;
   return (
-    <fieldset
-      className="m-0 grid grid-cols-5 place-items-center gap-2 border-0 p-0"
-      data-testid="avatar-studio-colors"
-    >
-      <legend className="sr-only">
-        <Trans>Color</Trans>
-      </legend>
-      {MASCOT_COLORS.map(({ id, hex }) => {
-        const selected = !parsed.isImage && current === id;
-        return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onChange(hex)}
-            aria-label={t`Color ${hex}`}
-            aria-pressed={selected}
-            className={`rounded-xl p-0.5 transition-transform hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring ${
-              selected ? "ring-2 ring-primary ring-offset-2 ring-offset-popover" : ""
-            }`}
-          >
-            <BotAvatar color={hex} size={44} />
-          </button>
-        );
-      })}
-    </fieldset>
+    <>
+      <fieldset
+        className="m-0 grid grid-cols-5 place-items-center gap-2 border-0 p-0"
+        data-testid="avatar-studio-colors"
+      >
+        <legend className="sr-only">
+          <Trans>Color</Trans>
+        </legend>
+        {MASCOT_COLORS.map(({ id, hex }) => {
+          const selected = !parsed.isImage && !customShown && current === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onChange(hex)}
+              aria-label={t`Color ${hex}`}
+              aria-pressed={selected}
+              className={`rounded-xl p-0.5 transition-transform hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring ${
+                selected ? "ring-2 ring-primary ring-offset-2 ring-offset-popover" : ""
+              }`}
+            >
+              <BotAvatar color={hex} size={44} />
+            </button>
+          );
+        })}
+      </fieldset>
+      <div className="mt-3 flex items-center gap-3">
+        <label
+          className={`relative rounded-xl p-0.5 transition-transform focus-within:ring-2 focus-within:ring-ring hover:scale-105 active:scale-95 ${
+            customShown ? "ring-2 ring-primary ring-offset-2 ring-offset-popover" : ""
+          }`}
+        >
+          {customShown ? (
+            <BotAvatar color={shown} size={44} />
+          ) : (
+            <span className="grid size-11 place-items-center rounded-xl border border-dashed border-border text-muted-foreground">
+              <Plus size={18} aria-hidden="true" />
+            </span>
+          )}
+          <input
+            type="color"
+            aria-label={t`Custom color`}
+            value={colorInputValue(shown)}
+            onChange={(event) => {
+              const next = event.target.value.toUpperCase();
+              pending.current = next;
+              setDraft(next);
+              window.clearTimeout(settle.current);
+              settle.current = window.setTimeout(commit, CUSTOM_COLOR_SETTLE_MS);
+            }}
+            onBlur={commit}
+            className="absolute inset-0 size-full cursor-pointer opacity-0"
+          />
+        </label>
+        {customShown ? (
+          <span data-custom-color className="text-xs tabular-nums text-muted-foreground">
+            {shown.toUpperCase()}
+          </span>
+        ) : null}
+      </div>
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-import { ACTIVE_RUN_STATUSES } from "@corvo/core";
+import { ACTIVE_RUN_STATUSES, customMascotBody, MASCOT_COLORS, MASCOT_LOOKS } from "@corvo/core";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
@@ -38,6 +38,37 @@ describe("BotAvatar", () => {
   it("uses the nearest mascot for a custom color", () => {
     expect(mascotOf(renderToString(<BotAvatar color="#9ACD32" />))).toBe("lime");
     expect(mascotOf(renderToString(<BotAvatar color="#8A8D8C" />))).toBe("neutral");
+  });
+
+  it("paints a color of one's own as the body, and keeps the drawn look of a swatch", () => {
+    const own = renderToString(<BotAvatar color="#14B8A6" size={40} />);
+    const body = customMascotBody("#14B8A6");
+    expect(body).toBeDefined();
+    expect(own).toContain(`fill="${body}"`);
+    expect(own).not.toContain(MASCOT_LOOKS.cyan.color);
+
+    // The swatches, and the lime that has a mascot but no palette entry, keep the shade they were
+    // drawn with.
+    for (const { id, hex } of MASCOT_COLORS) {
+      const html = renderToString(<BotAvatar color={hex} size={40} />);
+      expect(html, id).toContain(`fill="${MASCOT_LOOKS[id].color}"`);
+    }
+  });
+
+  it("wears the plain chick in a color of one's own, not what the nearest mascot wears", () => {
+    // #14B8D6 is nearest to the cyan chick (a bow, sleepy eyes); #18B67C to the mint one
+    // (a headset and a blush).
+    for (const [own, preset, marks] of [
+      ["#14B8D6", "#06B6D4", ["#c5256d"]],
+      ["#18B67C", "#10B981", ["#1c1c1e", "#ff82a0"]],
+    ] as const) {
+      const wornPreset = renderToString(<BotAvatar color={preset} size={40} />);
+      const wornOwn = renderToString(<BotAvatar color={own} size={40} />);
+      for (const mark of marks) {
+        expect(wornPreset, `${preset} wears ${mark}`).toContain(mark);
+        expect(wornOwn, `${own} does not wear ${mark}`).not.toContain(mark);
+      }
+    }
   });
 
   it.each([...ACTIVE_RUN_STATUSES])(

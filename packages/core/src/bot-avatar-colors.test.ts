@@ -13,6 +13,31 @@ describe("persona avatar colors", () => {
   });
 });
 
+describe("the accents of a color of one's own", () => {
+  const DARK_SURFACE = "#0A0A0A";
+  const LIGHT_SURFACE = "#FFFFFF";
+  it.each(["#FFEB3B", "#1A237E", "#14B8A6", "#FF00FF", "#7F7F7F", "#000000", "#FAFAFA"])(
+    "reads on both surfaces for %s",
+    (hex) => {
+      const def = resolvePersonaColorDef("preview", hex);
+      expect(def.id).toBe("custom");
+      expect(contrastRatio(def.light, DARK_SURFACE), "on dark").toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(def.dark, LIGHT_SURFACE), "on light").toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it("keeps the color that was chosen when it already reads", () => {
+    const def = resolvePersonaColorDef("preview", "#33C4B0");
+    expect(def.hex).toBe("#33C4B0");
+    expect(def.light.toLowerCase()).toBe("#33c4b0");
+  });
+
+  it("leaves the palette colors as they were drawn", () => {
+    const blue = BOT_COLOR_LIST.find((color) => color.id === "blue")!;
+    expect(resolvePersonaColorDef("preview", blue.hex)).toEqual(blue);
+  });
+});
+
 describe("chatUserBubbleColors", () => {
   it("wears the bot's color under readable text", () => {
     const red = chatUserBubbleColors("#EF4444::shape_2", "bot-1");
