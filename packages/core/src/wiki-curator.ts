@@ -131,15 +131,20 @@ export const wikiCaptureDefault = (kind: CuratorThreadKind): boolean => kind ===
 
 /**
  * Whether the curator may read a conversation. What outsiders say in a messaging conversation is
- * never read, and the Space's own switch turns the curator off for everyone.
+ * never read, and the Space's own switch turns the curator off for everyone. A channel belongs to
+ * one person, and what is learned from it is readable by the whole Space, so in a Space with other
+ * people a channel is read only when its own switch is on.
  */
 export function curatesThread(input: {
   kind: CuratorThreadKind;
   threadCapture: boolean | null;
   settingsCapture: boolean;
+  /** The Space has more than one member. */
+  sharedSpace?: boolean;
 }): boolean {
   if (input.kind === "external" || !input.settingsCapture) return false;
-  return input.threadCapture ?? wikiCaptureDefault(input.kind);
+  if (input.threadCapture !== null) return input.threadCapture;
+  return input.sharedSpace ? false : wikiCaptureDefault(input.kind);
 }
 
 /** The curator's rules for a page; a page titled "Wiki rules" replaces them. */
@@ -178,12 +183,19 @@ export function buildCuratorPrompt(input: {
   related: { title: string; body: string }[];
   pending: string[];
   messages: { author: string; text: string }[];
+  /** The person asked to keep this message, so the curator should not skip it as not worth it. */
+  kept?: boolean;
 }): string {
   const pages = input.related.map(
     (page) =>
       `<page title="${escapePromptData(page.title).replaceAll('"', "&quot;")}">\n${escapePromptData(page.body)}\n</page>`,
   );
   return [
+    ...(input.kept
+      ? [
+          "The person asked to keep this message in the wiki. Keep what is knowledge in it; skip it only if it plainly holds none.",
+        ]
+      : []),
     "<wiki_index>",
     escapePromptData(input.index) || "(no pages yet)",
     "</wiki_index>",
