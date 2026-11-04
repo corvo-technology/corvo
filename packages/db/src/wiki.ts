@@ -317,7 +317,23 @@ async function documentOf(db: PrismaClient, scope: WikiScope, title: string) {
   return doc;
 }
 
-/** Every revision of a page, newest first. */
+/** The newest revisions of a page that are read: each one is decrypted to report its size. */
+export const WIKI_HISTORY_LIMIT = 100;
+
+/**
+ * A short string that changes whenever a page is added, edited or removed, worked out without
+ * reading or decrypting any page. Callers keep what they built from the pages until it changes.
+ */
+export async function wikiVersion(db: PrismaClient, scope: WikiScope): Promise<string> {
+  const { _count, _max } = await db.memoryDocument.aggregate({
+    where: { spaceId: scope.spaceId, scope: SCOPE, ...VISIBLE },
+    _count: { _all: true },
+    _max: { updatedAt: true },
+  });
+  return `${_count._all}:${_max.updatedAt?.getTime() ?? 0}`;
+}
+
+/** The newest revisions of a page, newest first. */
 export async function wikiHistory(
   db: PrismaClient,
   scope: WikiScope,
@@ -327,6 +343,7 @@ export async function wikiHistory(
   const revisions = await db.memoryRevision.findMany({
     where: { documentId: doc.id },
     orderBy: { revision: "desc" },
+    take: WIKI_HISTORY_LIMIT,
     select: { revision: true, createdAt: true, content: true },
   });
   return revisions.map((revision) => ({

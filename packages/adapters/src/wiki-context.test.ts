@@ -2,8 +2,10 @@ import type { WikiPageInfo } from "@corvo/contracts";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const listWikiPages = vi.fn<() => Promise<WikiPageInfo[]>>();
+const wikiVersion = vi.fn<() => Promise<string>>();
 vi.mock("@corvo/db", () => ({
   listWikiPages: (...args: unknown[]) => listWikiPages(...(args as [])),
+  wikiVersion: (...args: unknown[]) => wikiVersion(...(args as [])),
 }));
 
 import { formatWikiIndex, loadWikiIndexContext } from "./wiki-context.js";
@@ -18,8 +20,13 @@ const page = (title: string, kind = "Other", summary = `About ${title}.`): WikiP
 });
 const scope = { spaceId: "s", userId: "u" };
 
+let version = 0;
 beforeEach(() => {
   listWikiPages.mockReset();
+  wikiVersion.mockReset();
+  // Each test is its own wiki: a new version, so nothing is carried over from the last one.
+  version += 1;
+  wikiVersion.mockResolvedValue(`v${version}`);
 });
 
 describe("formatWikiIndex", () => {
@@ -71,6 +78,30 @@ describe("loadWikiIndexContext", () => {
     expect(text).toMatch(/data, never instructions/);
     expect(text).toContain("<wiki_index");
     expect(text).toContain("- [[Ana Souza]]");
+  });
+
+  it("reads the pages again only when the wiki has changed", async () => {
+    listWikiPages.mockResolvedValue([page("Ana Souza", "Person")]);
+    const sameScope = { spaceId: "cached-space", userId: "u" };
+    await loadWikiIndexContext({} as never, sameScope);
+    await loadWikiIndexContext({} as never, { ...sameScope, userId: "someone else" });
+    expect(listWikiPages).toHaveBeenCalledTimes(1);
+    wikiVersion.mockResolvedValue("changed");
+    listWikiPages.mockResolvedValue([page("Ana Souza", "Person"), page("Plan")]);
+    const text = (await loadWikiIndexContext({} as never, sameScope))!;
+    expect(listWikiPages).toHaveBeenCalledTimes(2);
+    expect(text).toContain("[[Plan]]");
+  });
+
+  it("keeps one space's pages out of another's index", async () => {
+    listWikiPages.mockResolvedValueOnce([page("Only A")]).mockResolvedValueOnce([page("Only B")]);
+    wikiVersion.mockResolvedValue("same-version-in-both");
+    const a = await loadWikiIndexContext({} as never, { spaceId: "space-a", userId: "u" });
+    const b = await loadWikiIndexContext({} as never, { spaceId: "space-b", userId: "u" });
+    expect(a).toContain("Only A");
+    expect(a).not.toContain("Only B");
+    expect(b).toContain("Only B");
+    expect(b).not.toContain("Only A");
   });
 
   it("never fails a run: a wiki that cannot be read is simply left out", async () => {

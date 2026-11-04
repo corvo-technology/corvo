@@ -53,6 +53,10 @@ page you delete afterwards stays deleted.
 
 ## Limits
 
-- Up to 2 000 pages are read at once to work out links and citations.
+- Up to 2 000 pages are read at once for the index, links and citations. A page past that is still
+  found and opened by its title, but is not listed or counted. The index a run is given is built
+  again only when the wiki has changed.
+- A page's history shows its newest 100 revisions.
 - A page holds up to 200 000 characters.
-- Search matches whole words and word beginnings. It does not search the middle of a word.
+- Search matches whole words and word beginnings, ignoring case and accents. It does not search
+  the middle of a word.

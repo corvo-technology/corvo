@@ -6,10 +6,12 @@ import {
   removeWikiPage,
   restoreWikiRevision,
   searchWiki,
+  WIKI_HISTORY_LIMIT,
   WikiConflictError,
   WikiNotFoundError,
   WikiTitleError,
   wikiHistory,
+  wikiVersion,
   writeWikiPage,
 } from "./wiki.js";
 import { wikiTestFixture } from "./wiki-test-fixture.js";
@@ -220,6 +222,36 @@ describePostgres("wiki storage (PostgreSQL)", () => {
       await expect(restoreWikiRevision(fx.prisma, mine(), "Versions", 99)).rejects.toBeInstanceOf(
         WikiNotFoundError,
       );
+    }));
+
+  it("says when the wiki changed, without reading a page", () =>
+    system(async () => {
+      const before = await wikiVersion(fx.prisma, mine());
+      expect(await wikiVersion(fx.prisma, mine())).toBe(before);
+      expect(await wikiVersion(fx.prisma, elsewhere())).not.toBe(before);
+      await write("Versioned", "one");
+      const added = await wikiVersion(fx.prisma, mine());
+      expect(added).not.toBe(before);
+      await write("Versioned", "two");
+      const edited = await wikiVersion(fx.prisma, mine());
+      expect(edited).not.toBe(added);
+      await removeWikiPage(fx.prisma, mine(), "Versioned");
+      expect(await wikiVersion(fx.prisma, mine())).not.toBe(edited);
+    }));
+
+  it("reads the newest revisions of a page that has had very many", () =>
+    system(async () => {
+      await write("Busy", "r1");
+      await fx.query(
+        `INSERT INTO memory_revisions (id, "documentId", revision, content, "createdAt")
+         SELECT 'busy-' || g, d.id, g, 'text', now() FROM memory_documents d, generate_series(2, $2::int) g
+         WHERE d."spaceId" = $1 AND d.slug = 'busy'`,
+        [fx.spaceId, WIKI_HISTORY_LIMIT + 5],
+      );
+      const history = await wikiHistory(fx.prisma, mine(), "Busy");
+      expect(history).toHaveLength(WIKI_HISTORY_LIMIT);
+      expect(history[0]!.revision).toBe(WIKI_HISTORY_LIMIT + 5);
+      expect(history.at(-1)!.revision).toBe(6);
     }));
 
   it("lists only wiki pages, and none of the hidden ones", () =>
