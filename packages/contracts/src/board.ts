@@ -158,6 +158,8 @@ export type Ticket = z.infer<typeof TicketSchema>;
 export const ListTicketsInput = z.object({
   boardId: Id.optional(),
   status: TicketStatusSchema.optional(),
+  /** More than one status at once; combined with `status` by union. Empty means no filter. */
+  statuses: z.array(TicketStatusSchema).max(TICKET_STATUSES.length).optional(),
   assigneeBotId: Id.optional(),
   q: z.string().trim().max(200).optional(),
 });

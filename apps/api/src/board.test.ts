@@ -137,3 +137,38 @@ describe("renaming column labels", () => {
     expect(String(update.mock.calls[0]?.[0].data.statusLabels)).toContain("DbNull");
   });
 });
+
+describe("listing tickets by several statuses", () => {
+  it("asks the database for the union of the statuses and the owner", async () => {
+    const findMany = vi.fn(async () => []);
+    const prisma = {
+      board: { findUnique: vi.fn(async () => ({ id: "board-1", ticketPrefix: "RAK" })) },
+      ticket: { findMany },
+    };
+    const client = createRouterClient(
+      createRouter({ prisma, env: { ticketBoardEnabled: true } } as unknown as RouterDeps),
+      { context: { actor } },
+    );
+    await client.tickets.list({ statuses: ["doing", "review"], assigneeBotId: "bot-1" });
+    expect(findMany.mock.calls[0]?.[0].where).toMatchObject({
+      spaceId: "space-1",
+      boardId: "board-1",
+      status: { in: ["doing", "review"] },
+      assigneeBotId: "bot-1",
+    });
+  });
+
+  it("treats an empty list as no filter", async () => {
+    const findMany = vi.fn(async () => []);
+    const prisma = {
+      board: { findUnique: vi.fn(async () => ({ id: "board-1", ticketPrefix: "RAK" })) },
+      ticket: { findMany },
+    };
+    const client = createRouterClient(
+      createRouter({ prisma, env: { ticketBoardEnabled: true } } as unknown as RouterDeps),
+      { context: { actor } },
+    );
+    await client.tickets.list({ statuses: [] });
+    expect(findMany.mock.calls[0]?.[0].where).not.toHaveProperty("status");
+  });
+});

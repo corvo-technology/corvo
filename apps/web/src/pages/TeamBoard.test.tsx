@@ -161,3 +161,34 @@ it("gives the avatar the agent's real status, so a failure looks like one", asyn
   ).toBe("failed");
   await unmount();
 });
+
+it("lists what each agent is working on, and opens that ticket on the board", async () => {
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  const tickets = new Map([
+    [
+      "a",
+      [
+        { id: "t1", ref: "RAK-4", title: "Call Ana", status: "doing" },
+        { id: "t2", ref: "RAK-5", title: "Send offer", status: "review" },
+      ],
+    ],
+  ]);
+  await act(async () =>
+    root.render(
+      <TeamBoard
+        roster={buildTeamRoster([bot("a"), bot("b")], [group("eng", ["a", "b"])])}
+        tickets={tickets as never}
+        onOpen={onOpen}
+      />,
+    ),
+  );
+  const mine = q(host, "member-tickets-a");
+  expect(mine.textContent).toContain("RAK-4");
+  expect(mine.textContent).toContain("Call Ana");
+  expect(host.querySelector('[data-testid="member-tickets-b"]')).toBeNull();
+  await act(async () => mine.querySelector<HTMLButtonElement>("button")?.click());
+  expect(onOpen).toHaveBeenCalledWith("/app/board?ticket=RAK-4");
+  await act(async () => root.unmount());
+});

@@ -7,6 +7,7 @@ import {
   TICKET_STATUSES,
   TICKET_TITLE_MAX_LENGTH,
 } from "@corvo/contracts";
+import { isRunWorking } from "@corvo/core";
 import { fetchFresh, writeSaved } from "@corvo/core/query";
 import {
   Button,
@@ -23,8 +24,8 @@ import {
 import { Trans, useLingui } from "@lingui/react/macro";
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, Settings2 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useId, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { followBoard } from "../lib/board-stream";
 import { useSpaceQueries } from "../lib/query";
 import { formatRelativeTime } from "../lib/relative-time";
@@ -51,6 +52,21 @@ export function BoardPage() {
   const tickets = ticketsQuery.data?.tickets ?? [];
   const bots = botsQuery.data ?? [];
   const [selected, setSelected] = useState<Ticket | "new" | null>(null);
+  const [ownerFilter, setOwnerFilter] = useState("");
+  const [searchParams] = useSearchParams();
+  const wantedRef = searchParams.get("ticket")?.toLowerCase();
+  const openedRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    // An address that names a ticket opens it once, as a link from the Team screen does.
+    if (!wantedRef || openedRef.current === wantedRef) return;
+    const found = tickets.find((ticket) => ticket.ref.toLowerCase() === wantedRef);
+    if (!found) return;
+    openedRef.current = wantedRef;
+    setSelected(found);
+  }, [tickets, wantedRef]);
+  const visible = ownerFilter
+    ? tickets.filter((ticket) => ticket.assigneeBotId === ownerFilter)
+    : tickets;
   const [streamError, setError] = useState("");
   const loadFailed = ticketsQuery.error ?? botsQuery.error;
   const error = streamError || (loadFailed ? errorText(loadFailed) : "");
@@ -94,6 +110,21 @@ export function BoardPage() {
         <h1 className="flex-1 font-medium">
           <Trans>Board</Trans>
         </h1>
+        {bots.length > 1 ? (
+          <NativeSelect
+            aria-label={t`Owner`}
+            className="w-auto"
+            value={ownerFilter}
+            onChange={(event) => setOwnerFilter(event.target.value)}
+          >
+            <NativeSelectOption value="">{t`All`}</NativeSelectOption>
+            {bots.map((bot) => (
+              <NativeSelectOption key={bot.id} value={bot.id}>
+                {bot.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        ) : null}
         {boardQuery.data ? (
           <Button
             variant="ghost"
@@ -118,7 +149,7 @@ export function BoardPage() {
           {TICKET_STATUSES.map((status) => (
             <section key={status} className="min-w-40 flex-1 space-y-2">
               <h2 className="px-1 text-sm font-medium">{statuses[status]}</h2>
-              {tickets
+              {visible
                 .filter((ticket) => ticket.status === status)
                 .map((ticket) => (
                   <Button
@@ -130,7 +161,17 @@ export function BoardPage() {
                   >
                     <span className="text-xs text-muted-foreground">{ticket.ref}</span>
                     <span>{ticket.title}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {ticket.status === "doing" &&
+                      isRunWorking(
+                        bots.find((bot) => bot.id === ticket.assigneeBotId)?.status ?? "",
+                      ) ? (
+                        <span
+                          data-working=""
+                          aria-hidden="true"
+                          className="corvo-presence-dot size-1.5 shrink-0 rounded-full bg-status-working"
+                        />
+                      ) : null}
                       {bots.find((bot) => bot.id === ticket.assigneeBotId)?.name}
                     </span>
                   </Button>

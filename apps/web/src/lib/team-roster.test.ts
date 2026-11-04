@@ -1,6 +1,6 @@
-import type { SpaceBot, SpaceGroup } from "@corvo/contracts";
+import type { SpaceBot, SpaceGroup, Ticket } from "@corvo/contracts";
 import { describe, expect, it } from "vitest";
-import { buildTeamRoster } from "./team-roster";
+import { buildTeamRoster, ticketsByOwner } from "./team-roster";
 
 const bot = (id: string, status = "idle", extra: Partial<SpaceBot> = {}) =>
   ({ id, name: id, color: "#000", status, preview: "", parentBotId: null, ...extra }) as SpaceBot;
@@ -101,5 +101,30 @@ describe("buildTeamRoster", () => {
       [group("eng", ["a", "b", "c", "d"])],
     );
     expect(roster.teams[0]).toMatchObject({ working: 1, needsYou: 2 });
+  });
+});
+
+describe("ticketsByOwner", () => {
+  const ticket = (id: string, owner: string | null, status: string, updatedAt: string) =>
+    ({ id, ref: `RAK-${id}`, title: id, assigneeBotId: owner, status, updatedAt }) as Ticket;
+
+  it("groups what is being worked on by owner, newest first", () => {
+    const grouped = ticketsByOwner([
+      ticket("1", "a", "doing", "2026-11-05T09:00:00Z"),
+      ticket("2", "a", "review", "2026-11-05T11:00:00Z"),
+      ticket("3", "b", "blocked", "2026-11-05T10:00:00Z"),
+    ]);
+    expect(grouped.get("a")?.map((item) => item.id)).toEqual(["2", "1"]);
+    expect(grouped.get("b")?.map((item) => item.id)).toEqual(["3"]);
+  });
+
+  it("leaves out what is waiting, finished or without an owner", () => {
+    const grouped = ticketsByOwner([
+      ticket("1", "a", "todo", "2026-11-05T09:00:00Z"),
+      ticket("2", "a", "done", "2026-11-05T09:00:00Z"),
+      ticket("3", "a", "closed", "2026-11-05T09:00:00Z"),
+      ticket("4", null, "doing", "2026-11-05T09:00:00Z"),
+    ]);
+    expect(grouped.size).toBe(0);
   });
 });

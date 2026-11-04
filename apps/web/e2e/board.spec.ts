@@ -70,4 +70,23 @@ test("board creates a ticket and opens it", async ({ page }, testInfo) => {
   await expect(settings).toBeHidden();
   await expect(page.getByRole("heading", { name: "In contact", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "board-renamed-column");
+
+  // A ticket in progress shows under its owner on the Team screen, and opens on the board.
+  await page
+    .getByTestId(/board-card-/)
+    .first()
+    .click();
+  await page.getByRole("dialog", { name: title }).getByLabel("Status").selectOption("doing");
+  await page
+    .getByRole("dialog", { name: title })
+    .getByRole("button", { name: "Save", exact: true })
+    .first()
+    .click();
+  await page.goto("/app/team");
+  const owned = page.locator("[data-testid^='member-tickets-']").filter({ hasText: title });
+  await expect(owned).toBeVisible();
+  await captureScreenshot(page, testInfo, "team-agent-tickets");
+  await owned.getByRole("button").first().click();
+  await expect(page).toHaveURL(/\/app\/board\?ticket=/);
+  await expect(page.getByRole("dialog", { name: title })).toBeVisible();
 });

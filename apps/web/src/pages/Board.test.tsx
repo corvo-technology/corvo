@@ -104,6 +104,7 @@ async function renderBoard(
   stream?: AsyncIterable<{ ticketId?: string }>,
   refusal?: unknown,
   labels: Record<string, string> = {},
+  path = "/app/board",
 ) {
   api.boards.subscribe.mockReset();
   api.boards.get.mockResolvedValue({ id: "board-1", statusLabels: labels });
@@ -119,7 +120,7 @@ async function renderBoard(
   await act(async () =>
     root.render(
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={["/app/board"]}>
+        <MemoryRouter initialEntries={[path]}>
           <BoardPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -590,6 +591,79 @@ it("edits the named fields of a ticket and sends only what changed", async () =>
       id: "ticket-1",
       fields: { City: "Lisbon", Source: "" },
     });
+  } finally {
+    await page.cleanup();
+  }
+});
+
+it("marks a card whose owner is working on it right now", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([
+    { id: "bot-1", name: "Helper", status: "running" },
+    { id: "bot-2", name: "Rest", status: "idle" },
+  ]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [
+      ticket("Live", "ticket-1", "doing", "RAK-1", "bot-1"),
+      ticket("Quiet", "ticket-2", "doing", "RAK-2", "bot-2"),
+      ticket("Waiting", "ticket-3", "todo", "RAK-3", "bot-1"),
+    ],
+  });
+  const page = await renderBoard();
+  try {
+    const marked = (id: string) =>
+      page.container.querySelector(`[data-testid="board-card-${id}"] [data-working]`) !== null;
+    expect(marked("ticket-1")).toBe(true);
+    expect(marked("ticket-2")).toBe(false);
+    // A card that is not started has nothing being worked on, whatever its owner is doing.
+    expect(marked("ticket-3")).toBe(false);
+  } finally {
+    await page.cleanup();
+  }
+});
+
+it("shows only one owner's cards when the board is filtered by owner", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper"), bot("bot-2", "Scout")]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [
+      ticket("Mine", "ticket-1", "todo", "RAK-1", "bot-1"),
+      ticket("Theirs", "ticket-2", "todo", "RAK-2", "bot-2"),
+    ],
+  });
+  const page = await renderBoard();
+  try {
+    const select = page.container.querySelector<HTMLSelectElement>('select[aria-label="Owner"]');
+    expect(select).not.toBeNull();
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set?.call(
+        select,
+        "bot-2",
+      );
+      select?.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    const cards = [...page.container.querySelectorAll('[data-testid^="board-card-"]')].map((node) =>
+      node.getAttribute("data-testid"),
+    );
+    expect(cards).toEqual(["board-card-ticket-2"]);
+  } finally {
+    await page.cleanup();
+  }
+});
+
+it("opens the ticket named in the address", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper")]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [ticket("Call Ana", "ticket-1", "doing", "RAK-4", "bot-1")],
+  });
+  api.tickets.comments.mockResolvedValue([]);
+  const page = await renderBoard(undefined, undefined, {}, "/app/board?ticket=rak-4");
+  try {
+    await settle();
+    expect(page.container.querySelector<HTMLInputElement>("input[required]")?.value).toBe(
+      "Call Ana",
+    );
   } finally {
     await page.cleanup();
   }

@@ -1,12 +1,12 @@
 import { isRunWorking } from "@corvo/core";
 import { Spinner } from "@corvo/ui-web";
 import { Trans } from "@lingui/react/macro";
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { takeInitialBootstrap } from "../lib/bootstrap";
 import { useSpaceQueries } from "../lib/query";
-import { buildTeamRoster } from "../lib/team-roster";
+import { buildTeamRoster, TICKET_WORK_STATUSES, ticketsByOwner } from "../lib/team-roster";
 import { TeamBoard } from "./TeamBoard";
 import { WindowChrome } from "./WindowChrome";
 
@@ -30,6 +30,19 @@ export function TeamPage() {
     [bootstrap.data],
   );
 
+  // The board is optional, so its tickets are only asked for when it is on.
+  const boardOn = Boolean(bootstrap.data?.me?.ticketBoardEnabled);
+  const ticketsQuery = useQuery(
+    queries.tickets.list.queryOptions({
+      input: boardOn ? { statuses: [...TICKET_WORK_STATUSES] } : skipToken,
+      refetchInterval: IDLE_REFRESH_MS,
+    }),
+  );
+  const tickets = useMemo(
+    () => ticketsByOwner(ticketsQuery.data?.tickets ?? []),
+    [ticketsQuery.data],
+  );
+
   return (
     <div className="flex h-full min-h-0 flex-col overflow-y-auto bg-background text-foreground">
       <div className="app-drag flex items-center gap-2 px-4 pt-3">
@@ -44,7 +57,7 @@ export function TeamPage() {
         </div>
       ) : null}
       <div className="px-6 pb-8">
-        <TeamBoard roster={roster} onOpen={(path) => navigate(path)} />
+        <TeamBoard roster={roster} tickets={tickets} onOpen={(path) => navigate(path)} />
       </div>
     </div>
   );
