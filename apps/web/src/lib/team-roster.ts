@@ -6,8 +6,9 @@ export type Team = { group: SpaceGroup; members: TeamMember[]; working: number }
 
 /** Every team with who is in it and who is busy, plus the bots that belong to no team yet. */
 export function buildTeamRoster(bots: readonly SpaceBot[], groups: readonly SpaceGroup[]) {
-  // Helpers a bot starts for one task are part of that task, not of the company.
-  const staff = bots.filter((bot) => !bot.parentBotId);
+  // An agent another agent created or installed (the Chief does) is a colleague like any other:
+  // `parentBotId` is only where it came from.
+  const staff = bots;
   const byId = new Map(staff.map((bot) => [bot.id, bot]));
   const teams: Team[] = groups.map((group) => {
     const members = group.members.flatMap((member) => {
