@@ -121,6 +121,19 @@ describe("withContentEncryption with encryption off", () => {
     expect(writes).toEqual([{ blocks: [], searchTokens: { set: [] } }, { role: "bot" }]);
   });
 
+  it("drops the search tokens of a memory document rewritten in plaintext", async () => {
+    writes.length = 0;
+    await plain.memoryDocument.update({
+      where: { id: "m1" },
+      data: { scope: "wiki", content: "new words" },
+    });
+    await plain.memoryDocument.update({ where: { id: "m1" }, data: { path: "renamed.md" } });
+    expect(writes).toEqual([
+      { scope: "wiki", content: "new words", searchTokens: { set: [] } },
+      { path: "renamed.md" },
+    ]);
+  });
+
   it("still rejects writes that could not be encrypted once switched back on", async () => {
     await expect(
       plain.thread.create({
