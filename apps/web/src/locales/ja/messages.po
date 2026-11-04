@@ -260,6 +260,10 @@ msgstr "{name}が失敗しました"
 msgid "{name} finished"
 msgstr "{name}が完了しました"
 
+#: src/pages/shell/use-board-notifications.ts
+msgid "{name} moved {ref} to {status}"
+msgstr "{name}が{ref}を{status}に移動しました"
+
 #: src/pages/ModelRoleSettings.tsx
 msgid "{name} options"
 msgstr "{name} のオプション"

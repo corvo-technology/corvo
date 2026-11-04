@@ -7,7 +7,6 @@ import {
   TICKET_STATUSES,
   TICKET_TITLE_MAX_LENGTH,
 } from "@corvo/contracts";
-import { isRetryableError, retryDelayMs } from "@corvo/core";
 import { fetchFresh, writeSaved } from "@corvo/core/query";
 import {
   Button,
@@ -26,6 +25,7 @@ import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, Settings2 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
+import { followBoard } from "../lib/board-stream";
 import { useSpaceQueries } from "../lib/query";
 import { formatRelativeTime } from "../lib/relative-time";
 import { rpc } from "../lib/rpc";
@@ -58,8 +58,6 @@ export function BoardPage() {
   const reload = () => fetchFresh(queryClient, ticketsOptions).then(() => undefined);
 
   useEffect(() => {
-    let currentController: AbortController | undefined;
-    let active = true;
     // Live events refresh the board and any open ticket's comments.
     const refreshComments = (ticketId?: string) =>
       void queryClient.invalidateQueries({
@@ -67,48 +65,19 @@ export function BoardPage() {
           ? queries.tickets.comments.queryKey({ input: { ticketId } })
           : queries.tickets.comments.key(),
       });
-    let cancelRetry: (() => void) | undefined;
-    void (async () => {
-      while (active) {
-        const controller = new AbortController();
-        currentController = controller;
-        let failure: unknown;
-        try {
-          const stream = await rpc.boards.subscribe(undefined, {
-            signal: controller.signal,
-          });
-          if (!active) return;
-          await fetchFresh(queryClient, ticketsOptions);
-          if (!active) return;
-          refreshComments();
-          setError("");
-          for await (const event of stream) {
-            if (!active) return;
-            refreshComments(event.ticketId);
-            await fetchFresh(queryClient, ticketsOptions);
-          }
-        } catch (cause) {
-          failure = cause;
-          if (active) setError(errorText(cause));
-        } finally {
-          controller.abort();
-        }
-        if (!active || !isRetryableError(failure)) return;
-        await new Promise<void>((resolve) => {
-          const timer = setTimeout(resolve, retryDelayMs(failure, 1_000));
-          cancelRetry = () => {
-            clearTimeout(timer);
-            resolve();
-          };
-        });
-        cancelRetry = undefined;
-      }
-    })();
-    return () => {
-      active = false;
-      currentController?.abort();
-      cancelRetry?.();
-    };
+    return followBoard({
+      subscribe: (signal) => rpc.boards.subscribe(undefined, { signal }),
+      onOpen: async () => {
+        await fetchFresh(queryClient, ticketsOptions);
+        refreshComments();
+        setError("");
+      },
+      onEvent: async (event) => {
+        refreshComments(event.ticketId);
+        await fetchFresh(queryClient, ticketsOptions);
+      },
+      onError: (cause) => setError(errorText(cause)),
+    });
   }, [queries]);
 
   return (
