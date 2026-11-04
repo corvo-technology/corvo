@@ -131,6 +131,12 @@ describePostgres("the wiki procedures", () => {
     });
     expect(stale.status).toBe(409);
     expect(stale.body).toMatchObject({ code: "CONFLICT" });
+    const taken = await call("ada", "wiki/write", {
+      title: "Café",
+      body: "x",
+      expectedRevision: 0,
+    });
+    expect(taken.status).toBe(409);
     const spelling = await call("ada", "wiki/write", { title: "cafe", body: "x" });
     expect(spelling.status).toBe(400);
     expect(spelling.body).toMatchObject({ code: "BAD_REQUEST" });

@@ -49,8 +49,12 @@ describe("wiki contracts", () => {
       WikiWriteInputSchema.safeParse({ title: "A", body: "x".repeat(WIKI_BODY_MAX + 1) }).success,
     ).toBe(false);
     expect(WikiWriteInputSchema.safeParse({ title: "!!", body: "text" }).success).toBe(false);
+    // 0 means "this page must not exist yet", the way a new page is written; negatives are nonsense.
     expect(
       WikiWriteInputSchema.safeParse({ title: "A", body: "t", expectedRevision: 0 }).success,
+    ).toBe(true);
+    expect(
+      WikiWriteInputSchema.safeParse({ title: "A", body: "t", expectedRevision: -1 }).success,
     ).toBe(false);
     expect(WIKI_BODY_MAX).toBe(200_000);
   });

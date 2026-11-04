@@ -289,8 +289,27 @@ it("writes a new page under the title that was typed", async () => {
   await type(host.querySelector('input[aria-label="Title"]')!, "Budget");
   await type(host.querySelector("textarea")!, "Numbers.");
   await click(button("Save"));
-  expect(api.write).toHaveBeenCalledWith({ title: "Budget", body: "Numbers." });
+  expect(api.write).toHaveBeenCalledWith({
+    title: "Budget",
+    body: "Numbers.",
+    expectedRevision: 0,
+  });
   expect(opened.at(-1)).toBe("Budget");
+  await unmount();
+});
+
+it("opens the page that already has the title a new page was given, instead of replacing it", async () => {
+  const { api } = fakeApi({ Plan: { body: "Written last week." } });
+  const unmount = await mount(api);
+  await click(button("New page"));
+  await type(host.querySelector('input[aria-label="Title"]')!, "Plan");
+  await type(host.querySelector("textarea")!, "Mine.");
+  api.write.mockRejectedValueOnce(new ORPCError("CONFLICT"));
+  await click(button("Save"));
+  expect(opened.at(-1)).toBe("Plan");
+  expect(q("wiki-title")?.textContent).toBe("Plan");
+  expect(q("wiki-body")?.textContent).toContain("Written last week.");
+  expect(host.querySelector('[role="alert"]')).toBeNull();
   await unmount();
 });
 

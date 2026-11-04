@@ -218,7 +218,7 @@ export async function searchWiki(
 export type WikiWrite = {
   title: string;
   body: string;
-  /** The revision the writer saw; the write is refused when the page has moved on. */
+  /** The revision the writer saw (0: the title must be free); refused when the page has moved on. */
   expectedRevision?: number;
   sourceRunId?: string;
   sourceThreadId?: string;
@@ -250,7 +250,13 @@ export async function writeWikiPage(
             throw new WikiTitleError(
               `A page called "${existing.path.replace(/\.md$/, "")}" exists.`,
             );
-          if (input.expectedRevision !== undefined && existing?.revision !== input.expectedRevision)
+          // 0 means the writer expects a free title; any other number, the revision it opened.
+          if (
+            input.expectedRevision === 0
+              ? existing
+              : input.expectedRevision !== undefined &&
+                existing?.revision !== input.expectedRevision
+          )
             throw new WikiConflictError();
           const doc = existing
             ? await tx.memoryDocument.update({

@@ -50,7 +50,10 @@ export type WikiRevision = z.infer<typeof WikiRevisionSchema>;
 export const WikiWriteInputSchema = z.object({
   title: WikiTitleSchema,
   body: z.string().max(WIKI_BODY_MAX),
-  /** The revision the writer saw; the write is refused when the page has moved on. */
-  expectedRevision: z.number().int().positive().optional(),
+  /**
+   * The revision the writer saw; the write is refused when the page has moved on. 0 says the
+   * page must not exist yet, which is how a new page is written without replacing one.
+   */
+  expectedRevision: z.number().int().min(0).optional(),
 });
 export type WikiWriteInput = z.infer<typeof WikiWriteInputSchema>;

@@ -113,14 +113,18 @@ export function WikiBrowser({
       const saved = await api.write({
         title: name,
         body: draft,
-        ...(creating ? {} : { expectedRevision: loadedRevision }),
+        // A new page must not replace one that has the title: 0 asks for a free title.
+        expectedRevision: creating ? 0 : loadedRevision,
       });
       await refreshAfter(saved);
       setMode("view");
       onOpen(saved.title);
     } catch (err) {
-      if (err instanceof ORPCError && err.code === "CONFLICT") setConflicted(true);
-      else setError(t`Could not save`);
+      if (err instanceof ORPCError && err.code === "CONFLICT") {
+        // Someone wrote that title first: show what is there rather than replace it.
+        if (creating) show(name);
+        else setConflicted(true);
+      } else setError(t`Could not save`);
     } finally {
       setBusy(false);
     }

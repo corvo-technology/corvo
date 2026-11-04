@@ -114,6 +114,42 @@ describePostgres("wiki storage (PostgreSQL)", () => {
       expect(["one", "two", "three", "four"]).toContain(page?.body);
     }));
 
+  it("writes a new page only if the title is free, when asked to", () =>
+    system(async () => {
+      const created = await write("Fresh", "mine", { expectedRevision: 0 });
+      expect(created.revision).toBe(1);
+      await expect(write("Fresh", "theirs", { expectedRevision: 0 })).rejects.toBeInstanceOf(
+        WikiConflictError,
+      );
+      await expect(write("fresh", "theirs", { expectedRevision: 0 })).rejects.toBeInstanceOf(
+        WikiTitleError,
+      );
+      expect((await readWikiPage(fx.prisma, mine(), "Fresh"))?.body).toBe("mine");
+    }));
+
+  it("still reads a page when the wiki has more pages than are read at once", () =>
+    system(async () => {
+      const bulk = `${fx.spaceId}-bulk`;
+      await fx.prisma.space.create({
+        data: { id: bulk, organizationId: fx.organizationId, name: "Bulk" },
+      });
+      await fx.query(
+        `INSERT INTO memory_documents (id, "spaceId", "userId", scope, path, slug, content, revision, "createdAt", "updatedAt")
+         SELECT 'bulk-' || g, $1, $2, 'wiki', 'P' || lpad(g::text, 5, '0') || '.md', 'p' || lpad(g::text, 5, '0'), 'plain body', 1, now(), now()
+         FROM generate_series(1, 2001) g`,
+        [bulk, fx.userId],
+      );
+      const scope = { spaceId: bulk, userId: fx.userId };
+      await writeWikiPage(fx.prisma, scope, {
+        title: "Zzz Last",
+        body: "Sorts after every other page.",
+      });
+      const page = await readWikiPage(fx.prisma, scope, "zzz last");
+      expect(page?.title).toBe("Zzz Last");
+      expect(page?.body).toContain("Sorts after");
+      expect((await restoreWikiRevision(fx.prisma, scope, "Zzz Last", 1)).title).toBe("Zzz Last");
+    }));
+
   it("finds a page by a word in its text, by a prefix, and by its title", () =>
     system(async () => {
       await write("Launch", "The marigold campaign starts in spring.");
