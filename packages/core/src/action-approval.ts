@@ -64,6 +64,7 @@ const UNATTENDED_SAFE_BUILTIN_TOOLS = new Set([
   "wiki_index",
   "wiki_search",
   "wiki_read",
+  "read_document",
   "request_takeover",
   "run_subagent",
   "task_catalog",

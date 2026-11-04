@@ -37,6 +37,7 @@ describe("built-in tool bridge", () => {
       "find_tool",
       "list_files",
       "message_user",
+      "read_document",
       "read_file",
       "read_history",
       "remember",
@@ -56,7 +57,7 @@ describe("built-in tool bridge", () => {
       "wiki_search",
       "write_file",
     ]);
-    expect(definitionBytes(listed)).toBeLessThanOrEqual(30_700);
+    expect(definitionBytes(listed)).toBeLessThanOrEqual(31_100);
     expect(deferred.map((tool) => tool.name)).toEqual(
       expect.arrayContaining([
         "render_plot",

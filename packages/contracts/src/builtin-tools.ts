@@ -66,6 +66,7 @@ export const BUILTIN_TOOL_NAMES = [
   "wiki_index",
   "wiki_search",
   "wiki_read",
+  "read_document",
   "task_catalog",
   "scratchpad_list",
   "scratchpad_add",

@@ -18,6 +18,7 @@ export const READ_ONLY_AGENT_TOOLS = new Set([
   "wiki_index",
   "wiki_search",
   "wiki_read",
+  "read_document",
   "request_takeover",
   "run_subagent",
   "task_catalog",
@@ -134,6 +135,7 @@ export function selectBuiltinToolsForRun(options: {
           "wiki_index",
           "wiki_search",
           "wiki_read",
+          "read_document",
           "task_catalog",
           "board_tickets",
         ].includes(tool.name) &&
