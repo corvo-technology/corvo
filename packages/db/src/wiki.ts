@@ -145,8 +145,17 @@ export async function readWikiPage(
 ): Promise<WikiPage | undefined> {
   const slug = slugOfTitle(title);
   const rows = await wikiRows(db, scope.spaceId);
-  const row = rows.find((candidate) => slugOfRow(candidate) === slug);
-  return row ? pageOf(rows, row) : undefined;
+  // The rows read at once are capped, so a page past the cap is looked up by its own slug; the
+  // cap only limits which pages its links and citations are worked out against.
+  const row =
+    rows.find((candidate) => slugOfRow(candidate) === slug) ??
+    (await db.memoryDocument.findFirst({
+      where: { spaceId: scope.spaceId, scope: SCOPE, slug, ...VISIBLE },
+      select: SELECT,
+    })) ??
+    undefined;
+  if (!row) return undefined;
+  return pageOf(rows.some((other) => other.id === row.id) ? rows : [...rows, row], row);
 }
 
 function snippetOf(content: string, terms: string[]): string {

@@ -4,6 +4,7 @@ import {
   ciphertextKeyId,
   decryptText,
   encryptText,
+  foldAccents,
   jsonKeyIds,
   openJson,
   querySearchTokens,
@@ -370,7 +371,8 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
         // describing what it used to say.
         if (spec.searchTokens && wikiScope(data)) {
           const title = typeof data.path === "string" ? data.path.replace(/\.md$/, "") : "";
-          const text = `${title}\n${value}`;
+          // Accents are taken off before tokens are made, so a search without them still matches.
+          const text = foldAccents(`${title}\n${value}`);
           next.searchTokens = searchTokens(key, { words: text, strings: [text] });
         }
         next[field] = encrypt(value);
@@ -516,7 +518,7 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
     },
     async wikiSearchTokens(spaceId, query) {
       const keys = await ring.allFresh(spaceId);
-      return keys.map((key) => querySearchTokens(key, query, "prefix"));
+      return keys.map((key) => querySearchTokens(key, foldAccents(query), "prefix"));
     },
   };
 

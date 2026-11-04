@@ -151,6 +151,11 @@ function searchKey(key: DataKey): Buffer {
   return Buffer.from(hkdfSync("sha256", key.key, Buffer.alloc(0), "corvo/search/v1", 32));
 }
 
+/** Text with its accents taken off, so "café" and "cafe" make the same search tokens. */
+export function foldAccents(text: string): string {
+  return text.normalize("NFKD").replace(/\p{M}/gu, "");
+}
+
 export function searchTerms(text: string): string[] {
   return [
     ...new Set(

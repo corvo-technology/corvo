@@ -150,6 +150,19 @@ describePostgres("wiki storage (PostgreSQL)", () => {
       expect((await restoreWikiRevision(fx.prisma, scope, "Zzz Last", 1)).title).toBe("Zzz Last");
     }));
 
+  it("finds a page whatever the accents, in the query or in the page", () =>
+    system(async () => {
+      await write("Séance Notes", "Reunião sobre o orçamento de São Paulo.");
+      await write("naive plan", "A naive plan for the quarter.");
+      const titles = async (query: string) =>
+        (await searchWiki(fx.prisma, mine(), query)).map((hit) => hit.title);
+      expect(await titles("seance")).toEqual(["Séance Notes"]);
+      expect(await titles("séance")).toEqual(["Séance Notes"]);
+      expect(await titles("reuniao orcamento")).toEqual(["Séance Notes"]);
+      expect(await titles("são paulo")).toEqual(["Séance Notes"]);
+      expect(await titles("naïve")).toEqual(["naive plan"]);
+    }));
+
   it("finds a page by a word in its text, by a prefix, and by its title", () =>
     system(async () => {
       await write("Launch", "The marigold campaign starts in spring.");
