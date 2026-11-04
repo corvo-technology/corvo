@@ -23,7 +23,6 @@ export function TicketFields({
     <div className="space-y-2">
       {rows.map((row, index) => (
         // The rows have no identity beyond their place, and a removed row shifts the rest.
-        // biome-ignore lint/suspicious/noArrayIndexKey: see above
         <div key={index} className="flex items-center gap-2">
           <Input
             aria-label={t`Field name`}
