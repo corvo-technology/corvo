@@ -77,11 +77,11 @@ and the installers have stable names (`corvo-mac-arm64.zip`,
 `corvo-linux-x86_64.AppImage`, `corvo-win-x64.exe`) so the scripts never need a version:
 
 ```sh
-curl -fsSL https://github.com/corvo-technology/corvo/releases/latest/download/install.sh | sh
+curl -fsSL https://github.com/corvo-technology/rook/releases/latest/download/install.sh | sh
 ```
 
 ```powershell
-irm https://github.com/corvo-technology/corvo/releases/latest/download/install.ps1 | iex
+irm https://github.com/corvo-technology/rook/releases/latest/download/install.ps1 | iex
 ```
 
 These links only work while the release assets are publicly downloadable, and so does the

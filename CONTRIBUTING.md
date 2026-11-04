@@ -99,5 +99,5 @@ capability config, fixtures, logs, or snapshots; use the encrypted secret store 
 
 | Address | Use for |
 | --- | --- |
-| [security@corvo.tech](mailto:security@corvo.tech) | Vulnerabilities only — see [SECURITY.md](SECURITY.md) |
-| [support@corvo.tech](mailto:support@corvo.tech) | User and support questions |
+| [security@rookup.run](mailto:security@rookup.run) | Vulnerabilities only — see [SECURITY.md](SECURITY.md) |
+| [support@rookup.run](mailto:support@rookup.run) | User and support questions |

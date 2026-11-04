@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://bots.corvo.tech">bots.corvo.tech</a> · <a href="./CHANGELOG.md">Changelog</a>
+  <a href="https://rookup.run">rookup.run</a> · <a href="./CHANGELOG.md">Changelog</a>
 </p>
 
 ![Rook: agents in a channel, with an approval waiting](./docs/screenshots/hero.png)
@@ -110,16 +110,16 @@ Runs on your computer with its own database. No account, no server to set up.
 **macOS and Linux**
 
 ```bash
-curl -fsSL https://github.com/corvo-technology/corvo/releases/latest/download/install.sh | sh
+curl -fsSL https://github.com/corvo-technology/rook/releases/latest/download/install.sh | sh
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
-irm https://github.com/corvo-technology/corvo/releases/latest/download/install.ps1 | iex
+irm https://github.com/corvo-technology/rook/releases/latest/download/install.ps1 | iex
 ```
 
-Or download the app from the [releases page](https://github.com/corvo-technology/corvo/releases/latest):
+Or download the app from the [releases page](https://github.com/corvo-technology/rook/releases/latest):
 `corvo-mac-arm64.dmg` (Apple silicon), `corvo-win-x64.exe` or `corvo-linux-x86_64.AppImage`. The same command
 updates the app later. Details and signing notes: [desktop releases](./docs/desktop-release.md).
 
@@ -133,7 +133,7 @@ OpenSSL. No clone and no Node install:
 
 ```bash
 mkdir -p corvo && cd corvo &&
-curl -fsSLO https://raw.githubusercontent.com/corvo-technology/corvo/main/infra/compose/install-images.sh &&
+curl -fsSLO https://raw.githubusercontent.com/corvo-technology/rook/main/infra/compose/install-images.sh &&
 bash install-images.sh
 ```
 
@@ -186,7 +186,7 @@ You need Node.js 22.22.2 or newer in the 22.x line, 24.x, or 26+, pnpm 9, and Do
 25.x are not supported.
 
 ```bash
-git clone https://github.com/corvo-technology/corvo.git
+git clone https://github.com/corvo-technology/rook.git
 cd corvo
 cp .env.example .env   # then set the secrets listed inside
 pnpm install

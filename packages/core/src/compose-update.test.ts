@@ -561,12 +561,12 @@ describe("sidecar boundary validation", () => {
   it("normalizes a request the API already validated", () => {
     expect(
       validateUpdateRequest({
-        repoUrl: "https://github.com/corvo-technology/corvo.git",
+        repoUrl: "https://github.com/corvo-technology/rook.git",
         branch: " main ",
       }),
     ).toEqual({
       request: {
-        repoUrl: "https://github.com/corvo-technology/corvo.git",
+        repoUrl: "https://github.com/corvo-technology/rook.git",
         branch: "main",
         official: true,
       },

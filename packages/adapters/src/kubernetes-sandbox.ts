@@ -28,7 +28,7 @@ import { sandboxCommandArgv } from "./sandbox-command-environment.js";
 const DEFAULT_NAMESPACE = "corvo-sandboxes";
 // Same default as the Compose stack. Pin a digest with KUBERNETES_SANDBOX_COMPUTER_IMAGE in
 // production so every pod runs the image the API was tested against.
-const DEFAULT_COMPUTER_IMAGE = "ghcr.io/corvo-technology/corvo/computer:edge";
+const DEFAULT_COMPUTER_IMAGE = "ghcr.io/corvo-technology/rook/computer:edge";
 const DEFAULT_READY_TIMEOUT_MS = 120_000;
 const WORKSPACE = "/home/corvo";
 const CONTAINER_NAME = "computer";

@@ -12,7 +12,7 @@ describe("desktop child windows", () => {
     expect(
       shouldOpenInAppPopup(
         appOrigin,
-        "https://github.com/corvo-technology/corvo/pull/395",
+        "https://github.com/corvo-technology/rook/pull/395",
         "_blank",
       ),
     ).toBe(false);
