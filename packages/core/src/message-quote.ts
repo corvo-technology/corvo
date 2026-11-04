@@ -168,6 +168,8 @@ function replyBlockText(block: MessageBlock): string {
       return block.reason;
     case "subagent":
       return block.name || block.task;
+    case "wiki_change":
+      return block.pages.map((page) => page.title).join(", ");
     case "child_bot":
     case "skill_draft":
     case "connect":

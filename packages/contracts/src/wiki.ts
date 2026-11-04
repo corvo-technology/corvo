@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { IsoDate } from "./ids.js";
+import { Id, IsoDate } from "./ids.js";
 
 /** The longest page body that can be written, in characters. */
 export const WIKI_BODY_MAX = 200_000;
@@ -57,3 +57,51 @@ export const WikiWriteInputSchema = z.object({
   expectedRevision: z.number().int().min(0).optional(),
 });
 export type WikiWriteInput = z.infer<typeof WikiWriteInputSchema>;
+
+export const WikiChangeStateSchema = z.enum([
+  "pending",
+  "applied",
+  "refused",
+  "conflict",
+  "undone",
+]);
+export type WikiChangeState = z.infer<typeof WikiChangeStateSchema>;
+
+/** What a change does to a page: write a new one, add to one, or swap a passage in one. */
+export const WikiChangeOpKindSchema = z.enum(["create", "append", "replace"]);
+
+export const WikiChangePageSchema = z.object({ title: z.string(), op: WikiChangeOpKindSchema });
+export type WikiChangePage = z.infer<typeof WikiChangePageSchema>;
+
+/**
+ * A package of page operations the curator proposed. The quoted source is filled only for the
+ * person who can read the conversation it came from.
+ */
+export const WikiChangeSchema = z.object({
+  id: Id,
+  state: WikiChangeStateSchema,
+  reason: z.string(),
+  sourceTitle: z.string(),
+  pages: z.array(WikiChangePageSchema),
+  createdAt: IsoDate,
+  canSeeSource: z.boolean(),
+  sourceText: z.string().optional(),
+});
+export type WikiChange = z.infer<typeof WikiChangeSchema>;
+
+export const WikiChangeDecideInputSchema = z.object({
+  changeId: Id,
+  decision: z.enum(["apply", "refuse", "undo"]),
+});
+
+export const WikiSettingsSchema = z.object({
+  /** Whether the curator reads conversations at all. */
+  capture: z.boolean(),
+  /** Whether edits to existing pages wait for approval or go in at once. */
+  edits: z.enum(["approve", "auto"]),
+});
+export type WikiSettings = z.infer<typeof WikiSettingsSchema>;
+export const WikiSettingsPatchSchema = WikiSettingsSchema.partial();
+
+/** One conversation's switch: on, off, or null to follow its kind (channels on, chats with one agent off). */
+export const WikiCaptureValueSchema = z.boolean().nullable();
