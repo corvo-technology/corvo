@@ -13,7 +13,7 @@ import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
 import { searchTerms } from "./content-crypto.js";
 import { contentEncryptionOf } from "./content-encryption.js";
-import { withTransactionRetry } from "./transaction-retry.js";
+import { isWriteConflict, withTransactionRetry } from "./transaction-retry.js";
 
 /**
  * The space's shared wiki: memory documents with the scope "wiki", one page per title. Any member
@@ -285,8 +285,9 @@ export async function writeWikiPage(
       ),
     );
   } catch (error) {
-    // Two writers created the same title at once; the other one won.
-    if ((error as { code?: unknown }).code === "P2002") throw new WikiConflictError();
+    // Two writers collided (the same new title, or the same page) and this one kept losing.
+    if ((error as { code?: unknown }).code === "P2002" || isWriteConflict(error))
+      throw new WikiConflictError();
     throw error;
   }
   return (await readWikiPage(db, scope, title))!;

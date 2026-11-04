@@ -97,6 +97,23 @@ describePostgres("wiki storage (PostgreSQL)", () => {
       expect((await readWikiPage(fx.prisma, mine(), "Contested"))?.body).toBe("two");
     }));
 
+  it("lets two people write the same new page at once without losing it or failing", () =>
+    system(async () => {
+      const results = await Promise.allSettled(
+        ["one", "two", "three", "four"].map((body) => write("Race", body)),
+      );
+      for (const result of results)
+        if (result.status === "rejected") expect(result.reason).toBeInstanceOf(WikiConflictError);
+      expect(results.some((result) => result.status === "fulfilled")).toBe(true);
+      const rows = await fx.query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM memory_documents WHERE "spaceId" = $1 AND scope = 'wiki' AND slug = 'race'`,
+        [fx.spaceId],
+      );
+      expect(rows[0]!.n).toBe(1);
+      const page = await readWikiPage(fx.prisma, mine(), "Race");
+      expect(["one", "two", "three", "four"]).toContain(page?.body);
+    }));
+
   it("finds a page by a word in its text, by a prefix, and by its title", () =>
     system(async () => {
       await write("Launch", "The marigold campaign starts in spring.");
