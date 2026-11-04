@@ -17,6 +17,7 @@ import {
   modelStreamMaxRetries,
   resolveCompletionMaxTokens,
 } from "./pi-runtime-limits.js";
+import { explainFetchFailure } from "./transport-failure.js";
 import { fetchPairedWithDispatcher } from "./undici-fetch.js";
 
 /** Stable OpenCode affinity id for a bot conversation (and optional nested agent). */
@@ -198,7 +199,7 @@ function boundRetryableErrorBody(response: Response, idleTimeoutMs: number): Res
   });
 }
 
-function modelRequestFetch(
+export function modelRequestFetch(
   fetchImpl: ModelsSimpleStreamOptions["fetch"],
   idleTimeoutMs: number,
 ): NonNullable<ModelsSimpleStreamOptions["fetch"]> {
@@ -209,7 +210,13 @@ function modelRequestFetch(
       init && "dispatcher" in init
         ? fetchPairedWithDispatcher(fetchImpl)
         : (fetchImpl ?? globalThis.fetch);
-    const response = await transport(input, init);
+    let response: Response;
+    try {
+      response = await transport(input, init);
+    } catch (error) {
+      // The provider library keeps only "fetch failed"; the reason is lost unless it is said here.
+      throw explainFetchFailure(error, input);
+    }
     return boundRetryableErrorBody(response, idleTimeoutMs);
   };
 }

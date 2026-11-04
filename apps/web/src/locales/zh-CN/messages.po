@@ -284,6 +284,11 @@ msgstr "{provider}无法运行此模型。"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
+msgid "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection."
+msgstr "无法安全连接到{provider}。可能是安全软件或网络过滤器拦截了连接。"
+
+#. js-lingui-explicit-id
+#: src/lib/run-error.ts
 msgid "{provider} couldn't be reached. Check that it's running."
 msgstr "无法连接到{provider}。请检查它是否正在运行。"
 

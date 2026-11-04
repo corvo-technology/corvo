@@ -224,6 +224,24 @@ describe("normalizeRunError", () => {
     });
 
     it.each([
+      "fetch failed (api.example.com): unable to verify the first certificate (UNABLE_TO_VERIFY_LEAF_SIGNATURE)",
+      "fetch failed (api.example.com): self-signed certificate in certificate chain (SELF_SIGNED_CERT_IN_CHAIN)",
+      "fetch failed (api.example.com): certificate has expired (CERT_HAS_EXPIRED)",
+      "unable to get local issuer certificate",
+    ])("says a certificate failure %s may be a security program in the way", (details) => {
+      expect(normalizeRunError(details)).toEqual({
+        summary:
+          "Your model provider couldn't be reached securely. A security program or network filter may be intercepting the connection.",
+        details,
+      });
+    });
+
+    it("still calls a real timeout a timeout, with the reason in the details", () => {
+      const details = "fetch failed (api.example.com): connect ETIMEDOUT 1.2.3.4:443 (ETIMEDOUT)";
+      expect(normalizeRunError(details)).toEqual({ summary: tookTooLong, details });
+    });
+
+    it.each([
       [
         '429: {"message":"Request too large for gpt-4o on tokens per min (TPM): Limit 30000, Requested 50000."}',
         {

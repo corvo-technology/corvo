@@ -284,6 +284,11 @@ msgstr "{provider} kann dieses Modell nicht ausführen."
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
+msgid "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection."
+msgstr "{provider} konnte nicht sicher erreicht werden. Ein Sicherheitsprogramm oder Netzwerkfilter fängt die Verbindung möglicherweise ab."
+
+#. js-lingui-explicit-id
+#: src/lib/run-error.ts
 msgid "{provider} couldn't be reached. Check that it's running."
 msgstr "{provider} ist nicht erreichbar. Prüfe, ob er läuft."
 

@@ -120,6 +120,8 @@ export const PT_BR_MESSAGES: Record<string, string> = {
     "O modelo retornou uma resposta inutilizável. Tente novamente.",
   "This model's context window is too small. Choose another model.":
     "A janela de contexto deste modelo é pequena demais. Escolha outro modelo.",
+  "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection.":
+    "Não foi possível conectar com {provider} de forma segura. Um programa de segurança ou filtro de rede pode estar interceptando a conexão.",
   "{provider} took too long to respond. Try again.":
     "{provider} demorou demais para responder. Tente novamente.",
   "{provider} is overloaded right now. Try again in a moment.":

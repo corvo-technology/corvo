@@ -24,6 +24,7 @@ import {
   egressRefused,
   withPinnedDnsLookup,
 } from "./network-address.js";
+import { transportFailureDetail } from "./transport-failure.js";
 import { dispatcherFetch, fetchPairedWithDispatcher } from "./undici-fetch.js";
 
 const MAX_MCP_TOOLS = 250;
@@ -308,25 +309,6 @@ export function createPrivateNetworkFetch(
   const result = privateFetch as SafeRemoteFetch;
   result.close = () => dispatcher.close();
   return result;
-}
-
-const MAX_CAUSE_DEPTH = 5;
-
-/** undici reports refused ports, unreachable hosts, DNS misses and TLS errors
- * alike as `TypeError: fetch failed` and keeps the actionable reason in `cause`
- * (or in the per-address errors of a happy-eyeballs AggregateError). */
-function transportFailureDetail(error: unknown, depth = 0): string | undefined {
-  if (depth >= MAX_CAUSE_DEPTH || !(error instanceof Error)) return undefined;
-  if (error instanceof AggregateError) {
-    for (const inner of error.errors) {
-      const detail = transportFailureDetail(inner, depth + 1);
-      if (detail) return detail;
-    }
-  }
-  return (
-    transportFailureDetail(error.cause, depth + 1) ??
-    (error.message === "fetch failed" ? undefined : error.message)
-  );
 }
 
 export function createSafeLookup(

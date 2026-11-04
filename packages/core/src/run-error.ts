@@ -466,6 +466,17 @@ export function normalizeRunError(
   ) {
     summary = translate("{provider} is overloaded right now. Try again in a moment.", { provider });
   } else if (
+    // A security program or network filter that inspects HTTPS presents its own certificate, which
+    // the app does not trust. Naming that is what lets a person fix it, not "try again".
+    /UNABLE_TO_VERIFY_LEAF_SIGNATURE|UNABLE_TO_GET_ISSUER_CERT|SELF_SIGNED_CERT|DEPTH_ZERO_SELF_SIGNED|CERT_HAS_EXPIRED|CERT_UNTRUSTED|ERR_TLS_CERT|unable to (?:verify the first|get local issuer) certificate|self[- ]signed certificate|certificate has expired/i.test(
+      signals,
+    )
+  ) {
+    summary = translate(
+      "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection.",
+      { provider },
+    );
+  } else if (
     // The provider SDKs report a refused or unresolvable host as a bare "Connection error.".
     /^connection error\.?$/i.test(message.trim()) ||
     /ECONNREFUSED|connection refused|ENOTFOUND|getaddrinfo|EHOSTUNREACH|ENETUNREACH|EAI_AGAIN/i.test(
