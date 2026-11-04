@@ -8420,7 +8420,13 @@ describe("memory documents", () => {
     });
     await expect(client.memory.remove({ documentId: "doc-1" })).resolves.toEqual({ ok: true });
     expect(memoryDocument.findFirst).toHaveBeenCalledWith({
-      where: { id: "doc-1", spaceId: "space-1", userId: "user-1" },
+      where: {
+        id: "doc-1",
+        spaceId: "space-1",
+        userId: "user-1",
+        // The space's wiki is memory documents too; this procedure never reaches them.
+        scope: { in: ["bot", "user"] },
+      },
     });
     expect(memory.remove).toHaveBeenCalledWith(
       { id: "doc-1", scope: "bot", botId: "bot-1", path: "projects/retired.md" },
