@@ -77,9 +77,22 @@ describe("wiki curator contracts", () => {
       { title: "Plan", op: "replace" },
     ],
     createdAt: "2026-11-04T10:00:00.000Z",
+    edits: [
+      { title: "Alpha Builders", op: "create", added: "Chosen for the lobby." },
+      { title: "Plan", op: "replace", removed: "planning", added: "building" },
+    ],
     canSeeSource: true,
     sourceText: "We are going with Alpha Builders.",
   };
+
+  it("says what each operation would write, so it can be read before approving", () => {
+    expect(WikiChangeSchema.parse(change).edits).toHaveLength(2);
+    expect(
+      WikiChangeSchema.safeParse({ ...change, edits: [{ title: "A", op: "delete", added: "x" }] })
+        .success,
+    ).toBe(false);
+    expect(WikiChangeSchema.safeParse({ ...change, edits: undefined }).success).toBe(false);
+  });
 
   it("describes a change with its pages, its source and whether the reader may see it", () => {
     expect(WikiChangeSchema.parse(change)).toEqual(change);

@@ -179,6 +179,26 @@ describePostgres("the wiki curator procedures", () => {
     });
   });
 
+  it("lets only the owner of the Space change its wiki settings, though any member reads them", async () => {
+    const ada = people.ada!;
+    const setRole = (role: string) =>
+      system(() =>
+        handles.prisma.spaceMember.update({
+          where: { spaceId_userId: { spaceId: ada.spaceId, userId: ada.userId } },
+          data: { role },
+        }),
+      );
+    await setRole("member");
+    try {
+      const refused = await call("ada", "wiki/settings/set", { edits: "auto" });
+      expect(refused.status).toBe(403);
+      expect((await call("ada", "wiki/settings/get")).status).toBe(200);
+    } finally {
+      await setRole("owner");
+    }
+    expect((await call("ada", "wiki/settings/set", { edits: "approve" })).status).toBe(200);
+  });
+
   it("sets one conversation's switch, only on the person's own", async () => {
     const mine = await chat("ada");
     const set = await call("ada", "wiki/capture/set", { botId: mine.botId, capture: true });

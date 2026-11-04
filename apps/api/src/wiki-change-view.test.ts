@@ -7,6 +7,7 @@ const record: WikiChangeRecord = {
   state: "pending",
   reason: "A contractor was chosen",
   pages: [{ title: "Alpha Builders", op: "create" }],
+  edits: [{ title: "Alpha Builders", op: "create", added: "Chosen for the lobby." }],
   createdAt: new Date("2026-11-04T10:00:00.000Z"),
   anchorThreadId: "thread-1",
   anchorMessageId: null,
@@ -23,17 +24,24 @@ describe("what a reader is shown of a change's source", () => {
       reason: "A contractor was chosen",
       sourceTitle: "Lobby renovation",
       pages: [{ title: "Alpha Builders", op: "create" }],
+      edits: [{ title: "Alpha Builders", op: "create", added: "Chosen for the lobby." }],
       createdAt: "2026-11-04T10:00:00.000Z",
       canSeeSource: true,
       sourceText: "Ana: we are going with Alpha Builders. Her number is private.",
     });
   });
 
-  it("shows anyone else the change and its pages, and none of the words quoted", () => {
+  it("shows anyone else the pages and what would be written, and nothing said in the conversation", () => {
     const view = wikiChangeView(record, "colleague");
     expect(view.canSeeSource).toBe(false);
     expect(view).not.toHaveProperty("sourceText");
     expect(JSON.stringify(view)).not.toContain("number is private");
+    // The title and the reason are the model's summary of the conversation, so they are not shared.
+    expect(view.sourceTitle).toBe("");
+    expect(view.reason).toBe("");
     expect(view.pages).toEqual([{ title: "Alpha Builders", op: "create" }]);
+    expect(view.edits).toEqual([
+      { title: "Alpha Builders", op: "create", added: "Chosen for the lobby." },
+    ]);
   });
 });

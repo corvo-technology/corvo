@@ -73,6 +73,16 @@ export const WikiChangeOpKindSchema = z.enum(["create", "append", "replace"]);
 export const WikiChangePageSchema = z.object({ title: z.string(), op: WikiChangeOpKindSchema });
 export type WikiChangePage = z.infer<typeof WikiChangePageSchema>;
 
+/** What one operation would write, so a person can read it before approving it. */
+export const WikiChangeEditSchema = z.object({
+  title: z.string(),
+  op: WikiChangeOpKindSchema,
+  section: z.string().optional(),
+  removed: z.string().optional(),
+  added: z.string(),
+});
+export type WikiChangeEdit = z.infer<typeof WikiChangeEditSchema>;
+
 /**
  * A package of page operations the curator proposed. The quoted source is filled only for the
  * person who can read the conversation it came from.
@@ -80,9 +90,11 @@ export type WikiChangePage = z.infer<typeof WikiChangePageSchema>;
 export const WikiChangeSchema = z.object({
   id: Id,
   state: WikiChangeStateSchema,
+  /** The model's summary of the conversation; empty for anyone who may not read that conversation. */
   reason: z.string(),
   sourceTitle: z.string(),
   pages: z.array(WikiChangePageSchema),
+  edits: z.array(WikiChangeEditSchema),
   createdAt: IsoDate,
   canSeeSource: z.boolean(),
   sourceText: z.string().optional(),
