@@ -150,7 +150,7 @@ export interface ContentEncryption {
     query: string,
     domain: SearchTokenDomain,
   ): Promise<number[][]>;
-  /** The same for wiki pages, which are matched by whole words. */
+  /** The same for wiki pages, matched by the start of each word. */
   wikiSearchTokens(spaceId: string, query: string): Promise<number[][]>;
 }
 
@@ -365,10 +365,14 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
           });
         next[field] = sealJson(value, plainKeys, encrypt);
       } else if (typeof value === "string") {
-        // A wiki page keeps word tokens of its text. A rewrite must name the scope again, so the
-        // tokens are replaced with the text and not left describing what the page used to say.
-        if (spec.searchTokens && wikiScope(data))
-          next.searchTokens = searchTokens(key, { words: value, strings: [value] });
+        // A wiki page keeps word tokens of its title and its text. A rewrite must name the scope
+        // and the path again, so the tokens are made from what the page says now and not left
+        // describing what it used to say.
+        if (spec.searchTokens && wikiScope(data)) {
+          const title = typeof data.path === "string" ? data.path.replace(/\.md$/, "") : "";
+          const text = `${title}\n${value}`;
+          next.searchTokens = searchTokens(key, { words: text, strings: [text] });
+        }
         next[field] = encrypt(value);
       } else throw new Error(`Unsupported write to encrypted ${spec.table}.${field}`);
     }
@@ -512,7 +516,7 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
     },
     async wikiSearchTokens(spaceId, query) {
       const keys = await ring.allFresh(spaceId);
-      return keys.map((key) => querySearchTokens(key, query, "word"));
+      return keys.map((key) => querySearchTokens(key, query, "prefix"));
     },
   };
 

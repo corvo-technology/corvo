@@ -33,6 +33,11 @@ export function wikiPath(title: string): string {
   return `${name || "untitled"}.md`;
 }
 
+/** A page's title as it is kept: no folder, no `.md`, nothing a file name refuses. Links are matched on this. */
+export function wikiCanonicalTitle(target: string): string {
+  return wikiPath(wikiTitle(target)).replace(/\.md$/, "");
+}
+
 /** The text with its code replaced by blanks of the same length, so offsets still line up. */
 function withoutCode(body: string): string {
   return body.replace(CODE, (code) => " ".repeat(code.length));

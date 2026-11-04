@@ -17,10 +17,9 @@ export async function wikiTestFixture() {
     spaceId: `wiki-space-${suffix}`,
     otherSpaceId: `wiki-space2-${suffix}`,
   };
-  const provider = new LocalKeyProvider([
-    { id: "wiki-test", key: randomBytes(32) },
-    ...masterKeysFromEnv(),
-  ]);
+  // Only the environment's keys: a key that exists for this suite alone would stay wrapped in
+  // space_keys, and another suite that re-wraps every key in the shared database could not open it.
+  const provider = new LocalKeyProvider(masterKeysFromEnv());
   const db = createDb(process.env.DATABASE_URL!, { keyProvider: provider, encryptContent: true });
   const prisma: PrismaClient = db.prisma;
   await runAsSystem("test fixture", async () => {

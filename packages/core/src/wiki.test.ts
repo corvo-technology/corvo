@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   linkWikiTitles,
   parseWikiPage,
+  wikiCanonicalTitle,
   wikiKind,
   wikiLinks,
   wikiPath,
@@ -32,6 +33,15 @@ describe("wiki titles", () => {
     expect(wikiPath("x".repeat(300))).toBe(`${"x".repeat(120)}.md`);
     expect(wikiPath("???")).toBe("---.md");
     expect(wikiPath("   ")).toBe("untitled.md");
+  });
+});
+
+describe("wikiCanonicalTitle", () => {
+  it("names a page the way its file name and every link to it do", () => {
+    expect(wikiCanonicalTitle("Clients/Alpha Builders.md")).toBe("Alpha Builders");
+    expect(wikiCanonicalTitle("[[Alpha: Builders|them]]")).toBe("Alpha- Builders");
+    expect(wikiCanonicalTitle("Plan?")).toBe("Plan-");
+    expect(wikiSlug(wikiCanonicalTitle("A: B"))).toBe(wikiSlug(wikiCanonicalTitle("a- b")));
   });
 });
 

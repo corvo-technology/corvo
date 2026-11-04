@@ -44,6 +44,23 @@ describePostgres("wiki page columns (PostgreSQL)", () => {
       for (const token of marigold) expect(raw.tokens).toContain(token);
     }));
 
+  it("tokenizes the words of a wiki page's title as well as its text", () =>
+    system(async () => {
+      const row = await fx.prisma.memoryDocument.create({
+        data: page(fx.spaceId, "Budget Review.md", "Numbers only", "budget review"),
+      });
+      const raw = await stored(row.id);
+      for (const token of await wordTokens(fx.spaceId, "budget"))
+        expect(raw.tokens).toContain(token);
+      await fx.prisma.memoryDocument.update({
+        where: { id: row.id },
+        data: { scope: "wiki", path: "Quarterly Review.md", content: "Numbers only" },
+      });
+      const renamed = await stored(row.id);
+      for (const token of await wordTokens(fx.spaceId, "quarterly"))
+        expect(renamed.tokens).toContain(token);
+    }));
+
   it("keeps no tokens for memory that is not a wiki page", () =>
     system(async () => {
       const row = await fx.prisma.memoryDocument.create({
