@@ -324,6 +324,21 @@
 }
 
 /* A message that arrives while the chat is open rises in; history never animates. */
+/* The slow dot beside the faces of the bots working in a channel. */
+.corvo-presence-dot {
+  animation: corvo-presence-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes corvo-presence-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
 .corvo-message-in {
   animation: corvo-message-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -490,6 +505,7 @@
   .corvo-mascot-eyes[data-mood="happy"] .corvo-mascot-smile,
   .corvo-mascot-avatar:hover .corvo-mascot-avatar-image,
   :is(button, a, [role="button"], [role="option"], li):hover .corvo-mascot-avatar-image,
+  .corvo-presence-dot,
   .corvo-bot-avatar[data-working="true"] .corvo-bot-avatar-picture {
     animation: none;
     transition: none;

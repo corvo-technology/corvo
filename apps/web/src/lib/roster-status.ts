@@ -1,3 +1,4 @@
+import { WORKING_RUN_STATUSES } from "@corvo/core";
 import { t } from "@lingui/core/macro";
 
 export function rosterHasUndismissedRunError(
@@ -38,4 +39,13 @@ export function rosterAttentionLabel(status: string): string | null {
 /** Compact rows keep actionable status visible in place of the message preview. */
 export function compactRosterStatusLabel(status: string): string | null {
   return rosterWorkStatusLabel(status) ?? rosterAttentionLabel(status);
+}
+
+const WORKING_STATUSES: ReadonlySet<string> = new Set(WORKING_RUN_STATUSES);
+
+/** The members of a channel that are queued, starting or running, in the channel's own order. */
+export function workingMembers<T extends { status?: string }>(members: readonly T[]): T[] {
+  return members.filter(
+    (member) => member.status !== undefined && WORKING_STATUSES.has(member.status),
+  );
 }
