@@ -298,6 +298,9 @@ model Space {
   mcpOAuthSessions            McpOAuthSession[]
   modelOAuthSessions          ModelOAuthSession[]
   providerQuotas              ProviderQuota[]
+  wikiSettings                WikiSettings?
+  wikiSources                 WikiSource[]
+  wikiChanges                 WikiChange[]
   botMcpServers               BotMcpServer[]
   messagingIdentities         MessagingIdentity[]
   actionApprovalRules         ActionApprovalRule[]
@@ -649,6 +652,10 @@ model Thread {
   historyCompactionGeneration    Int                   @default(0)
   /// After a summary came back over the size limit, compaction waits until nextMessageSeq reaches this.
   historyCompactionRetryAfterSeq Int?
+  /// The last message seq the wiki curator has read in this conversation.
+  wikiCuratedUpToSeq             Int?
+  /// null follows the conversation's kind (channels on, chats with one agent off); true or false is the person's choice.
+  wikiCapture                    Boolean?
   unread                         Boolean               @default(false)
   /// Highest message seq the user has read; the "New" divider goes after it. -1 = none read.
   lastReadSeq                    Int                   @default(-1)
@@ -657,6 +664,7 @@ model Thread {
   tasks                          Task[]
   runs                           Run[]
   routines                       Routine[]
+  wikiSources                    WikiSource[]
 
   @@index([spaceId])
   @@map("threads")
@@ -1447,6 +1455,69 @@ model ModelOAuthSession {
 
 /// What a subscription provider last said about the person's windows (5 hours, week). One row per
 /// person and provider, replaced by each reading; a provider that reports nothing has no row.
+/// The wiki's own settings for a Space: whether the curator reads conversations, and whether edits
+/// to existing pages wait for approval ("approve") or go in at once ("auto").
+model WikiSettings {
+  spaceId   String   @id
+  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  capture   Boolean  @default(true)
+  edits     String   @default("approve")
+  updatedAt DateTime @updatedAt
+
+  @@map("wiki_settings")
+}
+
+/// What a wiki change came from, kept as it was said. Text and title are encrypted at rest.
+model WikiSource {
+  id        String      @id @default(cuid())
+  spaceId   String
+  space     Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  /// The conversation's owner: the only person shown the quoted text.
+  userId    String
+  threadId  String?
+  thread    Thread?     @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  /// "conversation" (read by the curator), "message" (kept on purpose) or "note" (saved by an agent).
+  origin    String
+  title     String
+  text      String
+  fromSeq   Int?
+  toSeq     Int?
+  messageId String?
+  createdAt DateTime    @default(now())
+  change    WikiChange?
+
+  @@unique([threadId, fromSeq, toSeq])
+  @@unique([threadId, messageId])
+  @@index([spaceId])
+  @@map("wiki_sources")
+}
+
+/// A package of page operations: "pending" until approved, then "applied" (or "refused", "conflict"
+/// when a page moved on, "undone"). Operations and reason are encrypted at rest.
+model WikiChange {
+  id               String     @id @default(cuid())
+  spaceId          String
+  space            Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId           String
+  sourceId         String     @unique
+  source           WikiSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  state            String     @default("pending")
+  ops              Json
+  reason           String
+  /// { "<page title>": revision the operations were written against (0 for a new page) }
+  baseRevisions    Json
+  /// { "<page title>": revision this change produced }, filled as pages are written.
+  appliedRevisions Json?
+  anchorThreadId   String?
+  anchorMessageId  String?
+  decidedByUserId  String?
+  createdAt        DateTime   @default(now())
+  decidedAt        DateTime?
+
+  @@index([spaceId, state])
+  @@map("wiki_changes")
+}
+
 model ProviderQuota {
   id        String   @id @default(cuid())
   spaceId   String

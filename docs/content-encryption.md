@@ -11,6 +11,7 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Thread events (they repeat message content) | `events.payload` |
 | Compacted history summaries | `threads.historyCompactionSummary` |
 | Memory documents and their revisions, wiki pages included (scope `wiki`) | `memory_documents.content`, `memory_revisions.content` |
+| What the wiki curator read and proposed (quoted conversation text and title; the operations and reason of a change) | `wiki_sources.title`, `wiki_sources.text`, `wiki_changes.ops` (string values; the `op` name stays plain), `wiki_changes.reason` |
 | Uploaded and generated files | `DATA_DIR/artifacts/<space>/<file>` |
 | Bot computer homes kept in [object storage](./self-host.md#bot-homes-in-object-storage) (always, whatever `CONTENT_ENCRYPTION` says) | `homes/<id>/<revision>` in the bucket |
 | Credentials (unchanged scheme) | `secrets`, `bot_secrets`, `integration_provider_configs` |
