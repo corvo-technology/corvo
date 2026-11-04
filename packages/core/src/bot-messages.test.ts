@@ -363,6 +363,27 @@ describe("group members roster", () => {
   });
 });
 
+describe("a delegated bot that could not use an app", () => {
+  const from = { id: "b_1", name: "Researcher" };
+  const text = "Grafana is not reachable here.";
+
+  it.each(["result", "status"] as const)(
+    "tells the bot that delegated to give it the app through connect_app on a %s",
+    (intent) => {
+      const prompt = buildBotMessageWakePrompt({ from, text, intent });
+      expect(prompt).toContain("connect_app");
+      expect(prompt).toContain("Researcher");
+      expect(prompt).toMatch(/instead of asking the user for a URL/);
+    },
+  );
+
+  it("leaves a request or an FYI without that instruction", () => {
+    for (const intent of ["request", "question", "fyi"] as const) {
+      expect(buildBotMessageWakePrompt({ from, text, intent })).not.toContain("connect_app");
+    }
+  });
+});
+
 describe("inbound wake prompt", () => {
   const prompt = buildBotMessageWakePrompt({
     from: { id: "b_1", name: "Researcher" },
