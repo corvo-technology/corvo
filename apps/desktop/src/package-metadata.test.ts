@@ -15,9 +15,11 @@ describe("desktop package metadata", () => {
     expect(packageJson.build?.productName).toBeUndefined();
   });
 
-  it("shows Rook where macOS names the app", () => {
+  it("shows Rook in Finder and Launchpad without renaming the bundle's own name", () => {
     const info = packageJson.build?.mac?.extendInfo;
-    expect(info?.CFBundleName).toBe("Rook");
     expect(info?.CFBundleDisplayName).toBe("Rook");
+    // Electron looks for its helper apps by this name ("<name> Helper.app"), and electron-builder
+    // names them from the product name. Setting it to anything else makes the app abort on launch.
+    expect(info).not.toHaveProperty("CFBundleName");
   });
 });
