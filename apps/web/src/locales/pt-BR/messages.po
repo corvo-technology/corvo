@@ -6745,6 +6745,9 @@ msgstr "Instruções de trabalho"
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/roster-status.ts
 #: src/pages/Auth.tsx
+#: src/pages/shell/channel-header.tsx
+#: src/pages/shell/channel-presence.tsx
+#: src/pages/shell/sidebar-roster.tsx
 #: src/pages/shell/transcript.tsx
 #: src/pages/SquadPage.tsx
 msgid "Working…"

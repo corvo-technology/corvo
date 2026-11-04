@@ -4,6 +4,7 @@ import {
   rosterAttentionLabel,
   rosterHasUndismissedRunError,
   rosterWorkStatusLabel,
+  workingMembers,
 } from "./roster-status";
 
 vi.mock("@lingui/core/macro", () => ({
@@ -62,5 +63,25 @@ describe("rosterAttentionLabel", () => {
     for (const status of ["idle", "queued", "leased", "running", "completed", "cancelled", ""]) {
       expect(rosterAttentionLabel(status)).toBeNull();
     }
+  });
+});
+
+describe("workingMembers", () => {
+  const members = [
+    { name: "a", status: "running" },
+    { name: "b", status: "idle" },
+    { name: "c", status: "queued" },
+    { name: "d", status: "waiting_input" },
+    { name: "e", status: "failed" },
+    { name: "f" },
+    { name: "g", status: "leased" },
+  ];
+
+  it("keeps the members that are queued, starting or running, in channel order", () => {
+    expect(workingMembers(members).map((member) => member.name)).toEqual(["a", "c", "g"]);
+  });
+
+  it("leaves out a member waiting for the person, a failed one and one with no status", () => {
+    expect(workingMembers(members.slice(3, 6))).toEqual([]);
   });
 });

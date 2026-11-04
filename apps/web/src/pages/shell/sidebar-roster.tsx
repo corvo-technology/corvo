@@ -25,7 +25,9 @@ import {
   rosterAttentionLabel,
   rosterHasUndismissedRunError,
   rosterWorkStatusLabel,
+  workingMembers,
 } from "../../lib/roster-status";
+import { ChannelPresence } from "./channel-presence";
 import type { RosterDropAction, RosterDropTarget } from "./roster-drop";
 import type { sidebarGroupsForSpaces } from "./space-sidebar";
 
@@ -268,6 +270,7 @@ export function SidebarRoster({
                 const compact = botsSidebarDensity === "compact";
                 const workStatusLabel =
                   item.kind === "bot" ? rosterWorkStatusLabel(item.chat.status) : null;
+                const workingHere = item.kind === "group" ? workingMembers(item.chat.members) : [];
                 const rowError =
                   item.kind === "bot" &&
                   (rosterHasUndismissedRunError(item.chat.runErrorId, dismissedRunErrorIds) ||
@@ -348,7 +351,7 @@ export function SidebarRoster({
                       mini
                         ? [
                             item.chat.unread ? `roster-unread-${item.kind}-${item.chat.id}` : null,
-                            compactStatusLabel
+                            compactStatusLabel || workingHere.length > 0
                               ? `roster-status-${item.kind}-${item.chat.id}`
                               : null,
                           ]
@@ -439,6 +442,21 @@ export function SidebarRoster({
                             {compactStatusLabel}
                           </span>
                         ) : null}
+                        {workingHere.length > 0 ? (
+                          <>
+                            <span
+                              aria-hidden="true"
+                              data-roster-working-dot
+                              className="corvo-presence-dot absolute -end-0.5 bottom-0 size-2 rounded-full bg-status-working ring-2 ring-sidebar"
+                            />
+                            <span
+                              className="sr-only"
+                              id={`roster-status-${item.kind}-${item.chat.id}`}
+                            >
+                              {`${workingHere.map((member) => member.name).join(", ")}: ${t`Working…`}`}
+                            </span>
+                          </>
+                        ) : null}
                         {item.chat.unread ? (
                           <>
                             <span
@@ -468,6 +486,7 @@ export function SidebarRoster({
                         >
                           {item.chat.name}
                         </span>
+                        <ChannelPresence members={workingHere} />
                         {item.chat.unread ? (
                           <>
                             <span

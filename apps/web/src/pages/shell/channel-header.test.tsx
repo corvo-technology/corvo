@@ -85,3 +85,33 @@ it("opens the channel's settings from its name, its agents and the plus, and the
   expect(handlers.onOpenSquad).toHaveBeenCalledTimes(1);
   await act(async () => root.unmount());
 });
+
+it("shows who is working in place of the count, and puts them first with the working ring", async () => {
+  const members: GroupMember[] = [
+    { ...member("a") },
+    { ...member("b"), status: "idle" },
+    { ...member("c"), status: "running" },
+    { ...member("d"), status: "queued" },
+  ];
+  const { host, root } = await render({ members });
+  const status = host.querySelector('[data-testid="channel-working"]');
+  expect(status?.textContent).toBe("c +1 · Working…");
+  expect(host.textContent).not.toContain("4 agents");
+  const faces = [...host.querySelectorAll(".corvo-mascot-avatar")];
+  expect(faces.map((face) => face.getAttribute("data-working"))).toEqual([
+    "true",
+    "true",
+    "false",
+    "false",
+  ]);
+  await act(async () => root.unmount());
+});
+
+it("goes back to the count once no one is working", async () => {
+  const { host, root } = await render({
+    members: [member("a"), { ...member("b"), status: "idle" }],
+  });
+  expect(host.querySelector('[data-testid="channel-working"]')).toBeNull();
+  expect(host.textContent).toContain("2 agents");
+  await act(async () => root.unmount());
+});
