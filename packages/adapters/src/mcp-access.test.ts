@@ -11,6 +11,12 @@ vi.mock("./run-messages.js", async (importOriginal) => ({
 
 const run = { id: "run-1", spaceId: "space-1", userId: "user-1", threadId: "t-1", botId: "bot-1" };
 
+const teammates = [
+  { id: "bot-1", name: "Chefe" },
+  { id: "bot-2", name: "Infraestrutura e SRE" },
+  { id: "bot-3", name: "Marketing" },
+];
+
 function setup(servers: unknown[], recent: unknown[] = [], createError?: unknown) {
   const tx = {
     $executeRaw: vi.fn(async () => 1),
@@ -19,6 +25,7 @@ function setup(servers: unknown[], recent: unknown[] = [], createError?: unknown
   const notify = vi.fn(async () => undefined);
   const deps = {
     prisma: {
+      bot: { findMany: vi.fn(async (_args: unknown) => teammates) },
       mcpServer: {
         findMany: vi.fn(async (_args: unknown) => servers),
         create: vi.fn(async (args: { data: Record<string, unknown> }) => {
@@ -175,5 +182,79 @@ describe("requestSpaceAppAccess", () => {
   it("leaves a name it does not know to the connector catalog", async () => {
     const { deps } = setup([posthog]);
     expect(await requestSpaceAppAccess(deps, run, "gmail")).toBeUndefined();
+  });
+});
+
+describe("requestSpaceAppAccess for a teammate", () => {
+  it("shows the card in the asking agent's chat, naming who the access is for", async () => {
+    const { deps, notify } = setup([posthog]);
+    const result = await requestSpaceAppAccess(deps, run, "posthog", "infraestrutura");
+    expect(result).toMatchObject({ status: "pending" });
+    expect(String((result as { message: string }).message)).toContain("Infraestrutura e SRE");
+    // The card is the asking agent's own message, in its own chat.
+    expect(persist.mock.calls[0]?.[1]).toMatchObject({ threadId: "t-1", botId: "bot-1" });
+    expect(persist.mock.calls[0]?.[3]).toEqual([
+      expect.objectContaining({
+        kind: "mcp_approval",
+        serverId: "srv-ph",
+        forBotId: "bot-2",
+        forBotName: "Infraestrutura e SRE",
+        status: "pending",
+      }),
+    ]);
+    expect(notify).toHaveBeenCalledWith("t-1", 7, undefined);
+  });
+
+  it("checks whether the teammate, not the asking agent, already has the app", async () => {
+    const { deps } = setup([posthog]);
+    await requestSpaceAppAccess(deps, run, "posthog", "Infraestrutura e SRE");
+    const query = (deps.prisma.mcpServer.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
+    expect(query.select.assignments).toEqual({ where: { botId: "bot-2" }, select: { id: true } });
+  });
+
+  it("says the teammate already has it instead of asking again", async () => {
+    const { deps } = setup([{ ...posthog, assignments: [{ id: "a-1" }] }]);
+    const result = await requestSpaceAppAccess(deps, run, "posthog", "Marketing");
+    expect(result).toMatchObject({ status: "connected" });
+    expect(String((result as { message: string }).message)).toContain("Marketing");
+    expect(persist).not.toHaveBeenCalled();
+  });
+
+  it("asks for the teammate once, but separately from a card for another agent", async () => {
+    const forInfra = {
+      kind: "mcp_approval",
+      serverId: "srv-ph",
+      status: "pending",
+      forBotId: "bot-2",
+    };
+    const again = setup([posthog], [{ blocks: [forInfra] }]);
+    await requestSpaceAppAccess(again.deps, run, "posthog", "Infraestrutura e SRE");
+    expect(persist).not.toHaveBeenCalled();
+
+    const other = setup([posthog], [{ blocks: [forInfra] }]);
+    await requestSpaceAppAccess(other.deps, run, "posthog", "Marketing");
+    expect(persist).toHaveBeenCalledTimes(1);
+  });
+
+  it("treats naming itself as asking for itself", async () => {
+    const { deps } = setup([posthog]);
+    await requestSpaceAppAccess(deps, run, "posthog", "Chefe");
+    expect(persist.mock.calls[0]?.[3]?.[0]).not.toHaveProperty("forBotId");
+  });
+
+  it("names the agents it can ask for when the name matches none, or more than one", async () => {
+    const { deps } = setup([posthog]);
+    const none = await requestSpaceAppAccess(deps, run, "posthog", "Financeiro");
+    expect(none).toEqual({ error: expect.stringContaining("Infraestrutura e SRE") });
+    const many = await requestSpaceAppAccess(deps, run, "posthog", "i");
+    expect(many).toEqual({ error: expect.stringContaining("More than one") });
+    expect(persist).not.toHaveBeenCalled();
+  });
+
+  it("looks only at the owner's agents that are not archived", async () => {
+    const { deps } = setup([posthog]);
+    await requestSpaceAppAccess(deps, run, "posthog", "Marketing");
+    const query = (deps.prisma.bot.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
+    expect(query.where).toEqual({ spaceId: "space-1", userId: "user-1", archivedAt: null });
   });
 });

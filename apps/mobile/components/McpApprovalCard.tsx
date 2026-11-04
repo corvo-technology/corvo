@@ -54,15 +54,25 @@ export function McpApprovalCard({
   }, [block.status]);
   const status = block.status && block.status !== "pending" ? block.status : localStatus;
   const summary = block.endpoint ?? `stdio (${block.transport})`;
+  // An agent can ask in its own chat for a teammate; the access is for the teammate.
+  const targetBotId = block.forBotId ?? botId;
 
   async function submit(action: "approve" | "dismiss") {
     if (readOnly || status !== "pending" || pendingAction !== null) return;
     setPendingAction(action);
     try {
       if (action === "approve") {
-        await rpc("mcp/assignments/approve", { botId, serverId: block.serverId, threadId });
+        await rpc("mcp/assignments/approve", {
+          botId: targetBotId,
+          serverId: block.serverId,
+          threadId,
+        });
       } else {
-        await rpc("mcp/assignments/dismiss", { botId, serverId: block.serverId, threadId });
+        await rpc("mcp/assignments/dismiss", {
+          botId: targetBotId,
+          serverId: block.serverId,
+          threadId,
+        });
       }
       setLocalStatus(action === "approve" ? "connected" : "dismissed");
     } catch (reason) {
@@ -95,6 +105,11 @@ export function McpApprovalCard({
           <Text style={[styles.summary, { color: tokens.mutedForeground }]} numberOfLines={2}>
             {summary}
           </Text>
+          {block.forBotName ? (
+            <Text style={[styles.summary, { color: tokens.foreground }]}>
+              {t("Access for {agent}", { agent: block.forBotName })}
+            </Text>
+          ) : null}
         </View>
       </View>
       {status !== "pending" ? (

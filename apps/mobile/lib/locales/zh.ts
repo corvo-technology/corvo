@@ -325,6 +325,7 @@ export const ZH_MESSAGES: Record<string, string> = {
     "使用此服务器自己的 {source} 凭据访问 {provider}。",
   "Connect API key": "连接 API 密钥",
   "Connect Executor": "连接 Executor",
+  "Access for {agent}": "{agent} 的访问权限",
   "Connect MCP server {name}": "连接 MCP 服务器 {name}",
   "Connect Treg": "连接 Treg",
   Connected: "已连接",

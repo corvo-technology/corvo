@@ -478,6 +478,7 @@ export const ES_MESSAGES: Record<string, string> = {
   "Uses this server's own {source} credentials to access {provider}.":
     "Usa las credenciales {source} propias de este servidor para acceder a {provider}.",
   "Connect API key": "Conectar clave de API",
+  "Access for {agent}": "Acceso para {agent}",
   "Connect MCP server {name}": "Conectar servidor MCP {name}",
   "Connected.": "Conectado.",
   "Context limit": "Límite de contexto",

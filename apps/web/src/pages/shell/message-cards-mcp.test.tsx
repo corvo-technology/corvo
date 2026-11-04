@@ -121,3 +121,53 @@ it("leaves a card without a key request as it was", async () => {
   expect(api.approve).toHaveBeenCalled();
   await unmount();
 });
+
+const teammateBlock: Block = {
+  kind: "mcp_approval",
+  name: "Sentry",
+  serverId: "srv_2",
+  transport: "streamable_http",
+  endpoint: "https://mcp.sentry.dev/mcp",
+  needsOAuth: false,
+  status: "pending",
+  forBotId: "bot_infra",
+  forBotName: "Infraestrutura e SRE",
+};
+
+it("says whom the access is for when an agent asked on a teammate's behalf", async () => {
+  const { host, unmount } = await mount(teammateBlock);
+  expect(host.textContent).toContain("Access for Infraestrutura e SRE");
+  await unmount();
+});
+
+it("shows no such line on a card for the agent whose chat it is in", async () => {
+  const { host, unmount } = await mount({
+    ...teammateBlock,
+    forBotId: undefined,
+    forBotName: undefined,
+  });
+  expect(host.textContent).not.toContain("Access for");
+  await unmount();
+});
+
+it("gives the access to the teammate, not to the agent whose chat shows the card", async () => {
+  const { host, unmount } = await mount(teammateBlock);
+  await act(async () => button(host, "Approve")?.click());
+  expect(api.approve).toHaveBeenCalledWith({
+    botId: "bot_infra",
+    serverId: "srv_2",
+    threadId: "thread_1",
+  });
+  await unmount();
+});
+
+it("dismisses the card for the teammate too", async () => {
+  const { host, unmount } = await mount(teammateBlock);
+  await act(async () => button(host, "Not now")?.click());
+  expect(api.dismiss).toHaveBeenCalledWith({
+    botId: "bot_infra",
+    serverId: "srv_2",
+    threadId: "thread_1",
+  });
+  await unmount();
+});

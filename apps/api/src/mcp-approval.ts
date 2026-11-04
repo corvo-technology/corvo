@@ -36,6 +36,16 @@ function isApproval(block: MessageBlock, serverId: string): block is ApprovalBlo
   return block.kind === "mcp_approval" && block.serverId === serverId;
 }
 
+/** A card is for the agent it names, or else for the agent that wrote it. */
+function isForBot(
+  message: { botId: string | null },
+  block: ApprovalBlock,
+  botId: string | undefined,
+): boolean {
+  const target = block.forBotId ?? message.botId;
+  return !target || target === botId;
+}
+
 function isOpen(block: ApprovalBlock): boolean {
   return block.status !== "connected" && block.status !== "dismissed";
 }
@@ -51,7 +61,22 @@ async function threadsForDecision(
       id: input.threadId,
       spaceId: actor.spaceId,
       userId: actor.userId,
-      OR: [{ botId: input.botId }, { group: { members: { some: { botId: input.botId } } } }],
+      OR: [
+        { botId: input.botId },
+        { group: { members: { some: { botId: input.botId } } } },
+        // An agent asked for this teammate in its own chat, which the teammate is not part of.
+        {
+          messages: {
+            some: {
+              blocks: {
+                array_contains: [
+                  { kind: "mcp_approval", serverId: input.serverId, forBotId: input.botId },
+                ],
+              },
+            },
+          },
+        },
+      ],
     },
     select: { id: true, botId: true },
   });
@@ -86,7 +111,15 @@ async function threadsForBot(
     where: {
       spaceId: actor.spaceId,
       userId: actor.userId,
-      OR: [{ botId }, { groupId: { not: null }, messages: { some: { botId } } }],
+      OR: [
+        { botId },
+        { groupId: { not: null }, messages: { some: { botId } } },
+        {
+          messages: {
+            some: { blocks: { array_contains: [{ kind: "mcp_approval", forBotId: botId }] } },
+          },
+        },
+      ],
     },
     select: { id: true, botId: true },
   });
@@ -111,10 +144,10 @@ async function rewriteCards(
       take: 100,
     });
     for (const message of messages) {
-      if (message.botId && message.botId !== input.botId) continue;
       const blocks = message.blocks as MessageBlock[];
-      const matching = blocks.filter((block): block is ApprovalBlock =>
-        isApproval(block, input.serverId),
+      const matching = blocks.filter(
+        (block): block is ApprovalBlock =>
+          isApproval(block, input.serverId) && isForBot(message, block, input.botId),
       );
       if (matching.length === 0) continue;
       for (const block of matching) {
@@ -123,7 +156,9 @@ async function rewriteCards(
       }
       if (!matching.some(selectable)) continue;
       const next = blocks.map((block) =>
-        isApproval(block, input.serverId) && selectable(block)
+        isApproval(block, input.serverId) &&
+        isForBot(message, block, input.botId) &&
+        selectable(block)
           ? { ...block, status: input.status }
           : block,
       );
@@ -273,6 +308,10 @@ function mcpConnectedPrompt(name: string): string {
   return `The user just connected the MCP server ${JSON.stringify(name)} from its approval card, so its tools are available now. Carry on with what they asked for. If nothing is left to do, confirm in one short sentence.`;
 }
 
+function mcpConnectedForPrompt(name: string, teammate: string): string {
+  return `The user just approved giving ${JSON.stringify(teammate)} the MCP server ${JSON.stringify(name)} from your approval card, so its tools are available to them now. Carry on with what they asked for, handing the work back to ${JSON.stringify(teammate)} if it was waiting on this. If nothing is left to do, confirm in one short sentence.`;
+}
+
 /** Approving a card in a chat is the user's turn: queue a hidden-prompt run (like
     a call's hang-up) so the bot carries on with the server's tools instead of
     waiting for another message. Skipped while the bot is busy in that chat, no
@@ -282,7 +321,7 @@ export async function queueMcpConnectedRun(
   actor: Actor,
   input: { botId: string; serverId: string; threadId: string },
 ): Promise<string | null> {
-  const thread = await tx.thread.findFirst({
+  const ownThread = await tx.thread.findFirst({
     where: {
       id: input.threadId,
       spaceId: actor.spaceId,
@@ -294,16 +333,40 @@ export async function queueMcpConnectedRun(
     },
     select: { id: true },
   });
-  if (!thread) return null;
-  const [bot, busy, server] = await Promise.all([
+  // Otherwise the card may be one an agent showed in its own chat for this teammate, and it is
+  // that agent, which asked and is waiting, that carries on.
+  const askedFor = ownThread
+    ? undefined
+    : await tx.thread.findFirst({
+        where: {
+          id: input.threadId,
+          spaceId: actor.spaceId,
+          userId: actor.userId,
+          botId: { not: null },
+          messages: {
+            some: {
+              blocks: {
+                array_contains: [
+                  { kind: "mcp_approval", serverId: input.serverId, forBotId: input.botId },
+                ],
+              },
+            },
+          },
+        },
+        select: { id: true, botId: true },
+      });
+  const thread = ownThread ?? askedFor;
+  const wakeBotId = askedFor ? askedFor.botId : input.botId;
+  if (!thread || !wakeBotId) return null;
+  const [bot, busy, server, teammate] = await Promise.all([
     tx.bot.findFirst({
-      where: { id: input.botId, spaceId: actor.spaceId, userId: actor.userId, archivedAt: null },
+      where: { id: wakeBotId, spaceId: actor.spaceId, userId: actor.userId, archivedAt: null },
       select: { id: true },
     }),
     tx.run.findFirst({
       where: {
         threadId: thread.id,
-        botId: input.botId,
+        botId: wakeBotId,
         status: { in: [...QUEUE_HOLDING_RUN_STATUSES] },
       },
       select: { id: true },
@@ -312,22 +375,30 @@ export async function queueMcpConnectedRun(
       where: { id: input.serverId, spaceId: actor.spaceId, userId: actor.userId },
       select: { name: true },
     }),
+    askedFor
+      ? tx.bot.findFirst({
+          where: { id: input.botId, spaceId: actor.spaceId, userId: actor.userId },
+          select: { name: true },
+        })
+      : undefined,
   ]);
-  if (!bot || busy || !server) return null;
+  if (!bot || busy || !server || (askedFor && !teammate)) return null;
   const task = await tx.task.create({
     data: {
       spaceId: actor.spaceId,
-      botId: input.botId,
+      botId: wakeBotId,
       threadId: thread.id,
       userId: actor.userId,
-      prompt: mcpConnectedPrompt(server.name),
+      prompt: teammate
+        ? mcpConnectedForPrompt(server.name, teammate.name)
+        : mcpConnectedPrompt(server.name),
       status: "queued",
     },
   });
   const run = await tx.run.create({
     data: {
       spaceId: actor.spaceId,
-      botId: input.botId,
+      botId: wakeBotId,
       threadId: thread.id,
       taskId: task.id,
       userId: actor.userId,

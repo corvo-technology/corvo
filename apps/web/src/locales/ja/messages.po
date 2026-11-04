@@ -474,6 +474,10 @@ msgstr "サブスクリプションの認証情報は安全に保存されてい
 msgid "About {label}"
 msgstr "{label}について"
 
+#: src/pages/shell/message-cards.tsx
+msgid "Access for {forBotName}"
+msgstr "{forBotName}のアクセス"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Access token (optional)"
 msgstr "アクセストークン（任意）"

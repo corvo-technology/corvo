@@ -468,10 +468,18 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "connect_app",
     description:
-      "Show an inline card to connect an app in this chat when you need an unconnected app or the user asks to connect one. This includes an app already added to the workspace that you cannot use yet, such as PostHog or Trello: call it with the app name instead of saying it is unavailable. Then wait for the user instead of directing them elsewhere.",
+      "Show an inline card to connect an app in this chat when you need an unconnected app or the user asks to connect one. This includes an app already added to the workspace that you cannot use yet, such as PostHog or Trello: call it with the app name instead of saying it is unavailable. When a teammate you delegated to says it cannot use an app, call it with that app and the teammate's name in agent, so the user can approve giving it to them here: never tell the user to do it themselves. Then wait for the user instead of directing them elsewhere.",
     inputSchema: {
       type: "object",
-      properties: { app: { type: "string", minLength: 1, maxLength: 100 } },
+      properties: {
+        app: { type: "string", minLength: 1, maxLength: 100 },
+        agent: {
+          type: "string",
+          minLength: 1,
+          maxLength: 100,
+          description: "A teammate to give the app to instead of yourself, by name.",
+        },
+      },
       required: ["app"],
       additionalProperties: false,
     },

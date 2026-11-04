@@ -23,6 +23,36 @@ type Target = { id: string; spaceId: string; userId: string; threadId: string; b
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
+const MAX_LISTED_AGENTS = 20;
+
+/**
+ * The teammate a card is for: one of the owner's agents that is not archived, by id or by name
+ * (exact first, then a name that contains it when only one does). An error names the choices.
+ */
+async function resolveTeammate(deps: ExecutorDeps, run: Target, agent: string) {
+  const agents = await deps.prisma.bot.findMany({
+    where: { spaceId: run.spaceId, userId: run.userId, archivedAt: null },
+    select: { id: true, name: true },
+  });
+  const wanted = normalize(agent);
+  const exact = agents.filter(
+    (item) => item.id === agent.trim() || normalize(item.name) === wanted,
+  );
+  const found =
+    exact.length > 0 ? exact : agents.filter((item) => normalize(item.name).includes(wanted));
+  if (found.length === 1 && found[0]) return found[0];
+  const names = agents
+    .slice(0, MAX_LISTED_AGENTS)
+    .map((item) => item.name)
+    .join(", ");
+  return {
+    error:
+      found.length > 1
+        ? `More than one agent matches "${agent.trim()}": ${found.map((item) => item.name).join(", ")}. Ask for one by its full name.`
+        : `No agent is named "${agent.trim()}". Agents you can ask for: ${names}.`,
+  };
+}
+
 /**
  * connect_app for an app the owner already added to the workspace, or that the app catalog has.
  * An added server this agent cannot use yet gets the approval card that assigns it. A catalog app
@@ -30,7 +60,17 @@ const normalize = (value: string) => value.trim().toLowerCase();
  * key or the desktop app is named, with where the user adds it. Undefined when the name matches
  * neither, so the connector catalog is searched as before.
  */
-export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app: string) {
+export async function requestSpaceAppAccess(
+  deps: ExecutorDeps,
+  run: Target,
+  app: string,
+  agent?: string,
+) {
+  // The card goes in the asking agent's own chat, where the user is; it is for the teammate named.
+  const teammate = agent?.trim() ? await resolveTeammate(deps, run, agent) : undefined;
+  if (teammate && "error" in teammate) return teammate;
+  const forBot = teammate && teammate.id !== run.botId ? teammate : undefined;
+  const subjectBotId = forBot?.id ?? run.botId;
   const wanted = normalize(app);
   const servers = await deps.prisma.mcpServer.findMany({
     where: { spaceId: run.spaceId, userId: run.userId, enabled: true },
@@ -41,7 +81,7 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
       transport: true,
       endpoint: true,
       secretId: true,
-      assignments: { where: { botId: run.botId }, select: { id: true } },
+      assignments: { where: { botId: subjectBotId }, select: { id: true } },
     },
   });
   let server =
@@ -93,7 +133,9 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
   if (server.assignments.length > 0) {
     return {
       status: "connected",
-      message: `${server.name} is already assigned to you, so its tools are available. If they are missing, the server is unavailable: say so rather than that it is missing.`,
+      message: forBot
+        ? `${server.name} is already assigned to ${forBot.name}, so its tools are available to them. If they report them missing, the server is unavailable: say so rather than that access is missing.`
+        : `${server.name} is already assigned to you, so its tools are available. If they are missing, the server is unavailable: say so rather than that it is missing.`,
     };
   }
   const slug = normalize(server.slug);
@@ -109,6 +151,7 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
     needsOAuth: !needsKey && server.transport !== "stdio" && !server.secretId,
     ...(needsKey ? { needsKey } : {}),
     status: "pending",
+    ...(forBot ? { forBotId: forBot.id, forBotName: forBot.name } : {}),
   };
   const committed = await deps.prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT id FROM threads WHERE id = ${run.threadId} FOR UPDATE`;
@@ -123,7 +166,8 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
         (candidate) =>
           candidate.kind === "mcp_approval" &&
           candidate.serverId === server.id &&
-          candidate.status === "pending",
+          candidate.status === "pending" &&
+          candidate.forBotId === forBot?.id,
       ),
     );
     return shown ? null : persistMessageInTransaction(tx, run, "bot", [block]);
@@ -132,6 +176,14 @@ export async function requestSpaceAppAccess(deps: ExecutorDeps, run: Target, app
     await deps.events
       .notify(run.threadId, committed.eventSeq, committed.firstResponseRunId)
       .catch((error) => getLogger().error("MCP approval realtime notification", error));
+  }
+  if (forBot) {
+    return {
+      status: "pending",
+      message: needsKey
+        ? `${server.name} is added to the workspace but not assigned to ${forBot.name}, and it needs an API key. A card in this chat asks the user for the key and gives ${forBot.name} the server. End your turn with one short sentence asking them to paste it there; never ask for the key in chat. You will be told when it is connected.`
+        : `${server.name} is added to the workspace but not assigned to ${forBot.name}. A card in this chat asks the user to approve giving it to them. End your turn with one short sentence asking the user to approve it there; you will be told when it is connected, and then ${forBot.name} can use it.`,
+    };
   }
   return {
     status: "pending",
