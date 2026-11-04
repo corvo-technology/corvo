@@ -219,6 +219,17 @@ const visibleBlocks: Array<[MessageBlock, string]> = [
   [{ kind: "child_bot", botId: "child", name: "Helper", status: "created" }, "Helper"],
   [
     {
+      kind: "wiki_change",
+      changeId: "c1",
+      pages: [
+        { title: "Alpha Builders", op: "create" },
+        { title: "Plan", op: "replace" },
+      ],
+    },
+    "Alpha Builders, Plan",
+  ],
+  [
+    {
       kind: "cloud_agent",
       agentId: "agent",
       title: "Fix",
