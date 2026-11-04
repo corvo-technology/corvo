@@ -152,6 +152,14 @@ import {
 import { SearchQueryOutputSchema } from "./search.js";
 import { SecurityEventListInputSchema, SecurityEventSchema } from "./security-events.js";
 import { SettingsScopeSchema, SpaceSettingSchema, settingsScopeInput } from "./settings-scope.js";
+import {
+  WikiHitSchema,
+  WikiPageInfoSchema,
+  WikiPageSchema,
+  WikiRevisionSchema,
+  WikiTitleSchema,
+  WikiWriteInputSchema,
+} from "./wiki.js";
 
 const botId = z.object({ botId: Id });
 const groupId = z.object({ groupId: Id });
@@ -655,6 +663,27 @@ export const appContract = {
       .output(z.array(ComputerCommandSchema.extend({ createdAt: z.string() }))),
     screenUrl: oc.input(botId).output(z.object({ url: z.string().nullable() })),
     heartbeat: oc.input(botId).output(z.object({ ok: z.literal(true) })),
+  },
+  /** The space's shared wiki: linked Markdown pages that agents read and cite. */
+  wiki: {
+    index: oc.output(z.array(WikiPageInfoSchema)),
+    search: oc
+      .input(
+        z.object({
+          query: z.string().trim().min(1).max(200),
+          limit: z.number().int().min(1).max(20).optional(),
+        }),
+      )
+      .output(z.array(WikiHitSchema)),
+    read: oc.input(z.object({ title: WikiTitleSchema })).output(WikiPageSchema),
+    write: oc.input(WikiWriteInputSchema).output(WikiPageSchema),
+    history: oc.input(z.object({ title: WikiTitleSchema })).output(z.array(WikiRevisionSchema)),
+    restore: oc
+      .input(z.object({ title: WikiTitleSchema, revision: z.number().int().positive() }))
+      .output(WikiPageSchema),
+    remove: oc
+      .input(z.object({ title: WikiTitleSchema }))
+      .output(z.object({ ok: z.literal(true) })),
   },
   memory: {
     list: oc
