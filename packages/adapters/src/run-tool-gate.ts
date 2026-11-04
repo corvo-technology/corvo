@@ -57,6 +57,7 @@ import {
 import { completeEffect, recordEffect, uncertainEffectError } from "./run-effects.js";
 import { renewRunLease } from "./run-lifecycle.js";
 import { notifyRun } from "./run-notifications.js";
+import { noteApprovalInParentChat } from "./run-parent-notice.js";
 import { resolveCompletedSecretLeftover } from "./run-secret.js";
 import type { ToolRequest } from "./run-tool-request.js";
 import { BUILTIN_AGENT_TOOL_NAMES, READ_ONLY_AGENT_TOOLS } from "./run-tool-selection.js";
@@ -614,6 +615,7 @@ async function showApprovalCard(
     botId: bot.id,
     threadId: thread.id,
   });
+  await noteApprovalInParentChat(deps, { bot, effectId: applied!.effect.id });
   return pauseForApproval(ctx);
 }
 
