@@ -33,7 +33,10 @@ it("groups the pages by kind, kinds and titles in order", () => {
 it("draws a link to a page that exists and leaves the label of one that does not", () => {
   const known = [info("Ana Souza", "Person"), info("Alpha (Beta)", "Client")];
   expect(
-    wikiDisplayBody("---\ntype: Project\n---\nOwner: [[ana souza]]. See [[Alpha (Beta)]], [[Budget]].", known),
+    wikiDisplayBody(
+      "---\ntype: Project\n---\nOwner: [[ana souza]]. See [[Alpha (Beta)]], [[Budget]].",
+      known,
+    ),
   ).toBe(
     "Owner: [ana souza](corvo-mention:ana%20souza). See [Alpha (Beta)](corvo-mention:Alpha%20%28Beta%29), Budget.",
   );
