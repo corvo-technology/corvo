@@ -15,8 +15,12 @@ describe("railSection", () => {
     expect(railSection("/app", "?settings=usage")).toBe("usage");
   });
 
-  it("leaves the rail unmarked on screens reached from the account menu", () => {
-    expect(railSection("/app/board", "")).toBeNull();
+  it("marks the board in the rail", () => {
+    expect(railSection("/app/board", "")).toBe("board");
+    expect(railSection("/app/board", "?ticket=RAK-4")).toBe("board");
+  });
+
+  it("leaves the rail unmarked on custom links reached from the account menu", () => {
     expect(railSection("/app/x/link-1", "")).toBeNull();
   });
 });
