@@ -216,6 +216,13 @@ jobs:
           set -euo pipefail
           app="apps/desktop/out/mac-universal/Corvo.app"
           codesign --verify --deep --strict --verbose=2 "$app"
+          # Electron finds its helper apps by the bundle's name, and an app whose name has none
+          # aborts as soon as it is opened, so a build is refused unless they match.
+          name="$(/usr/libexec/PlistBuddy -c "Print :CFBundleName" "$app/Contents/Info.plist")"
+          if [ ! -d "$app/Contents/Frameworks/$name Helper.app" ]; then
+            echo "::error::the app is named '$name' but has no '$name Helper.app'; it would not open"
+            exit 1
+          fi
           # Without this entitlement the hardened runtime silences the microphone.
           # Check the app and every helper it signs, and require the value to be true.
           entitlements="$(mktemp)"
