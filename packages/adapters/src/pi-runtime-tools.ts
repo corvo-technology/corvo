@@ -16,10 +16,13 @@ import { isToolPauseResult } from "./approval-effect.js";
 import { connectionIdArgument, credentialArgument } from "./bot-secrets.js";
 import { FIND_TOOL, findTools, partitionTools, USE_TOOL } from "./builtin-tool-bridge.js";
 import { shortenToolResultText } from "./context-selection.js";
+import { IMAGE_RETURNING_COMPUTER_TOOLS, MODEL_CANNOT_SEE_MESSAGE } from "./model-vision.js";
 import type { PiAgentRuntimeOptions } from "./pi-runtime.js";
 import { sanitizeSensitiveText } from "./pi-runtime-errors.js";
+import { modelCannotSeeImages } from "./pi-runtime-fallback.js";
 import { clipToolResultContent, clipToolResultText } from "./pi-runtime-limits.js";
 import type { RuntimeModelTarget } from "./pi-runtime-models.js";
+import { sameModelTarget } from "./pi-runtime-models.js";
 import { executeSubagent } from "./pi-runtime-subagent.js";
 import { parametersFor, prepareFleetArguments } from "./pi-runtime-tool-parameters.js";
 import { recordPiTelemetryContent, withPiTelemetrySpan } from "./pi-telemetry.js";
@@ -511,6 +514,30 @@ function toAgentTool(
                 return {
                   content: [{ type: "text", text: result }],
                   details: { result },
+                };
+              }
+              // The model answering now may be a backup that cannot see, which is never offered
+              // these tools; one that calls them anyway gets the same answer a bot without sight does.
+              // The main model is left to the executor, which already decides for it.
+              if (
+                IMAGE_RETURNING_COMPUTER_TOOLS.has(tool.name) &&
+                !sameModelTarget(host.activeModel.config, host.request.model) &&
+                modelCannotSeeImages(host.activeModel)
+              ) {
+                const refused = { error: MODEL_CANNOT_SEE_MESSAGE };
+                return {
+                  content: [
+                    {
+                      type: "text",
+                      text: serializeToolResult(
+                        refused,
+                        host.request.contextStrategy,
+                        tool.name,
+                        args,
+                      ),
+                    },
+                  ],
+                  details: refused,
                 };
               }
               if (host.request.executeTool) {
