@@ -166,6 +166,7 @@ msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 行} other {# 行}}"
 
 #: src/pages/shell/channel-header.tsx
+#: src/pages/TeamBoard.tsx
 msgid "{count} agents"
 msgstr "{count} 件のエージェント"
 
@@ -429,7 +430,7 @@ msgstr "平均 {value} 分"
 msgid "{value} s avg"
 msgstr "平均 {value} 秒"
 
-#: src/pages/TeamPage.tsx
+#: src/pages/TeamBoard.tsx
 msgid "{working} working"
 msgstr "{working} 件作業中"
 
@@ -4327,7 +4328,7 @@ msgstr "未確認"
 msgid "Not imported"
 msgstr "インポートされていません"
 
-#: src/pages/TeamPage.tsx
+#: src/pages/TeamBoard.tsx
 msgid "Not in a team"
 msgstr "チーム未所属"
 

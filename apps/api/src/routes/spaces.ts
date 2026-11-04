@@ -317,6 +317,7 @@ async function memberSpaceNavigation(
           id: group.id,
           spaceId: group.spaceId,
           name: group.name,
+          purpose: group.purpose,
           pinned: group.pinned,
           sectionId: group.sectionId,
           members: group.members,

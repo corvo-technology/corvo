@@ -166,6 +166,7 @@ msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# Zeile} other {# Zeilen}}"
 
 #: src/pages/shell/channel-header.tsx
+#: src/pages/TeamBoard.tsx
 msgid "{count} agents"
 msgstr "{count} Agenten"
 
@@ -429,7 +430,7 @@ msgstr "Ø {value} Min."
 msgid "{value} s avg"
 msgstr "Ø {value} Sek."
 
-#: src/pages/TeamPage.tsx
+#: src/pages/TeamBoard.tsx
 msgid "{working} working"
 msgstr "{working} arbeiten"
 
@@ -4327,7 +4328,7 @@ msgstr "Noch nicht geprüft"
 msgid "Not imported"
 msgstr "Nicht importiert"
 
-#: src/pages/TeamPage.tsx
+#: src/pages/TeamBoard.tsx
 msgid "Not in a team"
 msgstr "Ohne Team"
 

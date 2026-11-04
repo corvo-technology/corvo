@@ -278,6 +278,7 @@ export const SpaceGroupSchema = GroupSchema.pick({
   id: true,
   spaceId: true,
   name: true,
+  purpose: true,
   pinned: true,
   sectionId: true,
   members: true,
