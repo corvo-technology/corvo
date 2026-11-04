@@ -492,3 +492,57 @@ describe("the database programs on each system", () => {
     expect(initdb?.env.SECRET_TOKEN).toBeUndefined();
   });
 });
+
+describe("the network the engine's programs use", () => {
+  const programs = ["api.mjs", "worker.mjs"] as const;
+  const start = async (env: Record<string, string>, platform: NodeJS.Platform = "win32") => {
+    const engine = new EmbeddedEngineController({ ...deps(), platform, env });
+    await engine.start();
+    return (name: (typeof programs)[number]) => children.find((child) => base(child) === name)!.env;
+  };
+
+  it("trusts the certificates of the computer, so a security program that inspects HTTPS does not break every model request", async () => {
+    const envOf = await start({ SystemRoot: "C:\\Windows", PATH: "C:\\x" });
+    for (const name of programs) expect(envOf(name).NODE_USE_SYSTEM_CA).toBe("1");
+  });
+
+  it("changes nothing about proxies while none is set", async () => {
+    const envOf = await start({ SystemRoot: "C:\\Windows", PATH: "C:\\x" });
+    for (const name of programs) {
+      expect(envOf(name).NODE_USE_ENV_PROXY).toBeUndefined();
+      expect(envOf(name).NO_PROXY).toBeUndefined();
+    }
+  });
+
+  it("sends requests through the proxy the person has set, and keeps this computer's own calls off it", async () => {
+    const envOf = await start({
+      SystemRoot: "C:\\Windows",
+      PATH: "C:\\x",
+      HTTPS_PROXY: "http://proxy.corp:8080",
+      NO_PROXY: "intranet.corp",
+    });
+    for (const name of programs) {
+      const env = envOf(name);
+      expect(env.NODE_USE_ENV_PROXY).toBe("1");
+      expect(env.HTTPS_PROXY).toBe("http://proxy.corp:8080");
+      const bypass = (env.NO_PROXY ?? "").split(",");
+      expect(bypass).toEqual(
+        expect.arrayContaining(["intranet.corp", "127.0.0.1", "localhost", "::1", "[::1]"]),
+      );
+      expect(env.no_proxy).toBe(env.NO_PROXY);
+    }
+  });
+
+  it("reads a lower-case proxy variable too, as Windows tools and shells often set it", async () => {
+    const envOf = await start({ SystemRoot: "C:\\Windows", https_proxy: "http://proxy.corp:8080" });
+    expect(envOf("worker.mjs").NODE_USE_ENV_PROXY).toBe("1");
+    expect(envOf("worker.mjs").NO_PROXY).toContain("127.0.0.1");
+  });
+
+  it("does not hand these settings to the database", async () => {
+    await start({ SystemRoot: "C:\\Windows", HTTPS_PROXY: "http://proxy.corp:8080" });
+    const postgres = children.find((child) => path.basename(child.command).startsWith("postgres"));
+    expect(postgres?.env.NODE_USE_SYSTEM_CA).toBeUndefined();
+    expect(postgres?.env.NODE_USE_ENV_PROXY).toBeUndefined();
+  });
+});
