@@ -11,6 +11,7 @@ describe("railSection", () => {
     expect(railSection("/app/workflows", "")).toBe("workflows");
     expect(railSection("/app/artifacts/artifact-1", "")).toBe("artifacts");
     expect(railSection("/app/usage", "")).toBe("usage");
+    expect(railSection("/app/wiki", "?page=Plan")).toBe("wiki");
     expect(railSection("/app", "?settings=usage")).toBe("usage");
   });
 

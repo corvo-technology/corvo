@@ -1062,6 +1062,7 @@ msgstr "头像工作室"
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/SquadPage.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Back"
 msgstr "返回"
 
@@ -1262,6 +1263,7 @@ msgstr "无法读取图像"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "取消"
 
@@ -1438,6 +1440,10 @@ msgstr "选择如何使用 Rook"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Choose where bots run"
 msgstr "选择机器人的运行位置"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Cited by"
+msgstr "被引用于"
 
 #: src/lib/localized-provider-hint.ts
 msgid "Claude subscription"
@@ -2176,6 +2182,7 @@ msgstr "无法读取这些文件"
 
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Could not remove"
 msgstr "无法移除"
 
@@ -2232,6 +2239,7 @@ msgstr "无法运行例行任务"
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/chat-model-switcher.tsx
 #: src/pages/shell/use-space-roster.ts
+#: src/pages/WikiBrowser.tsx
 #: src/pages/Workflows.tsx
 msgid "Could not save"
 msgstr "无法保存"
@@ -2563,6 +2571,7 @@ msgstr "正在委派给助手：{value}"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Delete"
 msgstr "删除"
 
@@ -2819,6 +2828,7 @@ msgstr "每个名称只能使用一次。"
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Edit"
 msgstr "编辑"
 
@@ -3275,6 +3285,10 @@ msgstr "高"
 #: src/lib/model-catalog.ts
 msgid "High"
 msgstr "高"
+
+#: src/pages/WikiBrowser.tsx
+msgid "History"
+msgstr "历史记录"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Hold to talk"
@@ -4149,6 +4163,10 @@ msgstr "新消息"
 msgid "New open-work item"
 msgstr "新的待办"
 
+#: src/pages/WikiBrowser.tsx
+msgid "New page"
+msgstr "新建页面"
+
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4265,6 +4283,10 @@ msgstr "未列出模型。"
 #: src/pages/shell/agent-import.tsx
 msgid "No OpenClaw, Hermes or agent document found."
 msgstr "未找到 OpenClaw、Hermes 或 Agent 文档。"
+
+#: src/pages/WikiBrowser.tsx
+msgid "No pages yet"
+msgstr "还没有页面"
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
@@ -4573,6 +4595,14 @@ msgstr "所有者"
 #: src/components/markdown-copy.tsx
 msgid "Page {page} of {count}"
 msgstr "第 {page} 页，共 {count} 页"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page options"
+msgstr "页面选项"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page text"
+msgstr "页面正文"
 
 #: src/pages/RoutineEditor.tsx
 msgid "PagerDuty incident"
@@ -4953,6 +4983,7 @@ msgid "Release control"
 msgstr "交还控制权"
 
 #: src/components/InstructionSettings.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Reload"
 msgstr "重新加载"
 
@@ -5148,6 +5179,7 @@ msgstr "正在重启…"
 
 #: src/components/InstructionSettings.tsx
 #: src/pages/shell/archived-chats.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Restore"
 msgstr "恢复"
 
@@ -5205,6 +5237,11 @@ msgstr "执行前请确认：{reviewing}"
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
 msgstr "请检查提供方设置并重新测试。"
+
+#. placeholder {0}: revision.revision
+#: src/pages/WikiBrowser.tsx
+msgid "Revision {0}"
+msgstr "修订 {0}"
 
 #: src/pages/Onboarding.tsx
 msgid "Rook credits"
@@ -5322,6 +5359,7 @@ msgstr "周六"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Save"
 msgstr "保存"
 
@@ -5405,6 +5443,7 @@ msgstr "屏幕未连接"
 #: src/pages/shell/command-palette.tsx
 #: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/sidebar-header.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Search"
 msgstr "搜索"
 
@@ -6166,6 +6205,10 @@ msgstr "此模型的上下文窗口太小。请选择其他模型。"
 msgid "This month"
 msgstr "本月"
 
+#: src/pages/WikiBrowser.tsx
+msgid "This page changed. Reload to see the latest."
+msgstr "此页面已更改。请重新加载以查看最新版本。"
+
 #: src/components/AccountAccess.tsx
 msgid "This permanently deletes your account and data."
 msgstr "此操作将永久删除您的账户和数据。"
@@ -6228,6 +6271,7 @@ msgstr "运行时间可能不同"
 
 #: src/pages/Board.tsx
 #: src/pages/shell/bot-panel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Title"
 msgstr "标题"
 
@@ -6733,6 +6777,11 @@ msgstr "Bot 应在哪里运行？"
 #: src/pages/shell/agent-import.tsx
 msgid "Where to import"
 msgstr "导入到哪里"
+
+#: src/components/AppRail.tsx
+#: src/pages/WikiPage.tsx
+msgid "Wiki"
+msgstr "Wiki"
 
 #: src/lib/ticket-status.ts
 msgid "Won't do"

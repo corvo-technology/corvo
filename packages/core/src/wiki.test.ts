@@ -103,6 +103,12 @@ describe("linkWikiTitles", () => {
     );
   });
 
+  it("lets the caller choose what a link points to", () => {
+    expect(
+      linkWikiTitles("See [[Alpha (Beta)]].", known, (title) => `app:${encodeURIComponent(title)}`),
+    ).toBe("See [Alpha (Beta)](app:Alpha%20(Beta)).");
+  });
+
   it("leaves code alone", () => {
     expect(linkWikiTitles("`[[Alpha]]` and ```\n[[Alpha]]\n```", known)).toBe(
       "`[[Alpha]]` and ```\n[[Alpha]]\n```",

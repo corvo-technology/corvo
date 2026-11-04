@@ -106,11 +106,18 @@ export function withWikiFront(
   return rows.length ? `---\n${rows.join("\n")}\n---\n${body}` : body;
 }
 
+const defaultWikiHref = (title: string) =>
+  `rook-wiki:${encodeURIComponent(title).replace(/\(/g, "%28").replace(/\)/g, "%29")}`;
+
 /**
  * Links a body for display: a title that exists becomes a Markdown link to `rook-wiki:Title`, one
  * that does not stays as its label. Code is left alone.
  */
-export function linkWikiTitles(body: string, resolve: (title: string) => boolean): string {
+export function linkWikiTitles(
+  body: string,
+  resolve: (title: string) => boolean,
+  href: (title: string) => string = defaultWikiHref,
+): string {
   const parts = body.split(new RegExp(`(${CODE.source})`, "g"));
   return parts
     .map((part, index) => {
@@ -120,8 +127,7 @@ export function linkWikiTitles(body: string, resolve: (title: string) => boolean
         const title = wikiTitle(target!);
         const text = (label ?? title).trim();
         if (!resolve(title)) return text;
-        const url = encodeURIComponent(title).replace(/\(/g, "%28").replace(/\)/g, "%29");
-        return `[${text}](rook-wiki:${url})`;
+        return `[${text}](${href(title)})`;
       });
     })
     .join("");

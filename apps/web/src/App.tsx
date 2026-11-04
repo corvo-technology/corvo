@@ -55,12 +55,14 @@ const loadArtifacts = () => import("./pages/Artifacts").then((module) => module.
 const loadUsage = () => import("./pages/Usage").then((module) => module.UsagePage);
 const loadWorkflows = () => import("./pages/Workflows").then((module) => module.WorkflowsPage);
 const loadRoutines = () => import("./pages/Routines").then((module) => module.RoutinesPage);
+const loadWiki = () => import("./pages/WikiPage").then((module) => module.WikiPage);
 const ArtifactsPage = lazyComponent(loadArtifacts);
 const UsagePage = lazyComponent(loadUsage);
 const WorkflowsPage = lazyComponent(loadWorkflows);
 const RoutinesPage = lazyComponent(loadRoutines);
+const WikiPage = lazyComponent(loadWiki);
 /** The areas the bar moves between; fetched once the app is idle so moving to one never waits. */
-const AREA_LOADERS = [loadUsage, loadWorkflows, loadRoutines, loadArtifacts];
+const AREA_LOADERS = [loadUsage, loadWorkflows, loadRoutines, loadArtifacts, loadWiki];
 const TeamPage = lazyComponent(() => import("./pages/TeamPage").then((module) => module.TeamPage));
 const SquadPage = lazyComponent(() =>
   import("./pages/SquadPage").then((module) => module.SquadPage),
@@ -229,6 +231,7 @@ function SessionApp() {
                 <Route path="/app/routines" element={<RoutinesPage />} />
                 <Route path="/app/artifacts" element={<ArtifactsPage />} />
                 <Route path="/app/artifacts/:artifactId" element={<ArtifactsPage />} />
+                <Route path="/app/wiki" element={<WikiPage />} />
                 {ticketBoardEnabled ? <Route path="/app/board" element={<BoardPage />} /> : null}
                 <Route path="/app/x/:linkId" element={<NavLinkPage />} />
                 <Route path="/app/:botId" element={<ShellPage />} />
