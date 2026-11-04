@@ -1,8 +1,9 @@
-import type { TicketStatus } from "@corvo/contracts";
+import type { TicketField, TicketStatus } from "@corvo/contracts";
 import {
   CommentTicketInput,
   CreateTicketInput,
   isTicketCompletedStatus,
+  mergeTicketFields,
   TicketStatusSchema,
   UpdateTicketInput,
 } from "@corvo/contracts";
@@ -12,6 +13,7 @@ import {
   ensureBoard,
   findTicket,
   listTicketComments,
+  readTicketFields,
   toBoardDto,
   toTicketCommentDto,
   toTicketDto,
@@ -33,6 +35,17 @@ function ticketInputError(error: { issues: Array<{ path: PropertyKey[]; message:
     })
     .join("; ");
 }
+
+function mergeFieldsOrThrow(current: TicketField[], patch: Record<string, string>) {
+  try {
+    return mergeTicketFields(current, patch);
+  } catch (cause) {
+    throw new FieldLimitError(cause instanceof Error ? cause.message : "Too many fields.");
+  }
+}
+
+/** A field change that would leave the ticket with more fields than it may hold. */
+class FieldLimitError extends Error {}
 
 const STATUS_ERROR = `status must be one of ${TicketStatusSchema.options.join(", ")}.`;
 function coerceInputStatus(value: string) {
@@ -223,6 +236,7 @@ export async function updateTicket(
     priority?: string | null;
     status?: string;
     ownerBotId?: string;
+    fields?: Record<string, string>;
   },
 ) {
   if (!deps.ticketBoardEnabled) return { error: "Board unavailable." };
@@ -232,34 +246,43 @@ export async function updateTicket(
   if (data.assigneeBotId && !(await ownBotInSpace(deps, input, data.assigneeBotId)))
     return { error: "Unknown bot." };
   const board = await ensureBoard(deps.prisma, input.spaceId);
-  const result = await deps.prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM tickets WHERE id = ${data.id} AND "spaceId" = ${input.spaceId} FOR UPDATE`;
-    const current = await tx.ticket.findFirst({
-      where: { id: data.id, spaceId: input.spaceId, boardId: board.id },
-    });
-    if (!current) return null;
-    const row = await tx.ticket.update({
-      where: { id: current.id },
-      data: {
-        ...(data.title !== undefined ? { title: data.title } : {}),
-        ...(data.description !== undefined ? { description: data.description } : {}),
-        ...(data.priority !== undefined ? { priority: data.priority ?? "normal" } : {}),
-        ...(data.assigneeBotId !== undefined ? { assigneeBotId: data.assigneeBotId } : {}),
-        ...(data.status !== undefined
-          ? {
-              status: data.status,
-              completedAt: isTicketCompletedStatus(data.status)
-                ? (current.completedAt ?? new Date())
-                : null,
-            }
-          : {}),
-      },
-    });
-    return {
-      row,
-      reassigned: data.assigneeBotId !== undefined && data.assigneeBotId !== current.assigneeBotId,
-    };
-  });
+  const result = await deps.prisma
+    .$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM tickets WHERE id = ${data.id} AND "spaceId" = ${input.spaceId} FOR UPDATE`;
+      const current = await tx.ticket.findFirst({
+        where: { id: data.id, spaceId: input.spaceId, boardId: board.id },
+      });
+      if (!current) return null;
+      const fields =
+        data.fields !== undefined
+          ? mergeFieldsOrThrow(readTicketFields(current.fields), data.fields)
+          : undefined;
+      const row = await tx.ticket.update({
+        where: { id: current.id },
+        data: {
+          ...(fields !== undefined ? { fields } : {}),
+          ...(data.title !== undefined ? { title: data.title } : {}),
+          ...(data.description !== undefined ? { description: data.description } : {}),
+          ...(data.priority !== undefined ? { priority: data.priority ?? "normal" } : {}),
+          ...(data.assigneeBotId !== undefined ? { assigneeBotId: data.assigneeBotId } : {}),
+          ...(data.status !== undefined
+            ? {
+                status: data.status,
+                completedAt: isTicketCompletedStatus(data.status)
+                  ? (current.completedAt ?? new Date())
+                  : null,
+              }
+            : {}),
+        },
+      });
+      return {
+        row,
+        reassigned:
+          data.assigneeBotId !== undefined && data.assigneeBotId !== current.assigneeBotId,
+      };
+    })
+    .catch((cause: unknown) => (cause instanceof FieldLimitError ? cause : Promise.reject(cause)));
+  if (result instanceof FieldLimitError) return { error: result.message };
   if (!result) return { error: "Ticket not found." };
   await deps.onTicketChange?.({
     spaceId: input.spaceId,

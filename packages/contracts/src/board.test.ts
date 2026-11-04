@@ -4,6 +4,7 @@ import {
   CreateTicketInput,
   GetTicketInput,
   isTicketCompletedStatus,
+  mergeTicketFields,
   parseTicketRef,
   RenameBoardInput,
   TICKET_PRIORITIES,
@@ -132,5 +133,42 @@ describe("column labels", () => {
   it("lets a rename carry labels alone, and null removes one", () => {
     expect(RenameBoardInput.safeParse({ statusLabels: { doing: null } }).success).toBe(true);
     expect(RenameBoardInput.safeParse({}).success).toBe(false);
+  });
+});
+
+describe("mergeTicketFields", () => {
+  it("adds a field and replaces one by name, ignoring case and keeping the first spelling", () => {
+    const first = mergeTicketFields([], { Contact: "ana@example.com" });
+    expect(first).toEqual([{ name: "Contact", value: "ana@example.com" }]);
+    expect(mergeTicketFields(first, { contact: "bo@example.com", Source: "Fair" })).toEqual([
+      { name: "Contact", value: "bo@example.com" },
+      { name: "Source", value: "Fair" },
+    ]);
+  });
+
+  it("removes a field whose new value is empty", () => {
+    const current = [
+      { name: "Contact", value: "ana@example.com" },
+      { name: "Source", value: "Fair" },
+    ];
+    expect(mergeTicketFields(current, { contact: "" })).toEqual([
+      { name: "Source", value: "Fair" },
+    ]);
+  });
+
+  it("refuses to hold more than 20 fields", () => {
+    const full = Array.from({ length: 20 }, (_, index) => ({ name: `f${index}`, value: "x" }));
+    expect(() => mergeTicketFields(full, { extra: "x" })).toThrow(
+      "A ticket holds at most 20 fields.",
+    );
+    expect(mergeTicketFields(full, { f0: "y" })).toHaveLength(20);
+  });
+
+  it("is what the update input accepts", () => {
+    expect(UpdateTicketInput.safeParse({ id: "t1", fields: { Contact: "a" } }).success).toBe(true);
+    expect(UpdateTicketInput.safeParse({ id: "t1", fields: { "": "a" } }).success).toBe(false);
+    expect(UpdateTicketInput.safeParse({ id: "t1", fields: { a: "x".repeat(501) } }).success).toBe(
+      false,
+    );
   });
 });

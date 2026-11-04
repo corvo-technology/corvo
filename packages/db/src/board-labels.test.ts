@@ -36,3 +36,31 @@ describe("board column labels", () => {
     expect(toBoardDto({ ...row, statusLabels: { doing: 4, bogus: "x" } }).statusLabels).toEqual({});
   });
 });
+
+describe("ticket fields on a ticket", () => {
+  it("reads a stored column defensively, so a bad value never hides the ticket", async () => {
+    const { toTicketDto } = await import("./board.js");
+    const now = new Date();
+    const row = {
+      id: "t",
+      boardId: "b",
+      spaceId: "s",
+      number: 1,
+      title: "T",
+      description: null,
+      status: "todo",
+      priority: null,
+      assigneeBotId: null,
+      createdByBotId: null,
+      createdByUserId: null,
+      createdAt: now,
+      updatedAt: now,
+      completedAt: null,
+    };
+    expect(toTicketDto({ ...row, fields: null }, "RAK").fields).toEqual([]);
+    expect(
+      toTicketDto({ ...row, fields: [{ name: "Contact", value: "a" }] }, "RAK").fields,
+    ).toEqual([{ name: "Contact", value: "a" }]);
+    expect(toTicketDto({ ...row, fields: "oops" }, "RAK").fields).toEqual([]);
+  });
+});

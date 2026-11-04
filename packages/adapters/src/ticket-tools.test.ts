@@ -286,6 +286,39 @@ describe("ticket mutations", () => {
     expect(s.changes).not.toHaveBeenCalled();
   });
 
+  it("keeps named fields on a ticket, merging them under the row lock", async () => {
+    const s = mutationDeps();
+    const first = await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      fields: { Contact: "ana@example.com" },
+    });
+    expect(first).toHaveProperty("ticket.fields", [{ name: "Contact", value: "ana@example.com" }]);
+    const second = await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      fields: { contact: "", Source: "Fair" },
+    });
+    expect(second).toHaveProperty("ticket.fields", [{ name: "Source", value: "Fair" }]);
+    expect(s.tx.$queryRaw).toHaveBeenCalledTimes(2);
+  });
+
+  it("refuses a 21st field and writes nothing", async () => {
+    const s = mutationDeps();
+    const many = Object.fromEntries(Array.from({ length: 21 }, (_, index) => [`f${index}`, "x"]));
+    const result = await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      fields: many,
+    });
+    expect(result).toEqual({ error: "A ticket holds at most 20 fields." });
+    expect(s.tx.ticket.update).not.toHaveBeenCalled();
+    expect(s.changes).not.toHaveBeenCalled();
+  });
+
   it("uses public parameter names and keeps blank comments rejected", async () => {
     const s = mutationDeps();
     await expect(

@@ -91,6 +91,7 @@ function ticket(
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     completedAt: null,
+    fields: [],
   };
 }
 
@@ -532,4 +533,64 @@ it("shows the column names the board chose and saves a new one from the settings
   );
   expect(api.boards.rename).toHaveBeenCalledWith({ statusLabels: { doing: "In contact" } });
   await view.cleanup();
+});
+
+function typeInto(input: HTMLInputElement | null | undefined, value: string) {
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value);
+  input?.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+it("edits the named fields of a ticket and sends only what changed", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper")]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [
+      {
+        ...ticket("Lead", "ticket-1", "todo", "RAK-1", "bot-1"),
+        fields: [
+          { name: "Contact", value: "ana@example.com" },
+          { name: "Source", value: "Fair" },
+        ],
+      },
+    ],
+  });
+  api.tickets.comments.mockResolvedValue([]);
+  api.tickets.update.mockResolvedValue({});
+  const page = await renderBoard();
+  try {
+    await act(async () =>
+      page.container
+        .querySelector<HTMLButtonElement>('[data-testid="board-card-ticket-1"]')
+        ?.click(),
+    );
+    await settle();
+    const names = () => [
+      ...page.container.querySelectorAll<HTMLInputElement>('input[aria-label="Field name"]'),
+    ];
+    expect(names().map((input) => input.value)).toEqual(["Contact", "Source"]);
+    await act(async () =>
+      page.container
+        .querySelectorAll<HTMLButtonElement>('button[aria-label="Remove field"]')[1]
+        ?.click(),
+    );
+    await act(async () =>
+      [...page.container.querySelectorAll<HTMLButtonElement>("button")]
+        .find((button) => button.textContent === "Add field")
+        ?.click(),
+    );
+    await act(async () => {
+      typeInto(names()[1], "City");
+      typeInto(
+        page.container.querySelectorAll<HTMLInputElement>('input[aria-label="Field value"]')[1],
+        "Lisbon",
+      );
+    });
+    await act(async () => page.container.querySelector<HTMLFormElement>("form")?.requestSubmit());
+    expect(api.tickets.update).toHaveBeenCalledWith({
+      id: "ticket-1",
+      fields: { City: "Lisbon", Source: "" },
+    });
+  } finally {
+    await page.cleanup();
+  }
 });

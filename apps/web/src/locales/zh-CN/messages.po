@@ -627,6 +627,10 @@ msgstr "添加 Executor"
 msgid "Add fallback"
 msgstr "添加备用模型"
 
+#: src/pages/TicketFields.tsx
+msgid "Add field"
+msgstr "添加字段"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Add GraphQL"
 msgstr "添加 GraphQL"
@@ -3088,6 +3092,14 @@ msgstr "失败。"
 msgid "Failure handling"
 msgstr "失败处理"
 
+#: src/pages/TicketFields.tsx
+msgid "Field name"
+msgstr "字段名"
+
+#: src/pages/TicketFields.tsx
+msgid "Field value"
+msgstr "字段值"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Fields that mark a change"
 msgstr "标记变化的字段"
@@ -5055,6 +5067,10 @@ msgstr "移除 {secretName}？此机器人将无法再使用它。"
 #: src/pages/RoutineEditor.tsx
 msgid "Remove change trigger"
 msgstr "移除变化触发器"
+
+#: src/pages/TicketFields.tsx
+msgid "Remove field"
+msgstr "移除字段"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"

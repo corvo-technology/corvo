@@ -96,6 +96,45 @@ export const TicketCommentSchema = z.object({
 });
 export type TicketComment = z.infer<typeof TicketCommentSchema>;
 
+export const TICKET_FIELDS_MAX = 20;
+export const TICKET_FIELD_NAME_MAX_LENGTH = 60;
+export const TICKET_FIELD_VALUE_MAX_LENGTH = 500;
+const TicketFieldNameSchema = z.string().trim().min(1).max(TICKET_FIELD_NAME_MAX_LENGTH);
+const TicketFieldValueSchema = z.string().max(TICKET_FIELD_VALUE_MAX_LENGTH);
+export const TicketFieldSchema = z.object({
+  name: TicketFieldNameSchema,
+  value: TicketFieldValueSchema,
+});
+export type TicketField = z.infer<typeof TicketFieldSchema>;
+export const TicketFieldsSchema = z.array(TicketFieldSchema).max(TICKET_FIELDS_MAX);
+
+/**
+ * Apply a change to a ticket's fields: a name sets or replaces the field of that name (case does
+ * not matter, the first spelling stays), and an empty value removes it.
+ */
+export function mergeTicketFields(
+  current: readonly TicketField[],
+  patch: Record<string, string>,
+): TicketField[] {
+  const next = current.map((field) => ({ ...field }));
+  for (const [rawName, value] of Object.entries(patch)) {
+    const name = rawName.trim();
+    const at = next.findIndex((field) => field.name.toLowerCase() === name.toLowerCase());
+    if (value === "") {
+      if (at >= 0) next.splice(at, 1);
+    } else if (at >= 0) {
+      const existing = next[at];
+      if (existing) existing.value = value;
+    } else {
+      next.push({ name, value });
+    }
+  }
+  if (next.length > TICKET_FIELDS_MAX) {
+    throw new Error(`A ticket holds at most ${TICKET_FIELDS_MAX} fields.`);
+  }
+  return next;
+}
+
 export const TicketSchema = z.object({
   id: Id,
   boardId: Id,
@@ -112,6 +151,7 @@ export const TicketSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   completedAt: z.string().nullable(),
+  fields: TicketFieldsSchema.default([]),
 });
 export type Ticket = z.infer<typeof TicketSchema>;
 
@@ -152,6 +192,8 @@ export const UpdateTicketInput = z.object({
   priority: TicketPrioritySchema.nullable().optional(),
   status: TicketStatusSchema.optional(),
   assigneeBotId: Id.optional(),
+  /** Set a field by name; an empty value removes it. */
+  fields: z.record(TicketFieldNameSchema, TicketFieldValueSchema).optional(),
 });
 export type UpdateTicketInput = z.infer<typeof UpdateTicketInput>;
 

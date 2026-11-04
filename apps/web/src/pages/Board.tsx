@@ -1,5 +1,5 @@
 import { ChatMarkdown } from "@corvo/chat-ui/web";
-import type { Bot, Ticket, TicketPriority, TicketStatus } from "@corvo/contracts";
+import type { Bot, Ticket, TicketField, TicketPriority, TicketStatus } from "@corvo/contracts";
 import {
   TICKET_COMMENT_MAX_LENGTH,
   TICKET_DESCRIPTION_MAX_LENGTH,
@@ -29,10 +29,12 @@ import { Link } from "react-router-dom";
 import { useSpaceQueries } from "../lib/query";
 import { formatRelativeTime } from "../lib/relative-time";
 import { rpc } from "../lib/rpc";
+import { fieldChanges } from "../lib/ticket-fields";
 import { useTicketPriorityLabels } from "../lib/ticket-priority";
 import { useTicketStatusLabels } from "../lib/ticket-status";
 import { errorText } from "../lib/user-error";
 import { BoardSettings } from "./BoardSettings";
+import { TicketFields } from "./TicketFields";
 import { WindowChrome } from "./WindowChrome";
 
 export function BoardPage() {
@@ -218,6 +220,7 @@ function TicketDialog({
   const [owner, setOwner] = useState(ticket?.assigneeBotId ?? bots[0]?.id ?? "");
   const [status, setStatus] = useState<TicketStatus>(ticket?.status ?? "todo");
   const [priority, setPriority] = useState<TicketPriority>(ticket?.priority ?? "normal");
+  const [fields, setFields] = useState<TicketField[]>(ticket?.fields ?? []);
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
   const commentsOptions = queries.tickets.comments.queryOptions({
@@ -229,6 +232,8 @@ function TicketDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const shownError = error || (commentsQuery.error ? errorText(commentsQuery.error) : "");
+
+  const changedFields = ticket ? fieldChanges(ticket.fields, fields) : {};
 
   async function save() {
     setBusy(true);
@@ -244,6 +249,7 @@ function TicketDialog({
             : {}),
           ...(status !== ticket.status ? { status } : {}),
           ...(priority !== ticket.priority ? { priority } : {}),
+          ...(Object.keys(changedFields).length > 0 ? { fields: changedFields } : {}),
         });
       else
         await rpc.tickets.create({
@@ -379,6 +385,7 @@ function TicketDialog({
               ))}
             </NativeSelect>
           </label>
+          {ticket ? <TicketFields rows={fields} onChange={setFields} /> : null}
           <div className="flex justify-end">
             <Button type="submit" disabled={busy || !title.trim() || !owner}>
               {ticket ? t`Save` : t`Create`}

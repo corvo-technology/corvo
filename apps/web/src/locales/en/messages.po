@@ -627,6 +627,10 @@ msgstr "Add Executor"
 msgid "Add fallback"
 msgstr "Add fallback"
 
+#: src/pages/TicketFields.tsx
+msgid "Add field"
+msgstr "Add field"
+
 #: src/pages/PluginsOverlay.tsx
 msgid "Add GraphQL"
 msgstr "Add GraphQL"
@@ -3088,6 +3092,14 @@ msgstr "Failed."
 msgid "Failure handling"
 msgstr "Failure handling"
 
+#: src/pages/TicketFields.tsx
+msgid "Field name"
+msgstr "Field name"
+
+#: src/pages/TicketFields.tsx
+msgid "Field value"
+msgstr "Field value"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Fields that mark a change"
 msgstr "Fields that mark a change"
@@ -5055,6 +5067,10 @@ msgstr "Remove {secretName}? This bot will no longer be able to use it."
 #: src/pages/RoutineEditor.tsx
 msgid "Remove change trigger"
 msgstr "Remove change trigger"
+
+#: src/pages/TicketFields.tsx
+msgid "Remove field"
+msgstr "Remove field"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"

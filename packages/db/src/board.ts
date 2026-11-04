@@ -3,12 +3,14 @@ import type {
   BoardStatusLabels,
   Ticket,
   TicketComment,
+  TicketField,
   TicketPriority,
   TicketStatus,
 } from "@corvo/contracts";
 import {
   BoardStatusLabelsSchema,
   parseTicketRef,
+  TicketFieldsSchema,
   TicketPrioritySchema,
   TicketStatusSchema,
   ticketRef,
@@ -122,8 +124,15 @@ function coerceTicketPriority(value: string | null | undefined): TicketPriority 
   return parsed.success ? parsed.data : "normal";
 }
 
+/** A stored column that does not parse is ignored, so a bad value never hides the ticket. */
+export function readTicketFields(value: unknown): TicketField[] {
+  const parsed = TicketFieldsSchema.safeParse(value ?? []);
+  return parsed.success ? parsed.data : [];
+}
+
 export function toTicketDto(row: TicketRow, ticketPrefix: string): Ticket {
   return {
+    fields: readTicketFields(row.fields),
     id: row.id,
     boardId: row.boardId,
     spaceId: row.spaceId,

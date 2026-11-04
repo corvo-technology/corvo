@@ -50,6 +50,15 @@ test("board creates a ticket and opens it", async ({ page }, testInfo) => {
   await expect(detail.getByLabel("Title")).toHaveValue(title);
   await expect(detail.getByTestId("ticket-description")).toHaveValue(description);
   await expect(detail.getByTestId("ticket-comments")).toBeVisible();
+  await detail.getByRole("button", { name: "Add field", exact: true }).click();
+  await detail.getByLabel("Field name").fill("Contact");
+  await detail.getByLabel("Field value").fill("ana@example.com");
+  await detail.getByRole("button", { name: "Save", exact: true }).first().click();
+  await expect(detail).toBeHidden();
+  await card.click();
+  await expect(page.getByRole("dialog", { name: title }).getByLabel("Field value")).toHaveValue(
+    "ana@example.com",
+  );
   await captureScreenshot(page, testInfo, "board-ticket-detail");
 
   await page.keyboard.press("Escape");
