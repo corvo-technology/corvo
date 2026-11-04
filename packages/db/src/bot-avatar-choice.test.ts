@@ -106,6 +106,24 @@ describe("chooseBotAvatar", () => {
     expect(chosen.color).not.toBe("#F5A03C");
   });
 
+  it("counts the colour of a bot that wears a character, but not its look", () => {
+    const [worn] = idsForFamilies([0]);
+    const others = idsForFamilies([1, 2, 3, 4, 5, 6, 7, 8, 9]).map((id) => ({
+      id,
+      color: "#3EC5A8",
+    }));
+    const chosen = chooseBotAvatar(
+      [...others, { id: worn!, color: "#F5A03C::char_ghost" }],
+      undefined,
+      {
+        random: seeded(3),
+        now: 0,
+      },
+    );
+    expect(organicAvatarFamily(chosen.id)).toBe(0);
+    expect(chosen.color).not.toBe("#F5A03C");
+  });
+
   it("draws the organic family the caller picked, even one the user's bots already use", () => {
     const existing = idsForFamilies([3, 3, 3]).map((id) => ({ id, color: "#3EC5A8" }));
     for (let family = 0; family < ORGANIC_AVATAR_FAMILY_COUNT; family++) {

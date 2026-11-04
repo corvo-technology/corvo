@@ -13,6 +13,8 @@ export function mobileBotAvatarPresentation(color: string): MobileBotAvatarPrese
     return { kind: "image", imageUrl: parsed.imageUrl };
   }
   const hex =
-    parsed.kind === "shape" || parsed.kind === "color" ? parsed.color : DEFAULT_BOT_AVATAR_COLOR;
+    parsed.kind === "shape" || parsed.kind === "color" || parsed.kind === "character"
+      ? parsed.color
+      : DEFAULT_BOT_AVATAR_COLOR;
   return { kind: "mascot", id: mascotForColorDef(resolvePersonaColorDef("preview", hex)) };
 }

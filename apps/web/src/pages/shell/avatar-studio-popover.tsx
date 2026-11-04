@@ -1,5 +1,7 @@
-import { MASCOT_COLORS, mascotForColorDef } from "@corvo/core";
+import { botAvatarCharacter, composeBotAvatarValue } from "@corvo/contracts";
+import { DEFAULT_BOT_AVATAR_COLOR, MASCOT_COLORS, mascotForColorDef } from "@corvo/core";
 import {
+  BOT_CHARACTERS,
   BotAvatar,
   Dialog,
   DialogContent,
@@ -32,6 +34,8 @@ export function BotLookPicker({
 }) {
   const parsed = parseBotAvatar(value);
   const current = mascotForColorDef(resolvePersonaColorDef("preview", parsed.color)).toString();
+  // A character worn stays when another color is chosen, and each swatch shows it in that color.
+  const character = botAvatarCharacter(value);
 
   return (
     <fieldset
@@ -47,14 +51,66 @@ export function BotLookPicker({
           <button
             key={id}
             type="button"
-            onClick={() => onChange(hex)}
+            onClick={() => onChange(composeBotAvatarValue(hex, character))}
             aria-label={t`Color ${hex}`}
             aria-pressed={selected}
             className={`rounded-xl p-0.5 transition-transform hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring ${
               selected ? "ring-2 ring-primary ring-offset-2 ring-offset-popover" : ""
             }`}
           >
-            <BotAvatar color={hex} size={44} />
+            <BotAvatar color={composeBotAvatarValue(hex, character)} size={44} />
+          </button>
+        );
+      })}
+    </fieldset>
+  );
+}
+
+/** The default chick and the characters of Open Bot Avatar, each in the color the agent wears. */
+export function BotCharacterPicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const parsed = parseBotAvatar(value);
+  const color = parsed.isImage ? DEFAULT_BOT_AVATAR_COLOR : parsed.color;
+  const worn = parsed.characterId;
+  const tileClass = (selected: boolean) =>
+    `rounded-xl p-0.5 transition-transform hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring ${
+      selected ? "ring-2 ring-primary ring-offset-2 ring-offset-popover" : ""
+    }`;
+  const plain = !parsed.isImage && !worn;
+  return (
+    <fieldset
+      className="m-0 grid grid-cols-5 place-items-center gap-2 border-0 p-0"
+      data-testid="avatar-studio-characters"
+    >
+      <legend className="sr-only">
+        <Trans>Character</Trans>
+      </legend>
+      <button
+        type="button"
+        onClick={() => onChange(color)}
+        aria-label={t`Default`}
+        aria-pressed={plain}
+        className={tileClass(plain)}
+      >
+        <BotAvatar color={color} size={44} />
+      </button>
+      {BOT_CHARACTERS.map(({ id, name }) => {
+        const selected = worn === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(composeBotAvatarValue(color, id))}
+            aria-label={name}
+            aria-pressed={selected}
+            className={tileClass(selected)}
+          >
+            <BotAvatar color={composeBotAvatarValue(color, id)} size={44} />
           </button>
         );
       })}
@@ -80,7 +136,7 @@ export function AvatarStudioPopover({
   disabled = false,
 }: AvatarStudioPopoverProps) {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"bot" | "upload">("bot");
+  const [activeTab, setActiveTab] = useState<"bot" | "character" | "upload">("bot");
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -189,13 +245,16 @@ export function AvatarStudioPopover({
 
           <Tabs
             value={activeTab}
-            onValueChange={(next) => setActiveTab(next as "bot" | "upload")}
+            onValueChange={(next) => setActiveTab(next as "bot" | "character" | "upload")}
             className="gap-4"
           >
             <div className="flex items-center justify-between border-b border-border pb-1">
               <TabsList className="rounded-full">
                 <TabsTrigger value="bot" className="rounded-full px-3 text-xs">
                   <Trans>Bot</Trans>
+                </TabsTrigger>
+                <TabsTrigger value="character" className="rounded-full px-3 text-xs">
+                  <Trans>Character</Trans>
                 </TabsTrigger>
                 <TabsTrigger value="upload" className="rounded-full px-3 text-xs">
                   <Trans>Upload</Trans>
@@ -215,6 +274,13 @@ export function AvatarStudioPopover({
 
             <TabsContent value="bot" className="pt-1" data-testid="avatar-studio-bot-tab">
               <BotLookPicker value={value} onChange={onChange} />
+            </TabsContent>
+            <TabsContent
+              value="character"
+              className="pt-1"
+              data-testid="avatar-studio-character-tab"
+            >
+              <BotCharacterPicker value={value} onChange={onChange} />
             </TabsContent>
             <TabsContent value="upload">
               <button

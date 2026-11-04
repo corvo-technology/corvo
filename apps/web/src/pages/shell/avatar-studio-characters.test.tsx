@@ -1,0 +1,109 @@
+// @vitest-environment jsdom
+import type { ReactNode } from "react";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { beforeEach, expect, it, vi } from "vitest";
+
+vi.mock("open-bot-avatar/dom", () => ({
+  mountAvatar: vi.fn(() => ({ update: vi.fn(), destroy: vi.fn() })),
+}));
+vi.mock("@lingui/core/macro", () => ({
+  t: (parts: TemplateStringsArray, ...values: unknown[]) =>
+    parts.reduce((text, part, index) => text + part + (values[index] ?? ""), ""),
+}));
+vi.mock("@lingui/react/macro", () => ({
+  Trans: ({ children }: { children: ReactNode }) => children,
+}));
+
+import { BotCharacterPicker, BotLookPicker } from "./avatar-studio-popover";
+
+const onChange = vi.fn();
+beforeEach(() => {
+  onChange.mockReset();
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+});
+
+async function mount(element: ReactNode) {
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  await act(async () => root.render(element));
+  return { host, unmount: () => act(async () => root.unmount()) };
+}
+
+const tile = (host: HTMLElement, name: string) =>
+  [...host.querySelectorAll("button")].find((item) => item.getAttribute("aria-label") === name) as
+    | HTMLButtonElement
+    | undefined;
+const pressed = (host: HTMLElement) =>
+  [...host.querySelectorAll("button")]
+    .filter((item) => item.getAttribute("aria-pressed") === "true")
+    .map((item) => item.getAttribute("aria-label"));
+
+it("offers the default chick and every character, each by name", async () => {
+  const { host, unmount } = await mount(<BotCharacterPicker value="#3B82F6" onChange={onChange} />);
+  const buttons = host.querySelectorAll('[data-testid="avatar-studio-characters"] button');
+  expect(buttons).toHaveLength(23);
+  expect(tile(host, "Default")).toBeDefined();
+  for (const name of ["Ghost", "Witch Hat", "Paint Brush", "Watering Can"]) {
+    expect(tile(host, name), name).toBeDefined();
+  }
+  await unmount();
+});
+
+it("marks the chick when no character is worn, and the character when there is one", async () => {
+  const plain = await mount(<BotCharacterPicker value="#3B82F6" onChange={onChange} />);
+  expect(pressed(plain.host)).toEqual(["Default"]);
+  await plain.unmount();
+  const worn = await mount(<BotCharacterPicker value="#3B82F6::char_cat" onChange={onChange} />);
+  expect(pressed(worn.host)).toEqual(["Cat"]);
+  await worn.unmount();
+});
+
+it("puts the character on the color the agent already wears", async () => {
+  const { host, unmount } = await mount(<BotCharacterPicker value="#14B8A6" onChange={onChange} />);
+  await act(async () => tile(host, "Ghost")?.click());
+  expect(onChange).toHaveBeenCalledExactlyOnceWith("#14B8A6::char_ghost");
+  await unmount();
+});
+
+it("changes character without changing color, and goes back to the chick", async () => {
+  const { host, unmount } = await mount(
+    <BotCharacterPicker value="#14B8A6::char_ghost" onChange={onChange} />,
+  );
+  await act(async () => tile(host, "Rocket")?.click());
+  expect(onChange).toHaveBeenLastCalledWith("#14B8A6::char_rocket");
+  await act(async () => tile(host, "Default")?.click());
+  expect(onChange).toHaveBeenLastCalledWith("#14B8A6");
+  await unmount();
+});
+
+it("starts from the default color when the agent wears a photo", async () => {
+  const { host, unmount } = await mount(
+    <BotCharacterPicker value="data:image/webp;base64,AAAA" onChange={onChange} />,
+  );
+  expect(pressed(host)).toEqual([]);
+  await act(async () => tile(host, "Star")?.click());
+  expect(onChange).toHaveBeenCalledWith(expect.stringMatching(/^#[0-9A-Fa-f]{6}::char_star$/));
+  await unmount();
+});
+
+it("keeps the character when another color is chosen, and shows it in each swatch", async () => {
+  const { host, unmount } = await mount(
+    <BotLookPicker value="#3B82F6::char_cat" onChange={onChange} />,
+  );
+  expect(
+    host.querySelectorAll('[data-testid="avatar-studio-colors"] [data-character="cat"]'),
+  ).toHaveLength(10);
+  await act(async () => tile(host, "Color #EAB308")?.click());
+  expect(onChange).toHaveBeenCalledExactlyOnceWith("#EAB308::char_cat");
+  await unmount();
+});
+
+it("keeps choosing a plain color for the chick as before", async () => {
+  const { host, unmount } = await mount(<BotLookPicker value="#3B82F6" onChange={onChange} />);
+  await act(async () => tile(host, "Color #EAB308")?.click());
+  expect(onChange).toHaveBeenCalledExactlyOnceWith("#EAB308");
+  expect(pressed(host)).toEqual(["Color #3B82F6"]);
+  await unmount();
+});

@@ -1317,6 +1317,10 @@ msgstr "変更中…"
 msgid "Channels"
 msgstr "チャンネル"
 
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Character"
+msgstr "キャラクター"
+
 #: src/pages/shell/message-cards.tsx
 msgid "Chart failed to render: {error}"
 msgstr "チャートを表示できませんでした: {error}"
@@ -2520,6 +2524,7 @@ msgstr "拒否"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
+#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "デフォルト"
 

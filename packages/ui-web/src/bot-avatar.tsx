@@ -1,3 +1,5 @@
+import type { BotAvatarCharacterId } from "@corvo/contracts";
+import { botAvatarCharacter } from "@corvo/contracts";
 import type { BotColorDef } from "@corvo/core";
 import {
   ACTIVE_RUN_STATUSES,
@@ -11,6 +13,8 @@ import {
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "./lib/utils.js";
 import "./styles.css";
+import { botCharacter } from "./bot-characters.js";
+import { CharacterAvatar } from "./character-avatar.js";
 import { MascotFace } from "./mascot-face.js";
 import { useMascotGaze } from "./use-mascot-gaze.js";
 
@@ -30,7 +34,10 @@ function blinkBeat(identity: string): { every: string; delay: string } {
 export type { BotColorDef };
 export { BOT_AVATAR_COLORS, BOT_COLOR_LIST, DEFAULT_BOT_AVATAR_COLOR, resolvePersonaColorDef };
 
-/** A bot's saved look: a color (its mascot) or an uploaded picture. A `::shape_N` suffix from older bots is ignored. */
+/**
+ * A bot's saved look: a color (its mascot, or a character in that color) or an uploaded picture.
+ * A `::shape_N` suffix from older bots is ignored.
+ */
 export function parseBotAvatar(
   rawColor: string,
   _identity?: string,
@@ -38,6 +45,7 @@ export function parseBotAvatar(
   color: string;
   isImage: boolean;
   imageUrl?: string;
+  characterId?: BotAvatarCharacterId;
 } {
   if (!rawColor) return { color: "#F97316", isImage: false };
   // Only data: image URLs are rendered. Arbitrary http(s)/blob values in `color`
@@ -45,8 +53,9 @@ export function parseBotAvatar(
   if (rawColor.startsWith("data:image/")) {
     return { color: "#F97316", isImage: true, imageUrl: rawColor };
   }
-  const color = rawColor.split("::shape_")[0] || "#F97316";
-  return { color, isImage: false };
+  const color = rawColor.split("::")[0] || "#F97316";
+  const characterId = botAvatarCharacter(rawColor);
+  return characterId ? { color, isImage: false, characterId } : { color, isImage: false };
 }
 
 const AVATAR_HEX = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
@@ -119,6 +128,11 @@ export const BotAvatar = memo(function BotAvatar({
       mascotForColorDef(resolvePersonaColorDef(identity || parsed.color || "agent", parsed.color)),
     [identity, parsed.color],
   );
+  const character = parsed.characterId ? botCharacter(parsed.characterId) : undefined;
+  const eyeColor = useMemo(
+    () => resolvePersonaColorDef(identity || parsed.color || "agent", parsed.color).eyeColor,
+    [identity, parsed.color],
+  );
 
   if (parsed.isImage && parsed.imageUrl) {
     return (
@@ -130,6 +144,26 @@ export const BotAvatar = memo(function BotAvatar({
         <div className="corvo-bot-avatar-picture relative flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-border bg-secondary">
           <img src={parsed.imageUrl} alt="" className="h-full w-full object-cover" />
         </div>
+        {isWorking ? <WorkingRing size={size} /> : null}
+      </div>
+    );
+  }
+
+  if (character) {
+    return (
+      <div
+        className={cn("corvo-bot-avatar relative shrink-0 select-none", className)}
+        data-working={isWorking}
+        data-character={character.id}
+        style={{ width: size, height: size }}
+      >
+        <CharacterAvatar
+          character={character}
+          color={parsed.color}
+          eyeColor={eyeColor}
+          mood={mood}
+          size={size}
+        />
         {isWorking ? <WorkingRing size={size} /> : null}
       </div>
     );

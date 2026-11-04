@@ -1,8 +1,43 @@
 # Third-party notices
 
 Rook's own code is licensed as described in `LICENSE`. This file credits work that shaped parts
-of the Store's catalogs. Where text was copied or adapted it says so; where only ideas or
-structure were used it says that instead.
+of the Store's catalogs and work that Rook includes. Where text was copied or adapted it says so;
+where only ideas or structure were used it says that instead.
+
+## Included code and data
+
+### Open Bot Avatar
+
+The characters an agent can wear (the ghost, the cat, the rocket and the rest) and the code that
+draws and animates them come from Open Bot Avatar, version 0.1.2
+(https://github.com/DominikScholz/open-bot-avatar), by Dominik Scholz, under the MIT License.
+The `open-bot-avatar` package is a dependency of `@corvo/ui-web`. The definitions of the 22
+characters (the project's starter avatars and its gallery, geometry only) are copied unchanged
+into `packages/ui-web/src/bot-characters.ts`.
+
+```text
+MIT License
+
+Copyright (c) 2026 Dominik Scholz
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ## Agent and skill catalogs
 

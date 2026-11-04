@@ -3,7 +3,9 @@ import { BOT_COLORS, parseBotAvatarValue } from "@corvo/contracts";
 /** The color a bot avatar value is drawn in; a photo falls back to the first palette color. */
 export function avatarColor(value: string): string {
   const parsed = parseBotAvatarValue(value);
-  return parsed.kind === "color" || parsed.kind === "shape" ? parsed.color : BOT_COLORS[0];
+  return parsed.kind === "color" || parsed.kind === "shape" || parsed.kind === "character"
+    ? parsed.color
+    : BOT_COLORS[0];
 }
 
 export function avatarShape(value: string): number | null {

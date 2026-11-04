@@ -11,6 +11,13 @@ describe("mobile bot avatar presentation", () => {
     expect(mobileBotAvatarPresentation("#10B981")).toEqual({ kind: "mascot", id: "mint" });
   });
 
+  it("shows the mascot of a color that wears a character, which only the web draws", () => {
+    expect(mobileBotAvatarPresentation("#8B5CF6::char_ghost")).toEqual({
+      kind: "mascot",
+      id: "violet",
+    });
+  });
+
   it("keeps an uploaded picture", () => {
     expect(mobileBotAvatarPresentation("data:image/png;base64,abc")).toEqual({
       kind: "image",
