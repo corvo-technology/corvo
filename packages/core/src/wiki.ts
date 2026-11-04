@@ -106,6 +106,10 @@ export function withWikiFront(
   return rows.length ? `---\n${rows.join("\n")}\n---\n${body}` : body;
 }
 
+/** A link to a page that the chat's Markdown draws as a mention, with the title as its id. */
+export const wikiMentionHref = (title: string) =>
+  `corvo-mention:${encodeURIComponent(title).replace(/\(/g, "%28").replace(/\)/g, "%29")}`;
+
 const defaultWikiHref = (title: string) =>
   `rook-wiki:${encodeURIComponent(title).replace(/\(/g, "%28").replace(/\)/g, "%29")}`;
 

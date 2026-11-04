@@ -1136,4 +1136,8 @@ export const DE_MESSAGES: Record<string, string> = {
   "No runs yet": "Noch keine Ausführungen",
   "Load older runs": "Ältere Ausführungen laden",
   "Could not load run history": "Ausführungsverlauf konnte nicht geladen werden",
+  Wiki: "Wiki",
+  "No pages yet": "Noch keine Seiten",
+  "Cited by": "Zitiert von",
+  "Could not load pages": "Seiten konnten nicht geladen werden",
 };

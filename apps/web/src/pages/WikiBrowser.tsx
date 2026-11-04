@@ -1,6 +1,6 @@
 import { ChatMarkdown } from "@corvo/chat-ui/web";
 import type { WikiHit, WikiPage, WikiPageInfo, WikiRevision } from "@corvo/contracts";
-import { linkWikiTitles, parseWikiPage, wikiSlug } from "@corvo/core";
+import { linkWikiTitles, parseWikiPage, wikiMentionHref, wikiSlug } from "@corvo/core";
 import {
   Button,
   DropdownMenu,
@@ -35,10 +35,6 @@ type Mode = "view" | "edit" | "new" | "history" | "delete";
 const MIN_SEARCH = 2;
 const rowClass = (open: boolean) =>
   `block h-auto w-full min-w-0 justify-start whitespace-normal rounded-md px-2.5 py-2 text-start ${open ? "bg-muted" : ""}`;
-
-/** A link to a page, drawn by the chat's mention mechanism: the title travels as the "id". */
-const mentionHref = (title: string) =>
-  `corvo-mention:${encodeURIComponent(title).replace(/\(/g, "%28").replace(/\)/g, "%29")}`;
 
 /**
  * The team's wiki: its pages by kind, one page read at a time, and the few things a person does
@@ -403,7 +399,7 @@ function PageBody({
       linkWikiTitles(
         parseWikiPage(page.body).body,
         (title) => known.has(wikiSlug(title)),
-        mentionHref,
+        wikiMentionHref,
       ),
     [page.body, known],
   );

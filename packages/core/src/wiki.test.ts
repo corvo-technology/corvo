@@ -5,6 +5,7 @@ import {
   wikiCanonicalTitle,
   wikiKind,
   wikiLinks,
+  wikiMentionHref,
   wikiPath,
   wikiSlug,
   wikiSummary,
@@ -33,6 +34,16 @@ describe("wiki titles", () => {
     expect(wikiPath("x".repeat(300))).toBe(`${"x".repeat(120)}.md`);
     expect(wikiPath("???")).toBe("---.md");
     expect(wikiPath("   ")).toBe("untitled.md");
+  });
+});
+
+describe("wikiMentionHref", () => {
+  it("makes the link the chat's mention mechanism draws, safe inside Markdown", () => {
+    expect(wikiMentionHref("Alpha Builders")).toBe("corvo-mention:Alpha%20Builders");
+    expect(wikiMentionHref("Alpha (Beta)")).toBe("corvo-mention:Alpha%20%28Beta%29");
+    expect(decodeURIComponent(wikiMentionHref("Café #1").slice("corvo-mention:".length))).toBe(
+      "Café #1",
+    );
   });
 });
 
