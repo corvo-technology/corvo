@@ -48,6 +48,22 @@ wiki to keep a page: a new page is written at once, and text for an existing pag
 (never put in its place, since the agent's copy may be old) and waits for approval unless the space
 lets edits in.
 
+## Documents
+
+When a person attaches a PDF or a text file that holds knowledge the team will want again (a
+contract, a policy, a manual, a specification), the agent offers to keep it in the wiki after it has
+answered: it asks with a choice card, says that the wiki is where the team keeps what it knows and
+that everyone in the space can read it, and saves it with `save_shared_memory` only after a yes. It
+does not ask about the same file again, or after a no, and it does not offer a casual file. The
+offer is an instruction to the model, so it can be missed or made too often; what is never missed
+is that nothing is saved before the yes, because saving is a separate call that comes after the
+answer. It is made whether or not the wiki already has pages, and not in a messaging channel or in
+a background run, where nobody can answer.
+
+Saving goes through the same rules as any other save: a new page is written at once and text for an
+existing page waits for approval. A document is not yet read into the wiki part by part with its
+source and page numbers kept; that is the curator reading documents, which comes next.
+
 ## The curator
 
 After a conversation has been quiet for 20 seconds, a background job reads what was said since the

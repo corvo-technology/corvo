@@ -199,6 +199,7 @@ import { loadAgentTicketContext } from "./ticket-context.js";
 import { appendToolCompletionAudit } from "./tool-completion-audit.js";
 import { createWebProvider } from "./web-provider-factory.js";
 import { loadWikiIndexContext } from "./wiki-context.js";
+import { wikiOfferInstruction } from "./wiki-offer.js";
 
 export function createRunExecutor(deps: ExecutorDeps) {
   const contextStrategy = deps.contextStrategy ?? DEFAULT_CONTEXT_STRATEGY;
@@ -906,6 +907,11 @@ export function createRunExecutor(deps: ExecutorDeps) {
         }
         const attachedFilesPrompt = [
           currentTurnFilesInstruction(currentTurnFiles),
+          wikiOfferInstruction(currentTurnFiles, {
+            disabled: disabledBuiltinToolSet(bot.disabledBuiltinTools),
+            messagingChannelRun,
+            background: isBackgroundRunTrigger(run.trigger),
+          }),
           recentThreadFilesInstruction(recentThreadFiles),
         ]
           .filter(Boolean)
