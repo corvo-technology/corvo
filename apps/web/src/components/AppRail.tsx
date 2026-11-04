@@ -8,6 +8,7 @@ import {
   CalendarClock,
   FolderOpen,
   Gauge,
+  KanbanSquare,
   ShieldCheck,
   Store,
   Users,
@@ -60,6 +61,10 @@ export function AppRail({ ticketBoardEnabled }: { ticketBoardEnabled: boolean })
     Icon: ComponentType<{ className?: string }>;
   }> = [
     { section: "agents", label: t`Agents`, to: "/app", Icon: Bot },
+    // The board is optional: it has a place only where the deployment turns it on.
+    ...(ticketBoardEnabled
+      ? [{ section: "board" as const, label: t`Board`, to: "/app/board", Icon: KanbanSquare }]
+      : []),
     { section: "team", label: t`Team`, to: "/app/team", Icon: Users },
     { section: "routines", label: t`Routines`, to: "/app/routines", Icon: CalendarClock },
     { section: "workflows", label: t`Workflows`, to: "/app/workflows", Icon: Workflow },
@@ -148,7 +153,8 @@ export function AppRail({ ticketBoardEnabled }: { ticketBoardEnabled: boolean })
             account
             logos={[]}
             user={session.data?.user}
-            ticketBoardEnabled={ticketBoardEnabled}
+            // The rail has its own Board, so the account menu does not repeat it.
+            ticketBoardEnabled={false}
             navLinks={navLinks}
             closeMobileSidebar={() => {}}
             navigate={navigate}

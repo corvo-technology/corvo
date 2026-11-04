@@ -9,6 +9,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 
 const takeInitialBootstrap = vi.hoisted(() => vi.fn());
 const footer = vi.hoisted(() => vi.fn());
+const footerBoard = vi.hoisted(() => vi.fn());
 const embedded = vi.hoisted(() => ({ value: false }));
 vi.mock("../lib/embed", () => ({ isEmbedded: () => embedded.value }));
 vi.mock("../lib/bootstrap", () => ({ takeInitialBootstrap }));
@@ -26,8 +27,9 @@ vi.mock("../lib/query", () => ({
   }),
 }));
 vi.mock("../pages/shell/shell-sidebar", () => ({
-  ShellSidebarFooter: (props: { navLinks: unknown[] }) => {
+  ShellSidebarFooter: (props: { navLinks: unknown[]; ticketBoardEnabled: boolean }) => {
     footer(props.navLinks);
+    footerBoard(props.ticketBoardEnabled);
     return null;
   },
 }));
@@ -47,6 +49,7 @@ beforeEach(() => {
   queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   takeInitialBootstrap.mockReset();
   footer.mockReset();
+  footerBoard.mockReset();
   embedded.value = false;
 });
 
@@ -65,15 +68,15 @@ async function openMore(container: HTMLElement) {
     .filter(Boolean);
 }
 
-async function renderRail() {
+async function renderRail(ticketBoardEnabled = false, path = "/app") {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
   await act(async () =>
     root.render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={["/app"]}>
-          <AppRail ticketBoardEnabled={false} />
+        <MemoryRouter initialEntries={[path]}>
+          <AppRail ticketBoardEnabled={ticketBoardEnabled} />
           <Where />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -114,6 +117,28 @@ it("keeps four areas in sight and the rest behind three dots", async () => {
   ]);
   expect(buttons[0]?.getAttribute("aria-current")).toBe("page");
   expect(buttons[4]?.getAttribute("aria-current")).toBeNull();
+  await cleanup();
+});
+
+it("puts the board right under Agents when the board is on, and nowhere when it is off", async () => {
+  const on = await renderRail(true);
+  const labels = [...on.container.querySelectorAll("nav button")].map((button) =>
+    button.getAttribute("aria-label"),
+  );
+  expect(labels.slice(0, 3)).toEqual(["Agents", "Board", "Team"]);
+  const board = on.container.querySelector<HTMLButtonElement>('nav button[aria-label="Board"]');
+  await act(async () => board?.click());
+  expect(on.container.querySelector('[data-testid="where"]')?.textContent).toBe("/app/board");
+  expect(board?.getAttribute("aria-current")).toBe("page");
+  await on.cleanup();
+  const off = await renderRail(false);
+  expect(off.container.querySelector('nav button[aria-label="Board"]')).toBeNull();
+  await off.cleanup();
+});
+
+it("leaves the board out of the account menu the rail carries, which would repeat it", async () => {
+  const { cleanup } = await renderRail(true);
+  expect(footerBoard).toHaveBeenLastCalledWith(false);
   await cleanup();
 });
 
