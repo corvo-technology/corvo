@@ -1,0 +1,377 @@
+import type { WikiChangePage, WikiChangeState, WikiSettings } from "@corvo/contracts";
+import { applyCuratorOp, type CuratorOp, wikiCanonicalTitle, wikiSlug } from "@corvo/core";
+import type { PrismaClient } from "./client.js";
+import {
+  readWikiPage,
+  removeWikiPage,
+  restoreWikiRevision,
+  WikiConflictError,
+  WikiNotFoundError,
+  type WikiScope,
+  WikiTitleError,
+  writeWikiPage,
+} from "./wiki.js";
+
+/** A decision asked of a change that is not in a state that allows it. */
+export class WikiChangeStateError extends Error {
+  constructor() {
+    super("This change cannot be decided now.");
+    this.name = "WikiChangeStateError";
+  }
+}
+
+/** A change as the routes need it: the quoted source is for them to show or hide. */
+export type WikiChangeRecord = {
+  id: string;
+  state: WikiChangeState;
+  reason: string;
+  pages: WikiChangePage[];
+  createdAt: Date;
+  anchorThreadId: string | null;
+  anchorMessageId: string | null;
+  sourceTitle: string;
+  sourceText: string;
+  /** The owner of the conversation the source came from: the only person shown its text. */
+  sourceUserId: string;
+};
+
+type Revisions = Record<string, number>;
+
+const DEFAULT_SETTINGS: WikiSettings = { capture: true, edits: "approve" };
+const LIST_LIMIT = 100;
+
+type Row = {
+  id: string;
+  state: string;
+  reason: string;
+  ops: unknown;
+  baseRevisions: unknown;
+  appliedRevisions: unknown;
+  createdAt: Date;
+  anchorThreadId: string | null;
+  anchorMessageId: string | null;
+  source: { title: string; text: string; userId: string; threadId: string | null };
+};
+
+const opsOf = (row: Row) => row.ops as CuratorOp[];
+const revisionsOf = (value: unknown): Revisions => (value ?? {}) as Revisions;
+
+/** The operations by page, in the order the pages first appear. */
+function byPage(ops: CuratorOp[]): { title: string; slug: string; ops: CuratorOp[] }[] {
+  const pages = new Map<string, { title: string; slug: string; ops: CuratorOp[] }>();
+  for (const op of ops) {
+    const slug = wikiSlug(wikiCanonicalTitle(op.page));
+    const page = pages.get(slug) ?? { title: wikiCanonicalTitle(op.page), slug, ops: [] };
+    page.ops.push(op);
+    pages.set(slug, page);
+  }
+  return [...pages.values()];
+}
+
+function recordOf(row: Row): WikiChangeRecord {
+  const base = revisionsOf(row.baseRevisions);
+  return {
+    id: row.id,
+    state: row.state as WikiChangeState,
+    reason: row.reason,
+    pages: byPage(opsOf(row)).map((page) => ({
+      title: page.title,
+      op:
+        base[page.title] === 0
+          ? "create"
+          : page.ops.some((op) => op.op === "replace")
+            ? "replace"
+            : "append",
+    })),
+    createdAt: row.createdAt,
+    anchorThreadId: row.anchorThreadId,
+    anchorMessageId: row.anchorMessageId,
+    sourceTitle: row.source.title,
+    sourceText: row.source.text,
+    sourceUserId: row.source.userId,
+  };
+}
+
+const INCLUDE = { source: { select: { title: true, text: true, userId: true, threadId: true } } };
+
+/**
+ * The operations that can still be applied to the pages as they stand now, and the revision each
+ * page was at. A `create` of a page that exists, an `append` or `replace` of one that does not, and
+ * a `replace` of a passage that is gone are left out: the change keeps only what it can do.
+ */
+async function plan(db: PrismaClient, scope: WikiScope, ops: CuratorOp[]) {
+  const pages = new Map<string, { title: string; base: number; text: string | null }>();
+  const kept: CuratorOp[] = [];
+  for (const op of ops) {
+    const slug = wikiSlug(wikiCanonicalTitle(op.page));
+    let page = pages.get(slug);
+    if (!page) {
+      const current = await readWikiPage(db, scope, op.page);
+      page = current
+        ? { title: current.title, base: current.revision, text: current.body }
+        : { title: wikiCanonicalTitle(op.page), base: 0, text: null };
+      pages.set(slug, page);
+    }
+    if (op.op === "create") {
+      if (page.text !== null) continue;
+    } else if (page.text === null) continue;
+    const next = applyCuratorOp(page.text ?? "", op);
+    if (next === null) continue;
+    page.text = next;
+    kept.push({ ...op, page: page.title });
+  }
+  const base: Revisions = {};
+  for (const page of pages.values())
+    if (kept.some((op) => op.page === page.title)) base[page.title] = page.base;
+  return { kept, base };
+}
+
+/**
+ * Writes the pages of a change that are not written yet, each against the revision it was planned
+ * on. A page that moved on stops the rest: what was written is kept so it can be undone.
+ */
+async function applyPages(
+  db: PrismaClient,
+  scope: WikiScope,
+  row: Row,
+  only?: (title: string, isNew: boolean) => boolean,
+): Promise<{ applied: Revisions; conflict: boolean }> {
+  const base = revisionsOf(row.baseRevisions);
+  const applied = { ...revisionsOf(row.appliedRevisions) };
+  for (const page of byPage(opsOf(row))) {
+    if (applied[page.title] !== undefined) continue;
+    const isNew = base[page.title] === 0;
+    if (only && !only(page.title, isNew)) continue;
+    try {
+      const current = isNew ? undefined : await readWikiPage(db, scope, page.title);
+      if (!isNew && current?.revision !== base[page.title]) return { applied, conflict: true };
+      let text = current?.body ?? "";
+      for (const op of page.ops) {
+        const next = applyCuratorOp(text, op);
+        if (next === null) return { applied, conflict: true };
+        text = next;
+      }
+      const written = await writeWikiPage(db, scope, {
+        title: page.title,
+        body: text,
+        expectedRevision: base[page.title],
+        sourceThreadId: row.source.threadId ?? undefined,
+      });
+      applied[page.title] = written.revision;
+    } catch (error) {
+      if (error instanceof WikiConflictError || error instanceof WikiTitleError)
+        return { applied, conflict: true };
+      throw error;
+    }
+  }
+  return { applied, conflict: false };
+}
+
+const isUnique = (error: unknown) => (error as { code?: unknown } | null)?.code === "P2002";
+
+/**
+ * Keeps a stretch of conversation, or a message kept on purpose, as a source and the operations
+ * drawn from it as a change. New pages are written at once; an edit goes in at once only when the
+ * Space says so, and otherwise waits. Null when the stretch was kept before, or nothing is left to do.
+ */
+export async function createWikiChange(
+  db: PrismaClient,
+  scope: WikiScope,
+  input: {
+    source: {
+      origin: "conversation" | "message" | "note";
+      title: string;
+      text: string;
+      threadId?: string;
+      fromSeq?: number;
+      toSeq?: number;
+      messageId?: string;
+    };
+    ops: CuratorOp[];
+    reason: string;
+    anchor: { threadId?: string; messageId?: string };
+    edits: WikiSettings["edits"];
+  },
+): Promise<WikiChangeRecord | null> {
+  const { kept, base } = await plan(db, scope, input.ops);
+  if (!kept.length) return null;
+  let created: Row;
+  try {
+    created = (await db.$transaction(async (tx) => {
+      const source = await tx.wikiSource.create({
+        data: { spaceId: scope.spaceId, userId: scope.userId, ...input.source },
+      });
+      return tx.wikiChange.create({
+        data: {
+          spaceId: scope.spaceId,
+          userId: scope.userId,
+          sourceId: source.id,
+          ops: kept,
+          reason: input.reason,
+          baseRevisions: base,
+          anchorThreadId: input.anchor.threadId,
+          anchorMessageId: input.anchor.messageId,
+        },
+        include: INCLUDE,
+      });
+    })) as Row;
+  } catch (error) {
+    if (isUnique(error)) return null;
+    throw error;
+  }
+  const { applied, conflict } = await applyPages(
+    db,
+    scope,
+    created,
+    (_title, isNew) => isNew || input.edits === "auto",
+  );
+  const all = byPage(kept).every((page) => applied[page.title] !== undefined);
+  const row = (await db.wikiChange.update({
+    where: { id: created.id },
+    data: {
+      appliedRevisions: applied,
+      state: conflict ? "conflict" : all ? "applied" : "pending",
+    },
+    include: INCLUDE,
+  })) as Row;
+  return recordOf(row);
+}
+
+async function load(db: PrismaClient, scope: WikiScope, changeId: string): Promise<Row> {
+  const row = (await db.wikiChange.findFirst({
+    where: { id: changeId, spaceId: scope.spaceId },
+    include: INCLUDE,
+  })) as Row | null;
+  if (!row) throw new WikiNotFoundError();
+  return row;
+}
+
+/** Moves a change to the state a decision reaches, only from the state it was read in. */
+async function settle(
+  db: PrismaClient,
+  scope: WikiScope,
+  row: Row,
+  data: { state: WikiChangeState; appliedRevisions?: Revisions },
+): Promise<WikiChangeRecord> {
+  const { count } = await db.wikiChange.updateMany({
+    where: { id: row.id, spaceId: scope.spaceId, state: row.state },
+    data: { ...data, decidedByUserId: scope.userId, decidedAt: new Date() },
+  });
+  if (count !== 1) throw new WikiChangeStateError();
+  return recordOf(await load(db, scope, row.id));
+}
+
+/**
+ * The people's answer to a change. Approving writes the pages not written yet; undoing puts back
+ * what each page said before, but only for pages nobody has edited since the change wrote them.
+ */
+export async function decideWikiChange(
+  db: PrismaClient,
+  scope: WikiScope,
+  changeId: string,
+  decision: "apply" | "refuse" | "undo",
+): Promise<WikiChangeRecord> {
+  const row = await load(db, scope, changeId);
+  const state = row.state as WikiChangeState;
+  if (decision === "refuse") {
+    if (state !== "pending") throw new WikiChangeStateError();
+    return settle(db, scope, row, { state: "refused" });
+  }
+  if (decision === "apply") {
+    if (state !== "pending") throw new WikiChangeStateError();
+    const { applied, conflict } = await applyPages(db, scope, row);
+    return settle(db, scope, row, {
+      state: conflict ? "conflict" : "applied",
+      appliedRevisions: applied,
+    });
+  }
+  const applied = revisionsOf(row.appliedRevisions);
+  const titles = Object.keys(applied);
+  if (state === "undone" || !titles.length) throw new WikiChangeStateError();
+  for (const title of titles) {
+    const current = await readWikiPage(db, scope, title);
+    if (current?.revision !== applied[title]) return settle(db, scope, row, { state: "conflict" });
+  }
+  const base = revisionsOf(row.baseRevisions);
+  for (const title of titles) {
+    if (base[title] === 0) await removeWikiPage(db, scope, title);
+    else await restoreWikiRevision(db, scope, title, base[title]!);
+  }
+  return settle(db, scope, row, { state: "undone" });
+}
+
+export async function listWikiChanges(
+  db: PrismaClient,
+  scope: WikiScope,
+  filter: { state?: WikiChangeState[] } = {},
+): Promise<WikiChangeRecord[]> {
+  const rows = (await db.wikiChange.findMany({
+    where: {
+      spaceId: scope.spaceId,
+      ...(filter.state?.length ? { state: { in: filter.state } } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    take: LIST_LIMIT,
+    include: INCLUDE,
+  })) as Row[];
+  return rows.map(recordOf);
+}
+
+export async function getWikiChange(
+  db: PrismaClient,
+  scope: WikiScope,
+  changeId: string,
+): Promise<WikiChangeRecord | undefined> {
+  const row = (await db.wikiChange.findFirst({
+    where: { id: changeId, spaceId: scope.spaceId },
+    include: INCLUDE,
+  })) as Row | null;
+  return row ? recordOf(row) : undefined;
+}
+
+export async function getWikiSettings(db: PrismaClient, spaceId: string): Promise<WikiSettings> {
+  const row = await db.wikiSettings.findUnique({ where: { spaceId } });
+  return row
+    ? { capture: row.capture, edits: row.edits as WikiSettings["edits"] }
+    : DEFAULT_SETTINGS;
+}
+
+export async function setWikiSettings(
+  db: PrismaClient,
+  spaceId: string,
+  patch: Partial<WikiSettings>,
+): Promise<WikiSettings> {
+  const row = await db.wikiSettings.upsert({
+    where: { spaceId },
+    create: { spaceId, ...patch },
+    update: patch,
+  });
+  return { capture: row.capture, edits: row.edits as WikiSettings["edits"] };
+}
+
+/** One conversation's switch; false when the conversation is not this person's in this Space. */
+export async function setThreadWikiCapture(
+  db: PrismaClient,
+  thread: { threadId: string; spaceId: string; userId: string },
+  capture: boolean | null,
+): Promise<boolean> {
+  const { count } = await db.thread.updateMany({
+    where: { id: thread.threadId, spaceId: thread.spaceId, userId: thread.userId },
+    data: { wikiCapture: capture },
+  });
+  return count === 1;
+}
+
+/** Moves the cursor of what the curator has read, only from where it was; false when it moved. */
+export async function advanceWikiCursor(
+  db: PrismaClient,
+  threadId: string,
+  from: number | null,
+  to: number,
+): Promise<boolean> {
+  const { count } = await db.thread.updateMany({
+    where: { id: threadId, wikiCuratedUpToSeq: from },
+    data: { wikiCuratedUpToSeq: to },
+  });
+  return count === 1;
+}

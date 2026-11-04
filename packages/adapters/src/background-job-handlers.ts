@@ -25,6 +25,7 @@ import { compactHistory } from "./history-compaction.js";
 import type { MemoryProviderResolver } from "./memory-provider-factory.js";
 import { deliverMessagingOutbound, mirrorMessagingOutbound } from "./messaging-delivery.js";
 import { expireTaughtSkillTeaching } from "./teaching-session.js";
+import { curateWiki } from "./wiki-curator-run.js";
 
 type Tenant = { spaceId: string; userId: string };
 
@@ -182,6 +183,17 @@ export function createBackgroundJobHandlers(deps: {
     "push.receipt": async (payload) => {
       await runAsSystem("check a push receipt", () => deps.notifications?.checkReceipt(payload));
     },
+    "wiki.curate": asOwner(thread, async (payload) => {
+      await curateWiki(
+        {
+          prisma: deps.prisma,
+          runtime: deps.runtime,
+          events: deps.events,
+          resolveFastModel: deps.executor.resolveFastModel,
+        },
+        payload,
+      );
+    }),
     "history.compact": asOwner(thread, async (payload) => {
       // Retrieval policies use stored context without paid message-count compaction.
       // Skip legacy backlog work after a policy change.

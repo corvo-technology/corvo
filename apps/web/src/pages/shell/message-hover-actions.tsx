@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Copy, MessageSquareDot, MoreHorizontal, Reply, Smile } from "lucide-react";
+import { BookOpen, Copy, MessageSquareDot, MoreHorizontal, Reply, Smile } from "lucide-react";
 import { useState } from "react";
 import { MessageHoverMetadata } from "../../components/MessageHoverMetadata";
 import { copyableMessageText } from "../../lib/message-text";
@@ -21,6 +21,7 @@ export function MessageHoverActions({
   side,
   onReply,
   onMarkUnread,
+  onKeepInWiki,
   markedUnread = false,
   onReact,
 }: {
@@ -28,6 +29,7 @@ export function MessageHoverActions({
   side: "start" | "end";
   onReply: (message: ThreadMessage) => void;
   onMarkUnread: (message: ThreadMessage) => void;
+  onKeepInWiki?: (message: ThreadMessage) => void;
   markedUnread?: boolean;
   onReact: (message: ThreadMessage, reaction: MessageReaction) => Promise<void>;
 }) {
@@ -108,6 +110,17 @@ export function MessageHoverActions({
               >
                 <MessageSquareDot size={14} strokeWidth={1.7} />
                 <Trans>Mark as unread</Trans>
+              </DropdownMenuItem>
+            ) : null}
+            {onKeepInWiki && copyableMessageText(message) ? (
+              <DropdownMenuItem
+                onClick={() => {
+                  setMoreOpen(false);
+                  onKeepInWiki(message);
+                }}
+              >
+                <BookOpen size={14} strokeWidth={1.7} />
+                <Trans>Keep in the wiki</Trans>
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem onClick={copyMessage}>

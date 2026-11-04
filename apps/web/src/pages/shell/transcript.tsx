@@ -76,6 +76,7 @@ export const Transcript = memo(function Transcript({
   onAnswer,
   onReply,
   onMarkUnread,
+  onKeepInWiki,
   markedUnreadMessageId,
   onQuote,
   onReact,
@@ -129,6 +130,7 @@ export const Transcript = memo(function Transcript({
   ) => Promise<void>;
   onReply: (message: ThreadMessage) => void;
   onMarkUnread: (message: ThreadMessage) => void;
+  onKeepInWiki?: (message: ThreadMessage) => void;
   markedUnreadMessageId?: string;
   onQuote: (message: ThreadMessage, quote: string) => void;
   onReact: (message: ThreadMessage, reaction: MessageReaction) => Promise<void>;
@@ -596,6 +598,7 @@ export const Transcript = memo(function Transcript({
                       showToolActivity={showToolActivity}
                       onReply={onReply}
                       onMarkUnread={onMarkUnread}
+                      onKeepInWiki={onKeepInWiki}
                       onReact={onReact}
                     />
                   </div>

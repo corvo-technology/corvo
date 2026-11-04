@@ -1124,5 +1124,12 @@ export const JA_MESSAGES: Record<string, string> = {
   Wiki: "Wiki",
   "No pages yet": "まだページがありません",
   "Cited by": "引用元",
+  "Waiting for approval": "承認待ち",
+  "Added to the wiki": "Wikiに追加しました",
+  Refused: "却下しました",
+  Undone: "元に戻しました",
+  "A page changed since": "その後ページが変更されました",
+  Refuse: "却下",
+  "Keep in the wiki": "Wikiに保存",
   "Could not load pages": "ページを読み込めませんでした",
 };

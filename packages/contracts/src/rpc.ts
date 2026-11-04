@@ -153,10 +153,16 @@ import { SearchQueryOutputSchema } from "./search.js";
 import { SecurityEventListInputSchema, SecurityEventSchema } from "./security-events.js";
 import { SettingsScopeSchema, SpaceSettingSchema, settingsScopeInput } from "./settings-scope.js";
 import {
+  WikiCaptureValueSchema,
+  WikiChangeDecideInputSchema,
+  WikiChangeSchema,
+  WikiChangeStateSchema,
   WikiHitSchema,
   WikiPageInfoSchema,
   WikiPageSchema,
   WikiRevisionSchema,
+  WikiSettingsPatchSchema,
+  WikiSettingsSchema,
   WikiTitleSchema,
   WikiWriteInputSchema,
 } from "./wiki.js";
@@ -684,6 +690,28 @@ export const appContract = {
     remove: oc
       .input(z.object({ title: WikiTitleSchema }))
       .output(z.object({ ok: z.literal(true) })),
+    /** What the curator proposed or kept, and the people's answer to it. */
+    changes: {
+      list: oc
+        .input(z.object({ state: z.array(WikiChangeStateSchema).optional() }))
+        .output(z.array(WikiChangeSchema)),
+      get: oc.input(z.object({ changeId: Id })).output(WikiChangeSchema),
+      decide: oc.input(WikiChangeDecideInputSchema).output(WikiChangeSchema),
+    },
+    settings: {
+      get: oc.output(WikiSettingsSchema),
+      set: oc.input(WikiSettingsPatchSchema).output(WikiSettingsSchema),
+    },
+    /** Asks the curator to keep one message, whatever the conversation's switch says. */
+    keep: oc
+      .input(threadTarget.safeExtend({ messageId: Id }))
+      .output(z.object({ ok: z.literal(true) })),
+    /** One conversation's switch for the curator. */
+    capture: {
+      set: oc
+        .input(threadTarget.safeExtend({ capture: WikiCaptureValueSchema }))
+        .output(z.object({ ok: z.literal(true) })),
+    },
   },
   memory: {
     list: oc

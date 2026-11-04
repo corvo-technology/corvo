@@ -4,7 +4,16 @@ import { beforeEach, expect, it, vi } from "vitest";
 const rpc = vi.hoisted(() => vi.fn());
 vi.mock("./api", () => ({ rpc }));
 
-import { groupWikiPages, listWikiPages, readWikiPage, wikiDisplayBody } from "./wiki";
+import {
+  decideWikiChange,
+  getWikiChange,
+  groupWikiPages,
+  keepMessageInWiki,
+  listWikiChanges,
+  listWikiPages,
+  readWikiPage,
+  wikiDisplayBody,
+} from "./wiki";
 
 const info = (title: string, kind: string): WikiPageInfo => ({
   title,
@@ -49,4 +58,25 @@ it("asks the server for the index and for one page", async () => {
   rpc.mockResolvedValueOnce({ title: "Ana" });
   await readWikiPage("Ana");
   expect(rpc).toHaveBeenLastCalledWith("wiki/read", { title: "Ana" });
+});
+
+it("asks for the changes that wait, one change by its id, and answers one", async () => {
+  rpc.mockResolvedValue([]);
+  await listWikiChanges(["pending"]);
+  expect(rpc).toHaveBeenLastCalledWith("wiki/changes/list", { state: ["pending"] });
+  await getWikiChange("c1");
+  expect(rpc).toHaveBeenLastCalledWith("wiki/changes/get", { changeId: "c1" });
+  await decideWikiChange("c1", "apply");
+  expect(rpc).toHaveBeenLastCalledWith("wiki/changes/decide", {
+    changeId: "c1",
+    decision: "apply",
+  });
+});
+
+it("keeps a message of a chat or of a channel", async () => {
+  rpc.mockResolvedValue({ ok: true });
+  await keepMessageInWiki({ botId: "b1" }, "m1");
+  expect(rpc).toHaveBeenLastCalledWith("wiki/keep", { botId: "b1", messageId: "m1" });
+  await keepMessageInWiki({ groupId: "g1" }, "m2");
+  expect(rpc).toHaveBeenLastCalledWith("wiki/keep", { groupId: "g1", messageId: "m2" });
 });

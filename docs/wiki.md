@@ -2,8 +2,9 @@
 
 A space's wiki is what its team knows, written as short pages that link to each other with
 `[[Title]]`. Agents look in it before asking you something the team already knows, and cite the
-pages they used. You can read, write, fix and restore pages yourself, on the web, in the desktop
-app and (read only) on a phone.
+pages they used. A cheap model reads settled conversations and keeps what lasts, and you approve,
+refuse or undo what it keeps. You can also read, write, fix and restore pages yourself, on the web
+and in the desktop app, and read, approve and refuse on a phone.
 
 ## Where pages live
 
@@ -22,9 +23,9 @@ overwritten by a stale one.
 
 ## Who can read and write
 
-Every member of the space reads and writes the wiki. Pages belong to the space, not to the person
-who wrote them. A person's chats with one agent stay theirs; nothing in this first version copies
-them into the wiki.
+Every member of the space reads and writes the wiki, and any member can approve or refuse what the
+curator proposes. Pages belong to the space, not to the person who wrote them. A person's chats
+with one agent stay theirs: the curator reads them only when a message is kept on purpose.
 
 ## What agents can do
 
@@ -42,13 +43,45 @@ written by people and agents, so it reaches a run as data, never as instructions
 reads it is treated like one that read any other outside text. Runs that answer a messaging
 channel get no wiki tools and no index.
 
-Agents do not write to the wiki in this version.
+Agents never write a page on their own. `save_shared_memory` still exists, but it now asks the
+wiki to keep a page: a new page is written at once, and a change to an existing page waits for
+approval unless the space lets edits in.
+
+## The curator
+
+After a conversation has been quiet for 20 seconds, a background job reads what was said since the
+last time (at most the 14 newest messages, and only when there is something to read) and asks the
+member's `fast` model, or the main model when none is set, for strict JSON changes: `create`,
+`append` or `replace`. The model is told to keep decisions, lasting facts and results of work, and
+not what an agent did, small talk, open questions or work in progress; a change the model does not
+call lasting is dropped, and so is a `replace` whose old text is not on the page.
+
+- **What it reads.** Channels by default. A chat with one agent only when you keep a message
+  ("Keep in the wiki" in a message's menu) or switch capture on for it. A conversation held by
+  outsiders over a messaging channel is never read. The space can turn the curator off.
+- **What it keeps.** The stretch it read is stored as a source, as it was said (encrypted), and
+  every change points to it. Tokens, keys and email addresses are masked before the model sees the
+  text and before it is stored. Only the person whose conversation it was can read the quoted
+  source; everyone else sees the pages and the reason.
+- **Approval.** A new page is written at once. A change to an existing page waits for approval by
+  default (the setting "Approve edits" turns that off). The conversation shows a card with what
+  was kept and a way to approve, refuse or undo it, and the Wiki screen lists what waits.
+- **Undo.** Undoing restores each page to what it said before the change, but only if nobody has
+  edited the page since; otherwise nothing is changed and the change is marked as conflicting.
+  A change made against a page that moved on before it could be approved is also marked
+  conflicting, and nothing is overwritten.
+- **When it cannot run.** With no model ready, nothing is read and nothing is lost: the cursor
+  stays where it was. A model answer that is not usable is tried again up to three times.
+
+Not done yet: a switch on each conversation to turn the curator on or off (the procedure and the
+database column exist; no screen has the control), and a way to ask the curator to try a
+conflicting change again.
 
 ## Shared memory
 
 A space's earlier shared memory (the documents every agent of a person reads) is copied into the
 wiki as pages the first time the wiki is opened, once per person. The originals stay where they
-are and keep being sent to agents for now. A title the wiki already has is not replaced, and a
+are and keep being sent to agents for now; new saves go to the wiki. A title the wiki already has is not replaced, and a
 page you delete afterwards stays deleted.
 
 ## Limits

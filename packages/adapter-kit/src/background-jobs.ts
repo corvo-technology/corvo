@@ -27,6 +27,7 @@ const payloadSchemas = {
     threadId: z.string().min(1),
     keepRecent: z.number().int().min(0).max(100).optional(),
   }),
+  "wiki.curate": z.object({ threadId: z.string().min(1), messageId: z.string().min(1).optional() }),
   "messaging.deliver": z.object({ runId: z.string().min(1).optional() }),
   "messaging.credential-cleanup": z.object({
     installationId: z.string().min(1),
@@ -191,6 +192,32 @@ export function historyCompactJob(threadId: string, keepRecent?: number): Backgr
     payload: keepRecent === undefined ? { threadId } : { threadId, keepRecent },
     replaceKey: historyCompactJobKey(threadId),
     maxAttempts: HISTORY_COMPACT_MAX_ATTEMPTS,
+  };
+}
+
+/** How long a conversation stays quiet before the wiki curator reads what was said. */
+export const WIKI_CURATE_QUIET_MS = 20_000;
+/** A model that answers badly or is down is tried a few times, not for hours. */
+export const WIKI_CURATE_MAX_ATTEMPTS = 3;
+
+/**
+ * Reads a conversation for the wiki once it has been quiet; each new reply replaces the waiting job
+ * under the same key and so pushes the read back. A message kept on purpose runs at once under a
+ * key of its own, so it never takes the place of the quiet read.
+ */
+export function wikiCurateJob(
+  threadId: string,
+  options: { messageId?: string; now?: Date } = {},
+): BackgroundJob {
+  const { messageId } = options;
+  return {
+    name: "wiki.curate",
+    payload: messageId ? { threadId, messageId } : { threadId },
+    replaceKey: messageId ? `wiki.curate:${threadId}:${messageId}` : `wiki.curate:${threadId}`,
+    ...(messageId
+      ? {}
+      : { availableAt: new Date((options.now ?? new Date()).getTime() + WIKI_CURATE_QUIET_MS) }),
+    maxAttempts: WIKI_CURATE_MAX_ATTEMPTS,
   };
 }
 

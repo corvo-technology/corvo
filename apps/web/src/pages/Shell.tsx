@@ -911,6 +911,14 @@ function SpaceShell() {
                 else if (active)
                   void read.markBotUnread(active.id, message.id).catch(() => undefined);
               }}
+              onKeepInWiki={(message) => {
+                const target = groupId
+                  ? { groupId, messageId: message.id }
+                  : active
+                    ? { botId: active.id, messageId: message.id }
+                    : null;
+                if (target) void rpc.wiki.keep(target).catch(() => undefined);
+              }}
               onQuote={(message, quote) => {
                 composer.setReplyTarget(message);
                 composer.setReplyQuote(quote);

@@ -74,3 +74,37 @@ test("on a phone the list and the page take turns", async ({ page }) => {
   await page.getByRole("button", { name: "Back" }).click();
   await expect(page.getByTestId("wiki-page-Marina Costa")).toBeVisible();
 });
+
+test("a change the curator left waits in the list, and approving it clears it", async ({
+  page,
+}, testInfo) => {
+  await page.goto(url("light"));
+  const waiting = page.getByTestId("wiki-pending");
+  await expect(waiting).toContainText("Waiting for approval");
+  await expect(waiting).toContainText("Office Renovation");
+  await expect(waiting).toContainText("The quote was approved");
+  await captureScreenshot(page, testInfo, "wiki-pending");
+
+  // What was quoted is there to read, but only on request.
+  await waiting.getByText("Source").click();
+  await expect(waiting).toContainText("we start on Nov 18");
+
+  await waiting.getByRole("button", { name: "Approve" }).click();
+  await expect(page.getByTestId("wiki-pending")).toHaveCount(0);
+});
+
+test("nothing about changes shows while none waits", async ({ page }) => {
+  await page.goto(url("light", "&changes=none"));
+  await expect(page.getByTestId("wiki-kind-Person")).toBeVisible();
+  await expect(page.getByTestId("wiki-pending")).toHaveCount(0);
+});
+
+test("the two wiki settings are switches, off to turn a behavior off", async ({ page }) => {
+  await page.goto(url("light"));
+  await page.getByRole("button", { name: "Wiki settings" }).click();
+  const approve = page.getByRole("switch", { name: "Approve edits" });
+  await expect(approve).toBeChecked();
+  await approve.click();
+  await expect(approve).not.toBeChecked();
+  await expect(page.getByRole("switch", { name: "Learn from conversations" })).toBeChecked();
+});

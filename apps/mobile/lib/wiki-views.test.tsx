@@ -31,13 +31,16 @@ vi.mock("react-native", () => ({
   FlatList: ({
     data,
     renderItem,
+    ListHeaderComponent,
   }: {
     data: unknown[];
     renderItem: (info: { item: unknown; index: number }) => ReactNode;
+    ListHeaderComponent?: ReactNode;
   }) =>
     createElement(
       "div",
       null,
+      ListHeaderComponent,
       data.map((item, index) => renderItem({ item, index })),
     ),
   Pressable: shim("button"),
@@ -54,6 +57,10 @@ vi.mock("./native", () => ({
 }));
 vi.mock("./appearance", () => ({ mobileTokens: () => ({}) }));
 vi.mock("./api", () => ({ rpc: vi.fn() }));
+vi.mock("../components/native-action-button", () => ({
+  NativeActionButton: ({ label, onPress }: { label: string; onPress: () => void }) =>
+    createElement("button", { type: "button", onClick: onPress }, label),
+}));
 vi.mock("@corvo/chat-ui/native", () => ({
   ChatMarkdown: ({
     children,
@@ -158,5 +165,17 @@ it("shows no list of citing pages when no page cites it", async () => {
   };
   const unmount = await render(createElement(WikiPageView, { page, pages: [], onOpen: vi.fn() }));
   expect(host.querySelector('[aria-label="Cited by"]')).toBeNull();
+  await unmount();
+});
+
+it("puts what waits for a person above the pages", async () => {
+  const unmount = await render(
+    createElement(WikiList, {
+      groups: groupWikiPages([info("Ana", "Person")]),
+      onOpen: vi.fn(),
+      header: createElement("span", null, "WAITING"),
+    }),
+  );
+  expect(host.textContent).toBe("WAITINGPersonAnaAbout Ana.");
   await unmount();
 });

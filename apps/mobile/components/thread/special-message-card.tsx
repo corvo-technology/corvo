@@ -20,6 +20,7 @@ import { BotMention } from "../bot-mention";
 import { NativeSymbol } from "../native-symbol";
 import type { MessageActionProps } from "./message-bubble";
 import type { MessageRowActions } from "./message-row";
+import { WikiChangeBlock } from "./wiki-change-block";
 
 // A running helper's live card and the saved message that replaces it have different ids, so
 // its row mounts again when the helper finishes. Remember open cards by agent id across that.
@@ -27,7 +28,7 @@ const openHelpers = new Set<string>();
 
 export type SpecialMessageBlock = Extract<
   MessageBlock,
-  { kind: "subagent" | "child_bot" | "cloud_agent" | "plan" }
+  { kind: "subagent" | "child_bot" | "cloud_agent" | "plan" | "wiki_change" }
 >;
 
 export function isSpecialMessageBlock(block: MessageBlock): block is SpecialMessageBlock {
@@ -35,7 +36,8 @@ export function isSpecialMessageBlock(block: MessageBlock): block is SpecialMess
     block.kind === "subagent" ||
     block.kind === "child_bot" ||
     block.kind === "cloud_agent" ||
-    block.kind === "plan"
+    block.kind === "plan" ||
+    block.kind === "wiki_change"
   );
 }
 
@@ -181,6 +183,7 @@ export function SpecialMessageCard(props: SpecialMessageCardProps) {
   const tokens = withUserBubble(mobileTokens(), userBubble);
   const { t } = useI18n();
   if (special.kind === "subagent") return <HelperMessageCard {...props} special={special} />;
+  if (special.kind === "wiki_change") return <WikiChangeBlock changeId={special.changeId} />;
   if (special.kind === "plan") {
     const label = {
       pending: t("Waiting"),

@@ -77,6 +77,19 @@ export const ENCRYPTED_MODELS: Record<string, ModelSpec> = {
     space: { parent: "memory_documents" },
     ownerRelation: "document",
   },
+  /** What the wiki curator read, kept as it was said, and what it proposed. */
+  WikiSource: {
+    table: "wiki_sources",
+    fields: { title: {}, text: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
+  WikiChange: {
+    table: "wiki_changes",
+    fields: { ops: { plainKeys: new Set(["op"]) }, reason: {} },
+    space: { column: "spaceId" },
+    ownerRelation: "user",
+  },
   /** The compacted summary of older history is derived message content. */
   Thread: {
     table: "threads",

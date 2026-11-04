@@ -457,6 +457,10 @@ msgstr "いろいろ少しずつ"
 msgid "A command's output"
 msgstr "コマンドの出力"
 
+#: src/components/WikiChangeCard.tsx
+msgid "A page changed since"
+msgstr "その後ページが変更されました"
+
 #: src/components/ApprovalRulesSettings.tsx
 msgid "A second model approves what fits your request. You decide the rest."
 msgstr "2つ目のモデルが、リクエストに合うものを承認します。残りはあなたが決めます。"
@@ -695,6 +699,10 @@ msgstr "トリガーを追加"
 msgid "Added"
 msgstr "追加済み"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Added to the wiki"
+msgstr "Wikiに追加しました"
+
 #: src/pages/AppCatalogGrid.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -922,9 +930,14 @@ msgstr "承認モデル"
 msgid "Approvals"
 msgstr "承認"
 
+#: src/components/WikiChangeCard.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "承認"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Approve edits"
+msgstr "編集を承認"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -3519,6 +3532,10 @@ msgstr "返信元のメッセージへ移動: {excerpt}"
 msgid "just now"
 msgstr "たった今"
 
+#: src/pages/shell/message-hover-actions.tsx
+msgid "Keep in the wiki"
+msgstr "Wikiに保存"
+
 #: src/pages/shell/agent-import.tsx
 msgid "Keep its instructions"
 msgstr "既存の指示を残す"
@@ -3568,6 +3585,10 @@ msgstr "前回の実行"
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
 msgstr "後で"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Learn from conversations"
+msgstr "会話から学ぶ"
 
 #: src/components/DesktopControlSettings.tsx
 msgid "Let bots see and use your apps. Actions ask first."
@@ -4974,6 +4995,14 @@ msgstr "表示を更新"
 msgid "Refreshing…"
 msgstr "更新中…"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Refuse"
+msgstr "却下"
+
+#: src/components/WikiChangeCard.tsx
+msgid "Refused"
+msgstr "却下しました"
+
 #: src/lib/user-error.ts
 msgid "Registration is closed"
 msgstr "新規登録は締め切られています"
@@ -5793,6 +5822,10 @@ msgstr "{column} で並べ替え済み、昇順"
 msgid "Sorted by {column}, descending"
 msgstr "{column} で並べ替え済み、降順"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Source"
+msgstr "出典"
+
 #: src/lib/identity-display.ts
 #: src/pages/SettingsOverlay.tsx
 msgid "Space"
@@ -6393,6 +6426,7 @@ msgid "Type your answer"
 msgstr "回答を入力"
 
 #: src/components/AskCard.tsx
+#: src/components/WikiChangeCard.tsx
 msgid "Undo"
 msgstr "元に戻す"
 
@@ -6403,6 +6437,10 @@ msgstr "インポートを元に戻す"
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Undo import?"
 msgstr "インポートを元に戻しますか？"
+
+#: src/components/WikiChangeCard.tsx
+msgid "Undone"
+msgstr "元に戻しました"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Uninstall"
@@ -6654,6 +6692,10 @@ msgstr "待機中"
 msgid "Waiting"
 msgstr "待機中"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Waiting for approval"
+msgstr "承認待ち"
+
 #: src/lib/roster-status.ts
 msgid "Waiting in line…"
 msgstr "順番待ち…"
@@ -6782,6 +6824,10 @@ msgstr "インポート先"
 #: src/pages/WikiPage.tsx
 msgid "Wiki"
 msgstr "Wiki"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Wiki settings"
+msgstr "Wikiの設定"
 
 #: src/lib/ticket-status.ts
 msgid "Won't do"

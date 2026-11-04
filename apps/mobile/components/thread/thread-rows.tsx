@@ -43,6 +43,7 @@ export function useLatestRowActions(current: MessageRowActions): MessageRowActio
       speak: (message) => rowActionsRef.current.speak(message),
       react: (message, reaction) => rowActionsRef.current.react(message, reaction),
       markUnread: (message) => rowActionsRef.current.markUnread(message),
+      keepInWiki: (message) => rowActionsRef.current.keepInWiki(message),
       answer: (message, answer, username, dismiss) =>
         rowActionsRef.current.answer(message, answer, username, dismiss),
       openBot: (id, name) => rowActionsRef.current.openBot(id, name),

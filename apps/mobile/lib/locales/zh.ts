@@ -1091,5 +1091,12 @@ export const ZH_MESSAGES: Record<string, string> = {
   Wiki: "Wiki",
   "No pages yet": "还没有页面",
   "Cited by": "被引用于",
+  "Waiting for approval": "等待批准",
+  "Added to the wiki": "已添加到 Wiki",
+  Refused: "已拒绝",
+  Undone: "已撤销",
+  "A page changed since": "此后有页面已更改",
+  Refuse: "拒绝",
+  "Keep in the wiki": "保留到 Wiki",
   "Could not load pages": "无法加载页面",
 };

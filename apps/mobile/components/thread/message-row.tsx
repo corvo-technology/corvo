@@ -44,6 +44,8 @@ export type MessageRowActions = {
   speak: (message: MobileMessage) => void;
   react: (message: MobileMessage, reaction: MessageReaction) => Promise<boolean>;
   markUnread: (message: MobileMessage) => void;
+  /** Asks the wiki to keep this message. */
+  keepInWiki: (message: MobileMessage) => void;
   answer: (
     message: MobileMessage,
     answer: string,
@@ -189,6 +191,12 @@ export const MessageRow = memo(function MessageRow({
     };
     const react = (reaction: MessageReaction) => actions.react(message, reaction);
     const markUnread = () => actions.markUnread(message);
+    const keepInWiki = () => actions.keepInWiki(message);
+    // Only a message with words in it can be kept, and not one that is only being streamed.
+    const includeWiki =
+      !readOnly &&
+      !message.id.startsWith("progress:") &&
+      Boolean(copyableMobileMessageText(message));
     // VoiceOver reads the bubble as one element and can't reach a code block's copy button.
     const codeBlocks = message.role === "user" ? [] : markdownCodeBlocks(blockText(message));
     const copyCode = () => {
@@ -200,6 +208,7 @@ export const MessageRow = memo(function MessageRow({
         ? [{ name: "unread", text: t("Mark as unread"), onPress: markUnread }]
         : []),
       ...(includeQuote ? [{ name: "quote", text: t("Quote"), onPress: quote }] : []),
+      ...(includeWiki ? [{ name: "wiki", text: t("Keep in the wiki"), onPress: keepInWiki }] : []),
       ...(includeReact
         ? [
             {
@@ -234,6 +243,7 @@ export const MessageRow = memo(function MessageRow({
         speak: t("Speak message"),
         select: t("Select text"),
         unread: t("Mark as unread"),
+        wiki: t("Keep in the wiki"),
       },
       reactions: MESSAGE_REACTIONS,
       include: {
@@ -243,6 +253,7 @@ export const MessageRow = memo(function MessageRow({
         speak: includeSpeak,
         select: includeSelect,
         unread: includeUnread,
+        wiki: includeWiki,
       },
     });
     const openSheet = (event: GestureResponderEvent) =>
@@ -337,6 +348,7 @@ export const MessageRow = memo(function MessageRow({
         if (id === "speak") speakMessage();
         if (id === "select") select();
         if (id === "unread") markUnread();
+        if (id === "wiki") keepInWiki();
       },
       actionProps: {
         onLongPress: Platform.OS === "ios" ? undefined : openSheet,

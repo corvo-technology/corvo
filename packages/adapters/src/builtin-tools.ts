@@ -671,12 +671,12 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "save_shared_memory",
     description:
-      "Save a Space shared memory document every bot reads. Replaces the full content, so include everything it should keep.",
+      "Save a wiki page every bot can read. Send the page's whole text. A new page is kept at once; a change to an existing page waits for the owner's approval.",
     inputSchema: {
       type: "object",
       properties: {
-        path: { type: "string", description: "Document name, for example MEMORY.md." },
-        content: { type: "string", description: "The document's complete new content." },
+        path: { type: "string", description: "Page title, for example Alpha Builders." },
+        content: { type: "string", description: "The page's complete text." },
       },
       required: ["path", "content"],
     },

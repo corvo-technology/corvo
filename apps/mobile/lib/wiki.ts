@@ -1,4 +1,4 @@
-import type { WikiPageInfo } from "@corvo/contracts";
+import type { WikiChangeState, WikiPageInfo } from "@corvo/contracts";
 import { linkWikiTitles, parseWikiPage, wikiMentionHref, wikiSlug } from "@corvo/core";
 import { rpc } from "./api";
 
@@ -35,4 +35,22 @@ export function listWikiPages() {
 
 export function readWikiPage(title: string) {
   return rpc("wiki/read", { title });
+}
+
+/** What the curator proposed or kept; `["pending"]` is what waits for a person. */
+export function listWikiChanges(state?: WikiChangeState[]) {
+  return rpc("wiki/changes/list", { state });
+}
+
+export function getWikiChange(changeId: string) {
+  return rpc("wiki/changes/get", { changeId });
+}
+
+export function decideWikiChange(changeId: string, decision: "apply" | "refuse" | "undo") {
+  return rpc("wiki/changes/decide", { changeId, decision });
+}
+
+/** Asks the wiki to keep one message of a chat with an agent or of a channel. */
+export function keepMessageInWiki(target: { botId?: string; groupId?: string }, messageId: string) {
+  return rpc("wiki/keep", { ...target, messageId });
 }

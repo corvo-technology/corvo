@@ -1,0 +1,89 @@
+import type { WikiChange } from "@corvo/contracts";
+import { Button } from "@corvo/ui-web";
+import { Trans } from "@lingui/react/macro";
+import { BuiCard } from "./ai/primitives";
+
+export type WikiChangeCardProps = {
+  change: Pick<
+    WikiChange,
+    "state" | "reason" | "sourceTitle" | "pages" | "canSeeSource" | "sourceText"
+  >;
+  /** An answer is on its way, so the buttons wait. */
+  busy?: boolean;
+  onDecide: (decision: "apply" | "refuse" | "undo") => void;
+  onOpenPage: (title: string) => void;
+};
+
+function State({ state }: { state: WikiChange["state"] }) {
+  switch (state) {
+    case "pending":
+      return <Trans>Waiting for approval</Trans>;
+    case "applied":
+      return <Trans>Added to the wiki</Trans>;
+    case "refused":
+      return <Trans>Refused</Trans>;
+    case "undone":
+      return <Trans>Undone</Trans>;
+    case "conflict":
+      return <Trans>A page changed since</Trans>;
+  }
+}
+
+/**
+ * What the wiki kept, or is waiting to keep, from a conversation: the pages it touches, why, and the
+ * one thing a person can do about it now. The quoted source is only there for whom it was said to.
+ */
+export function WikiChangeCard({ change, busy, onDecide, onOpenPage }: WikiChangeCardProps) {
+  return (
+    <BuiCard
+      className="flex w-full max-w-md flex-col gap-2 px-4 py-3"
+      data-testid="wiki-change"
+      data-state={change.state}
+    >
+      <p className="text-sm text-muted-foreground">
+        <State state={change.state} />
+      </p>
+      <ul className="flex flex-wrap gap-x-3 gap-y-1">
+        {change.pages.map((page) => (
+          <li key={page.title}>
+            <Button
+              variant="link"
+              className="h-auto p-0 text-sm"
+              onClick={() => onOpenPage(page.title)}
+            >
+              {page.title}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      {change.reason ? <p className="text-sm">{change.reason}</p> : null}
+      {change.canSeeSource && change.sourceText ? (
+        <details className="text-sm text-muted-foreground">
+          <summary className="cursor-pointer select-none">
+            <Trans>Source</Trans>
+          </summary>
+          <p className="mt-1 whitespace-pre-wrap" dir="auto">
+            {change.sourceText}
+          </p>
+        </details>
+      ) : null}
+      {change.state === "pending" ? (
+        <div className="flex gap-2 pt-1">
+          <Button size="sm" disabled={busy} onClick={() => onDecide("apply")}>
+            <Trans>Approve</Trans>
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => onDecide("refuse")}>
+            <Trans>Refuse</Trans>
+          </Button>
+        </div>
+      ) : null}
+      {change.state === "applied" ? (
+        <div className="pt-1">
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => onDecide("undo")}>
+            <Trans>Undo</Trans>
+          </Button>
+        </div>
+      ) : null}
+    </BuiCard>
+  );
+}

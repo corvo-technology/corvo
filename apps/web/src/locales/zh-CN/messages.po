@@ -457,6 +457,10 @@ msgstr "什么都做一点"
 msgid "A command's output"
 msgstr "命令的输出"
 
+#: src/components/WikiChangeCard.tsx
+msgid "A page changed since"
+msgstr "此后有页面已更改"
+
 #: src/components/ApprovalRulesSettings.tsx
 msgid "A second model approves what fits your request. You decide the rest."
 msgstr "由第二个模型批准符合你请求的内容，其余由你决定。"
@@ -695,6 +699,10 @@ msgstr "添加触发器"
 msgid "Added"
 msgstr "已添加"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Added to the wiki"
+msgstr "已添加到 Wiki"
+
 #: src/pages/AppCatalogGrid.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -922,9 +930,14 @@ msgstr "审批模型"
 msgid "Approvals"
 msgstr "审批"
 
+#: src/components/WikiChangeCard.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "批准"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Approve edits"
+msgstr "批准编辑"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -3519,6 +3532,10 @@ msgstr "跳转到回复的消息：{excerpt}"
 msgid "just now"
 msgstr "刚刚"
 
+#: src/pages/shell/message-hover-actions.tsx
+msgid "Keep in the wiki"
+msgstr "保留到 Wiki"
+
 #: src/pages/shell/agent-import.tsx
 msgid "Keep its instructions"
 msgstr "保留其指令"
@@ -3568,6 +3585,10 @@ msgstr "上次运行"
 #: src/components/DesktopUpdates.tsx
 msgid "Later"
 msgstr "稍后"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Learn from conversations"
+msgstr "从对话中学习"
 
 #: src/components/DesktopControlSettings.tsx
 msgid "Let bots see and use your apps. Actions ask first."
@@ -4974,6 +4995,14 @@ msgstr "刷新视图"
 msgid "Refreshing…"
 msgstr "正在刷新…"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Refuse"
+msgstr "拒绝"
+
+#: src/components/WikiChangeCard.tsx
+msgid "Refused"
+msgstr "已拒绝"
+
 #: src/lib/user-error.ts
 msgid "Registration is closed"
 msgstr "注册已关闭"
@@ -5793,6 +5822,10 @@ msgstr "按 {column} 排序，升序"
 msgid "Sorted by {column}, descending"
 msgstr "按 {column} 排序，降序"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Source"
+msgstr "来源"
+
 #: src/lib/identity-display.ts
 #: src/pages/SettingsOverlay.tsx
 msgid "Space"
@@ -6393,6 +6426,7 @@ msgid "Type your answer"
 msgstr "输入你的回答"
 
 #: src/components/AskCard.tsx
+#: src/components/WikiChangeCard.tsx
 msgid "Undo"
 msgstr "撤销"
 
@@ -6403,6 +6437,10 @@ msgstr "撤销导入"
 #: src/pages/shell/agent-import-undo.tsx
 msgid "Undo import?"
 msgstr "撤销导入？"
+
+#: src/components/WikiChangeCard.tsx
+msgid "Undone"
+msgstr "已撤销"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Uninstall"
@@ -6654,6 +6692,10 @@ msgstr "等待中"
 msgid "Waiting"
 msgstr "等待中"
 
+#: src/components/WikiChangeCard.tsx
+msgid "Waiting for approval"
+msgstr "等待批准"
+
 #: src/lib/roster-status.ts
 msgid "Waiting in line…"
 msgstr "排队等候…"
@@ -6782,6 +6824,10 @@ msgstr "导入到哪里"
 #: src/pages/WikiPage.tsx
 msgid "Wiki"
 msgstr "Wiki"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Wiki settings"
+msgstr "Wiki 设置"
 
 #: src/lib/ticket-status.ts
 msgid "Won't do"

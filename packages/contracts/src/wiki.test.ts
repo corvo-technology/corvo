@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
+import { MessageBlock } from "./events.js";
 import {
   WIKI_BODY_MAX,
+  WikiCaptureValueSchema,
+  WikiChangeDecideInputSchema,
+  WikiChangeSchema,
   WikiHitSchema,
   WikiPageInfoSchema,
   WikiPageSchema,
   WikiRevisionSchema,
+  WikiSettingsPatchSchema,
+  WikiSettingsSchema,
   WikiTitleSchema,
   WikiWriteInputSchema,
 } from "./wiki.js";
@@ -57,5 +63,62 @@ describe("wiki contracts", () => {
       WikiWriteInputSchema.safeParse({ title: "A", body: "t", expectedRevision: -1 }).success,
     ).toBe(false);
     expect(WIKI_BODY_MAX).toBe(200_000);
+  });
+});
+
+describe("wiki curator contracts", () => {
+  const change = {
+    id: "chg1",
+    state: "pending",
+    reason: "A decision about the lobby",
+    sourceTitle: "Kickoff call",
+    pages: [
+      { title: "Alpha Builders", op: "create" },
+      { title: "Plan", op: "replace" },
+    ],
+    createdAt: "2026-11-04T10:00:00.000Z",
+    canSeeSource: true,
+    sourceText: "We are going with Alpha Builders.",
+  };
+
+  it("describes a change with its pages, its source and whether the reader may see it", () => {
+    expect(WikiChangeSchema.parse(change)).toEqual(change);
+    expect(
+      WikiChangeSchema.parse({ ...change, canSeeSource: false, sourceText: undefined }),
+    ).toBeTruthy();
+    expect(WikiChangeSchema.safeParse({ ...change, state: "merged" }).success).toBe(false);
+    expect(
+      WikiChangeSchema.safeParse({ ...change, pages: [{ title: "A", op: "delete" }] }).success,
+    ).toBe(false);
+  });
+
+  it("accepts only apply, refuse or undo, for a named change", () => {
+    for (const decision of ["apply", "refuse", "undo"])
+      expect(WikiChangeDecideInputSchema.safeParse({ changeId: "c", decision }).success).toBe(true);
+    expect(
+      WikiChangeDecideInputSchema.safeParse({ changeId: "c", decision: "delete" }).success,
+    ).toBe(false);
+    expect(WikiChangeDecideInputSchema.safeParse({ changeId: "", decision: "apply" }).success).toBe(
+      false,
+    );
+  });
+
+  it("holds two settings, each changeable on its own", () => {
+    expect(WikiSettingsSchema.parse({ capture: true, edits: "approve" })).toBeTruthy();
+    expect(WikiSettingsSchema.safeParse({ capture: true, edits: "never" }).success).toBe(false);
+    expect(WikiSettingsPatchSchema.parse({ edits: "auto" })).toEqual({ edits: "auto" });
+    expect(WikiSettingsPatchSchema.parse({})).toEqual({});
+  });
+
+  it("takes a switch that is on, off, or follows the conversation's kind", () => {
+    for (const value of [true, false, null])
+      expect(WikiCaptureValueSchema.safeParse(value).success).toBe(true);
+    expect(WikiCaptureValueSchema.safeParse("on").success).toBe(false);
+  });
+
+  it("is a block that names its change and the pages it touches", () => {
+    const block = { kind: "wiki_change", changeId: "chg1", pages: change.pages };
+    expect(MessageBlock.parse(block)).toEqual(block);
+    expect(MessageBlock.safeParse({ kind: "wiki_change", pages: [] }).success).toBe(false);
   });
 });

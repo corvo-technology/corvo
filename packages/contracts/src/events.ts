@@ -236,6 +236,12 @@ export const MessageBlock = z.discriminatedUnion("kind", [
       .max(12),
   }),
   z.object({
+    /** What the wiki curator kept or proposed from this conversation; its state is read live. */
+    kind: z.literal("wiki_change"),
+    changeId: Id,
+    pages: z.array(z.object({ title: z.string(), op: z.enum(["create", "append", "replace"]) })),
+  }),
+  z.object({
     kind: z.literal("child_bot"),
     botId: z.string(),
     name: z.string(),

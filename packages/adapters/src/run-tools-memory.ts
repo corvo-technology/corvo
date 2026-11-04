@@ -7,6 +7,7 @@ import { MAX_RECALLED_MEMORIES } from "./history-compaction.js";
 import { appendMemoryFact } from "./memory-tools.js";
 import type { RunContext } from "./run-context.js";
 import type { ToolCall, ToolHandlers } from "./run-tool-gate.js";
+import { keepNoteInWiki } from "./wiki-note.js";
 
 async function readHistoryTool(ctx: RunContext, call: ToolCall) {
   const { deps, run } = ctx;
@@ -69,33 +70,19 @@ export const memoryTools: ToolHandlers = {
     }
   },
   async save_shared_memory(ctx, call) {
-    const { deps, runId, thread, context } = ctx;
+    const { deps, thread, bot } = ctx;
     const { args } = call;
     const invalid = sharedMemorySaveError(args);
     if (invalid) return call.finish({ error: invalid });
-    const path = String(args.path ?? "").trim();
-    // The save replaces the whole document. Pass the revision just read so a
-    // concurrent edit is rejected instead of overwritten.
-    const snapshot = await deps.memory.read({ scope: "user", path }, context);
-    const expectedRevision = snapshot.documents[0]?.revision ?? 0;
-    try {
-      const saved = await deps.memory.commit(
-        {
-          scope: "user",
-          path,
-          content: String(args.content ?? ""),
-          expectedRevision,
-          sourceRunId: runId,
-          sourceThreadId: thread.id,
-        },
-        context,
-      );
-      return call.finish({ ok: true, path: saved.path, revision: saved.revision });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not save shared memory.";
-      if (message === MEMORY_REVISION_CONFLICT_ERROR) return call.finish({ error: message });
-      throw error;
-    }
+    // The wiki keeps it: a new page at once, a change to a page for the owner to approve.
+    return call.finish(
+      await keepNoteInWiki(deps, {
+        thread,
+        botName: bot.name,
+        path: String(args.path ?? "").trim(),
+        content: String(args.content ?? ""),
+      }),
+    );
   },
   async recall_memory(ctx, call) {
     const { bot, thread, context } = ctx;

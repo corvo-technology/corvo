@@ -1,5 +1,13 @@
 import { ChatMarkdown } from "@corvo/chat-ui/web";
-import type { WikiHit, WikiPage, WikiPageInfo, WikiRevision } from "@corvo/contracts";
+import type {
+  WikiChange,
+  WikiChangeState,
+  WikiHit,
+  WikiPage,
+  WikiPageInfo,
+  WikiRevision,
+  WikiSettings,
+} from "@corvo/contracts";
 import { linkWikiTitles, parseWikiPage, wikiMentionHref, wikiSlug } from "@corvo/core";
 import {
   Button,
@@ -8,15 +16,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Spinner,
+  Switch,
   Textarea,
 } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { ORPCError } from "@orpc/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, Link2, MoreHorizontal, Plus, Search } from "lucide-react";
+import { ChevronLeft, Link2, MoreHorizontal, Plus, Search, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { WikiChangeCard } from "../components/WikiChangeCard";
 import { formatRelativeTime } from "../lib/relative-time";
 
 /** What the browser needs of the wiki: the procedures of the `wiki` namespace, nothing else. */
@@ -28,6 +41,14 @@ export type WikiApi = {
   history(input: { title: string }): Promise<WikiRevision[]>;
   restore(input: { title: string; revision: number }): Promise<WikiPage>;
   remove(input: { title: string }): Promise<{ ok: true }>;
+  changes: {
+    list(input: { state?: WikiChangeState[] }): Promise<WikiChange[]>;
+    decide(input: { changeId: string; decision: "apply" | "refuse" | "undo" }): Promise<WikiChange>;
+  };
+  settings: {
+    get(): Promise<WikiSettings>;
+    set(patch: Partial<WikiSettings>): Promise<WikiSettings>;
+  };
 };
 
 type Mode = "view" | "edit" | "new" | "history" | "delete";
@@ -78,6 +99,35 @@ export function WikiBrowser({
     queryFn: () => api.history({ title: title! }),
     enabled: Boolean(title) && mode === "history",
   });
+
+  const waiting = useQuery({
+    queryKey: ["wiki", "changes", "pending"],
+    queryFn: () => api.changes.list({ state: ["pending"] }),
+  });
+  const settings = useQuery({ queryKey: ["wiki", "settings"], queryFn: () => api.settings.get() });
+  const [deciding, setDeciding] = useState<string | null>(null);
+
+  async function decide(changeId: string, decision: "apply" | "refuse" | "undo") {
+    if (deciding) return;
+    setDeciding(changeId);
+    try {
+      await api.changes.decide({ changeId, decision });
+      await queryClient.invalidateQueries({ queryKey: ["wiki"] });
+    } catch {
+      setError(t`Could not save`);
+    } finally {
+      setDeciding(null);
+    }
+  }
+
+  async function changeSetting(patch: Partial<WikiSettings>) {
+    queryClient.setQueryData(["wiki", "settings"], { ...settings.data, ...patch });
+    try {
+      queryClient.setQueryData(["wiki", "settings"], await api.settings.set(patch));
+    } catch {
+      await queryClient.invalidateQueries({ queryKey: ["wiki", "settings"] });
+    }
+  }
 
   const known = useMemo(
     () => new Set((index.data ?? []).map((entry) => wikiSlug(entry.title))),
@@ -216,7 +266,48 @@ export function WikiBrowser({
           >
             <Plus />
           </Button>
+          <Popover>
+            <PopoverTrigger
+              aria-label={t`Wiki settings`}
+              className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground hover:text-foreground"
+            >
+              <SlidersHorizontal size={15} strokeWidth={1.7} />
+            </PopoverTrigger>
+            <PopoverContent align="end" className="flex w-64 flex-col gap-3 p-3">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <Trans>Learn from conversations</Trans>
+                <Switch
+                  checked={settings.data?.capture ?? true}
+                  aria-label={t`Learn from conversations`}
+                  onCheckedChange={(capture) => void changeSetting({ capture })}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <Trans>Approve edits</Trans>
+                <Switch
+                  checked={(settings.data?.edits ?? "approve") === "approve"}
+                  aria-label={t`Approve edits`}
+                  onCheckedChange={(approve) =>
+                    void changeSetting({ edits: approve ? "approve" : "auto" })
+                  }
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
+        {waiting.data?.length ? (
+          <div className="flex flex-col gap-2" data-testid="wiki-pending">
+            {waiting.data.map((change) => (
+              <WikiChangeCard
+                key={change.id}
+                change={change}
+                busy={deciding === change.id}
+                onDecide={(decision) => void decide(change.id, decision)}
+                onOpenPage={show}
+              />
+            ))}
+          </div>
+        ) : null}
         {index.isPending ? (
           <div className="flex justify-center py-6">
             <Spinner />
