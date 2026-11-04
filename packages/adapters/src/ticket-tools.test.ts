@@ -81,6 +81,24 @@ describe("ticket tools", () => {
     expect(result).toEqual({ tickets: [expect.objectContaining({ ref: "RAK-1" })] });
   });
 
+  it("tells the agent the column names the person chose, and only then", async () => {
+    const findMany = vi.fn(async () => []);
+    const labelled = boardSpace();
+    labelled.board.findUnique = vi.fn(async () =>
+      board({ statusLabels: { doing: "In contact" } }),
+    ) as never;
+    const withLabels = await listBoardTickets(
+      { prisma: { ...labelled, ticket: { findMany } }, ticketBoardEnabled: true } as never,
+      { spaceId: "ws" },
+    );
+    expect(withLabels).toMatchObject({ statusLabels: { doing: "In contact" } });
+    const plain = await listBoardTickets(
+      { prisma: { ...boardSpace(), ticket: { findMany } }, ticketBoardEnabled: true } as never,
+      { spaceId: "ws" },
+    );
+    expect(plain).not.toHaveProperty("statusLabels");
+  });
+
   it("leaves closed tickets out of an unfiltered list and shortens descriptions", async () => {
     const findMany = vi.fn(async () => [ticket({ number: 2, description: "x".repeat(500) })]);
     const prisma = { ...boardSpace(), ticket: { findMany } };

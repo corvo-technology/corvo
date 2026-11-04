@@ -95,3 +95,45 @@ it.each([false, true])("includes the board capability in me (%s)", async (ticket
   await expect(client.me()).resolves.toHaveProperty("ticketBoardEnabled", ticketBoardEnabled);
   await expect(client.me()).resolves.toHaveProperty("phoneCallsEnabled", ticketBoardEnabled);
 });
+
+describe("renaming column labels", () => {
+  const board = { id: "board-1", ticketPrefix: "RAK", statusLabels: { done: "Won" } };
+  function renameClient() {
+    const update = vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
+      id: "board-1",
+      spaceId: "space-1",
+      name: "Board",
+      ticketPrefix: "RAK",
+      nextNumber: 1,
+      statusLabels: data.statusLabels,
+      createdAt: new Date(0),
+      updatedAt: new Date(0),
+    }));
+    const prisma = {
+      board: { findUnique: vi.fn(async () => board), update },
+      ticket: { count: vi.fn(async () => 0) },
+    };
+    const client = createRouterClient(
+      createRouter({ prisma, env: { ticketBoardEnabled: true } } as unknown as RouterDeps),
+      { context: { actor } },
+    );
+    return { client, update };
+  }
+
+  it("keeps the other labels, sets one and returns the result", async () => {
+    const { client, update } = renameClient();
+    const result = await client.boards.rename({ statusLabels: { doing: "In contact" } });
+    expect(update.mock.calls[0]?.[0].data.statusLabels).toEqual({
+      done: "Won",
+      doing: "In contact",
+    });
+    expect(result.statusLabels).toEqual({ done: "Won", doing: "In contact" });
+  });
+
+  it("removes a label with null", async () => {
+    const { client, update } = renameClient();
+    await client.boards.rename({ statusLabels: { done: null } });
+    // No label left stores a database null, not the JSON value null.
+    expect(String(update.mock.calls[0]?.[0].data.statusLabels)).toContain("DbNull");
+  });
+});

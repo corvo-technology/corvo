@@ -23,7 +23,7 @@ import {
 } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Settings2 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSpaceQueries } from "../lib/query";
@@ -32,13 +32,17 @@ import { rpc } from "../lib/rpc";
 import { useTicketPriorityLabels } from "../lib/ticket-priority";
 import { useTicketStatusLabels } from "../lib/ticket-status";
 import { errorText } from "../lib/user-error";
+import { BoardSettings } from "./BoardSettings";
 import { WindowChrome } from "./WindowChrome";
 
 export function BoardPage() {
   const { t } = useLingui();
-  const statuses = useTicketStatusLabels();
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
+  const boardOptions = queries.boards.get.queryOptions();
+  const boardQuery = useQuery(boardOptions);
+  const statuses = useTicketStatusLabels(boardQuery.data?.statusLabels);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const ticketsOptions = queries.tickets.list.queryOptions({ input: {} });
   const ticketsQuery = useQuery(ticketsOptions);
   const botsQuery = useQuery(queries.bots.list.queryOptions());
@@ -119,6 +123,16 @@ export function BoardPage() {
         <h1 className="flex-1 font-medium">
           <Trans>Board</Trans>
         </h1>
+        {boardQuery.data ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t`Board settings`}
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Settings2 />
+          </Button>
+        ) : null}
         <Button onClick={() => setSelected("new")} disabled={bots.length === 0}>
           <Trans>New ticket</Trans>
         </Button>
@@ -159,11 +173,22 @@ export function BoardPage() {
           </p>
         ) : null}
       </main>
+      {settingsOpen && boardQuery.data ? (
+        <BoardSettings
+          board={boardQuery.data}
+          onClose={() => setSettingsOpen(false)}
+          onSave={async (changes) => {
+            await rpc.boards.rename({ statusLabels: changes });
+            await fetchFresh(queryClient, boardOptions);
+          }}
+        />
+      ) : null}
       {selected ? (
         <TicketDialog
           key={selected === "new" ? "new" : selected.id}
           ticket={selected === "new" ? null : selected}
           bots={bots}
+          statuses={statuses}
           onClose={() => setSelected(null)}
           onSaved={reload}
         />
@@ -175,17 +200,18 @@ export function BoardPage() {
 function TicketDialog({
   ticket,
   bots,
+  statuses,
   onClose,
   onSaved,
 }: {
   ticket: Ticket | null;
+  statuses: Record<TicketStatus, string>;
   bots: Bot[];
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
   const { t } = useLingui();
   const formId = useId();
-  const statuses = useTicketStatusLabels();
   const priorities = useTicketPriorityLabels();
   const [title, setTitle] = useState(ticket?.title ?? "");
   const [description, setDescription] = useState(ticket?.description ?? "");

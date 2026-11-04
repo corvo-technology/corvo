@@ -1,5 +1,13 @@
-import type { Board, Ticket, TicketComment, TicketPriority, TicketStatus } from "@corvo/contracts";
+import type {
+  Board,
+  BoardStatusLabels,
+  Ticket,
+  TicketComment,
+  TicketPriority,
+  TicketStatus,
+} from "@corvo/contracts";
 import {
+  BoardStatusLabelsSchema,
   parseTicketRef,
   TicketPrioritySchema,
   TicketStatusSchema,
@@ -68,8 +76,31 @@ export async function findTicket(
   });
 }
 
+/** A stored column that does not parse is ignored, so a bad value never hides the board. */
+function readStatusLabels(value: unknown): BoardStatusLabels {
+  const parsed = BoardStatusLabelsSchema.safeParse(value ?? {});
+  return parsed.success ? parsed.data : {};
+}
+
+/**
+ * Apply a label change: a string sets the label, null removes it. Nothing left to store
+ * returns null, so a board with no overrides keeps an empty column.
+ */
+export function mergeStatusLabels(
+  current: unknown,
+  patch: Partial<Record<TicketStatus, string | null>>,
+): BoardStatusLabels | null {
+  const next: Record<string, string> = { ...readStatusLabels(current) };
+  for (const [status, label] of Object.entries(patch)) {
+    if (label === null || label === undefined) delete next[status];
+    else next[status] = label;
+  }
+  return Object.keys(next).length > 0 ? (next as BoardStatusLabels) : null;
+}
+
 export function toBoardDto(row: BoardRow): Board {
   return {
+    statusLabels: readStatusLabels(row.statusLabels),
     id: row.id,
     spaceId: row.spaceId,
     name: row.name,

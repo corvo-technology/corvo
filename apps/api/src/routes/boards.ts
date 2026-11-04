@@ -2,13 +2,15 @@ import { commentTicket, createTicket, updateTicket } from "@corvo/adapters";
 import type { BoardEvent } from "@corvo/contracts";
 import { parseTicketRef } from "@corvo/contracts";
 import { escapeSearchWildcards } from "@corvo/core";
-import type { Board as BoardRow, Prisma, PrismaClient } from "@corvo/db";
+import type { Board as BoardRow, PrismaClient } from "@corvo/db";
 import {
   ensureBoard,
   findTicket,
   IsolationError,
   listBoards,
   listTicketComments,
+  mergeStatusLabels,
+  Prisma,
   toBoardDto,
   toTicketCommentDto,
   toTicketDto,
@@ -60,6 +62,12 @@ export function boardsRoutes(ctx: RouterContext) {
           data: {
             ...(input.name !== undefined ? { name: input.name } : {}),
             ...(nextPrefix !== undefined ? { ticketPrefix: nextPrefix } : {}),
+            ...(input.statusLabels !== undefined
+              ? {
+                  statusLabels:
+                    mergeStatusLabels(board.statusLabels, input.statusLabels) ?? Prisma.DbNull,
+                }
+              : {}),
           },
         });
         return toBoardDto(row);

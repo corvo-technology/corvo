@@ -9,7 +9,7 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({
-  boards: { subscribe: vi.fn() },
+  boards: { subscribe: vi.fn(), get: vi.fn(), rename: vi.fn() },
   bots: { list: vi.fn() },
   tickets: {
     list: vi.fn(),
@@ -99,8 +99,13 @@ beforeEach(() => {
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 });
 
-async function renderBoard(stream?: AsyncIterable<{ ticketId?: string }>, refusal?: unknown) {
+async function renderBoard(
+  stream?: AsyncIterable<{ ticketId?: string }>,
+  refusal?: unknown,
+  labels: Record<string, string> = {},
+) {
   api.boards.subscribe.mockReset();
+  api.boards.get.mockResolvedValue({ id: "board-1", statusLabels: labels });
   api.boards.subscribe.mockResolvedValue(
     stream ?? {
       [Symbol.asyncIterator]: () => ({ next: () => new Promise(() => {}) }),
@@ -499,4 +504,32 @@ it("does not repeat a posted comment a refresh already brought", async () => {
   } finally {
     await page.cleanup();
   }
+});
+
+it("shows the column names the board chose and saves a new one from the settings", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper")]);
+  api.tickets.list.mockResolvedValue({ tickets: [] });
+  api.boards.rename.mockResolvedValue({ id: "board-1", statusLabels: { doing: "In contact" } });
+  const view = await renderBoard(undefined, undefined, { review: "Check" });
+  const headings = [...view.container.querySelectorAll("h2")].map((node) => node.textContent);
+  expect(headings).toContain("Check");
+  expect(headings).toContain("In progress");
+
+  await act(async () =>
+    view.container.querySelector<HTMLButtonElement>('button[aria-label="Board settings"]')?.click(),
+  );
+  const input = view.container.querySelector<HTMLInputElement>('input[name="label-doing"]');
+  expect(input?.value).toBe("");
+  expect(input?.placeholder).toBe("In progress");
+  await act(async () => {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    set?.call(input, "In contact");
+    input?.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await act(async () =>
+    view.container.querySelector<HTMLFormElement>("form#board-settings")?.requestSubmit(),
+  );
+  expect(api.boards.rename).toHaveBeenCalledWith({ statusLabels: { doing: "In contact" } });
+  await view.cleanup();
 });

@@ -51,11 +51,18 @@ export function parseTicketRef(
   return { prefix, number };
 }
 
+export const BOARD_LABEL_MAX_LENGTH = 40;
+const BoardLabelSchema = z.string().trim().min(1).max(BOARD_LABEL_MAX_LENGTH);
+/** The column names a board changed. A status with no entry keeps its built-in name. */
+export const BoardStatusLabelsSchema = z.partialRecord(TicketStatusSchema, BoardLabelSchema);
+export type BoardStatusLabels = z.infer<typeof BoardStatusLabelsSchema>;
+
 export const BoardSchema = z.object({
   id: Id,
   spaceId: Id,
   name: z.string(),
   ticketPrefix: z.string(),
+  statusLabels: BoardStatusLabelsSchema.default({}),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -65,10 +72,16 @@ export const RenameBoardInput = z
   .object({
     name: z.string().trim().min(1).max(80).optional(),
     ticketPrefix: TicketPrefixSchema.optional(),
+    /** A label of null removes the override, so the column goes back to its built-in name. */
+    statusLabels: z.partialRecord(TicketStatusSchema, BoardLabelSchema.nullable()).optional(),
   })
-  .refine((value) => value.name !== undefined || value.ticketPrefix !== undefined, {
-    message: "Provide a name or ticketPrefix",
-  });
+  .refine(
+    (value) =>
+      value.name !== undefined ||
+      value.ticketPrefix !== undefined ||
+      value.statusLabels !== undefined,
+    { message: "Provide a name, ticketPrefix or statusLabels" },
+  );
 export type RenameBoardInput = z.infer<typeof RenameBoardInput>;
 
 export const TicketCommentSchema = z.object({

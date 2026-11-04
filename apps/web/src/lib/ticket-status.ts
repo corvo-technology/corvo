@@ -1,8 +1,21 @@
-import type { TicketStatus } from "@corvo/contracts";
+import type { BoardStatusLabels, TicketStatus } from "@corvo/contracts";
 import { useLingui } from "@lingui/react/macro";
 import { useMemo } from "react";
 
-export function useTicketStatusLabels(): Record<TicketStatus, string> {
+/** A board's own column name where it set one, the built-in name everywhere else. */
+export function resolveStatusLabels(
+  builtin: Record<TicketStatus, string>,
+  overrides: BoardStatusLabels | undefined,
+): Record<TicketStatus, string> {
+  const labels = { ...builtin };
+  for (const status of Object.keys(builtin) as TicketStatus[]) {
+    const label = overrides?.[status]?.trim();
+    if (label) labels[status] = label;
+  }
+  return labels;
+}
+
+export function useBuiltinStatusLabels(): Record<TicketStatus, string> {
   const { t } = useLingui();
   return useMemo(
     () => ({
@@ -15,4 +28,9 @@ export function useTicketStatusLabels(): Record<TicketStatus, string> {
     }),
     [t],
   );
+}
+
+export function useTicketStatusLabels(overrides?: BoardStatusLabels): Record<TicketStatus, string> {
+  const builtin = useBuiltinStatusLabels();
+  return useMemo(() => resolveStatusLabels(builtin, overrides), [builtin, overrides]);
 }

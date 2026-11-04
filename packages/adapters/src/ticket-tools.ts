@@ -12,6 +12,7 @@ import {
   ensureBoard,
   findTicket,
   listTicketComments,
+  toBoardDto,
   toTicketCommentDto,
   toTicketDto,
 } from "@corvo/db";
@@ -134,8 +135,11 @@ export async function listBoardTickets(
   });
   const page = rows.slice(0, LIST_TICKETS_LIMIT);
   const next = rows.length > LIST_TICKETS_LIMIT ? page.at(-1) : undefined;
+  const statusLabels = toBoardDto(board).statusLabels;
   // A list is for scanning; ticket_get returns the full description.
   return {
+    // The person's own column names, so the agent can speak the way the board does.
+    ...(Object.keys(statusLabels).length > 0 ? { statusLabels } : {}),
     tickets: page.map((row) => {
       const dto = toTicketDto(row, board.ticketPrefix);
       return { ...dto, description: truncateDescription(dto.description) };

@@ -1127,6 +1127,11 @@ msgstr "Bloqueado"
 msgid "Board"
 msgstr "Tablero"
 
+#: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
+msgid "Board settings"
+msgstr "Ajustes del tablero"
+
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
@@ -5380,6 +5385,7 @@ msgstr "sábado"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx

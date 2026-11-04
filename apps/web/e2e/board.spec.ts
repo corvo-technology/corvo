@@ -51,4 +51,14 @@ test("board creates a ticket and opens it", async ({ page }, testInfo) => {
   await expect(detail.getByTestId("ticket-description")).toHaveValue(description);
   await expect(detail.getByTestId("ticket-comments")).toBeVisible();
   await captureScreenshot(page, testInfo, "board-ticket-detail");
+
+  await page.keyboard.press("Escape");
+  await expect(detail).toBeHidden();
+  await page.getByRole("button", { name: "Board settings", exact: true }).click();
+  const settings = page.getByRole("dialog", { name: "Board settings" });
+  await settings.getByLabel("In progress", { exact: true }).fill("In contact");
+  await settings.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(settings).toBeHidden();
+  await expect(page.getByRole("heading", { name: "In contact", exact: true })).toBeVisible();
+  await captureScreenshot(page, testInfo, "board-renamed-column");
 });

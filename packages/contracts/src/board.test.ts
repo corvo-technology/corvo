@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  BoardStatusLabelsSchema,
   CreateTicketInput,
   GetTicketInput,
   isTicketCompletedStatus,
   parseTicketRef,
+  RenameBoardInput,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
   TicketSchema,
@@ -112,5 +114,23 @@ describe("ticket contracts", () => {
       "bot-2",
     );
     expect(() => UpdateTicketInput.parse({ id: "ticket-1", assigneeBotId: null })).toThrow();
+  });
+});
+
+describe("column labels", () => {
+  it("accepts a partial map of short, non-empty labels", () => {
+    expect(BoardStatusLabelsSchema.parse({ doing: "In contact" })).toEqual({ doing: "In contact" });
+    expect(BoardStatusLabelsSchema.parse({})).toEqual({});
+  });
+
+  it("refuses an empty label, an unknown status and a label over 40 characters", () => {
+    expect(BoardStatusLabelsSchema.safeParse({ doing: "  " }).success).toBe(false);
+    expect(BoardStatusLabelsSchema.safeParse({ started: "Go" }).success).toBe(false);
+    expect(BoardStatusLabelsSchema.safeParse({ doing: "x".repeat(41) }).success).toBe(false);
+  });
+
+  it("lets a rename carry labels alone, and null removes one", () => {
+    expect(RenameBoardInput.safeParse({ statusLabels: { doing: null } }).success).toBe(true);
+    expect(RenameBoardInput.safeParse({}).success).toBe(false);
   });
 });
