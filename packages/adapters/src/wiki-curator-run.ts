@@ -258,21 +258,29 @@ export async function curateWiki(
         })
       : null;
   if (!kept) await advanceWikiCursor(prisma, thread.id, thread.wikiCuratedUpToSeq, toSeq);
-  if (change) await postChangeCard(deps, thread, rows, change);
+  if (change)
+    await postWikiChangeCard(
+      deps,
+      thread,
+      change,
+      rows.find((row) => row.botId)?.botId ?? undefined,
+    );
 }
 
-/** The line in the conversation that shows what was kept; a failure here never loses the change. */
-async function postChangeCard(
-  deps: WikiCuratorDeps,
-  thread: ThreadFacts & { userId: string },
-  rows: { botId: string | null }[],
+/**
+ * The line in the conversation that shows what was kept; a failure here never loses the change.
+ * Every event names a bot; a channel has none of its own, so it borrows the one that spoke in it.
+ */
+export async function postWikiChangeCard(
+  deps: Pick<WikiCuratorDeps, "prisma" | "events">,
+  thread: ThreadFacts,
   change: { id: string; pages: { title: string; op: "create" | "append" | "replace" }[] },
+  speakingBotId?: string,
 ): Promise<void> {
   try {
-    // Every event names a bot; a channel has none of its own, so it borrows one that spoke in it.
     const botId =
       thread.botId ??
-      rows.find((row) => row.botId)?.botId ??
+      speakingBotId ??
       (
         await deps.prisma.chatGroupMember.findFirst({
           where: { groupId: thread.groupId ?? "" },

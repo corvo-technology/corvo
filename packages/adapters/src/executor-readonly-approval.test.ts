@@ -30,6 +30,12 @@ vi.mock("./computer-lifecycle.js", async (importOriginal) => ({
   provisionComputer: async () => ({ id: "computer-1", kind: "desktop" }),
 }));
 
+// How the wiki keeps a saved page is tested on its own; here only what the tool hands to it.
+const keepNoteInWiki = vi.hoisted(() =>
+  vi.fn(async (): Promise<unknown> => ({ ok: true, status: "kept", page: "MEMORY" })),
+);
+vi.mock("./wiki-note.js", () => ({ keepNoteInWiki }));
+
 // What the notice writes is tested on its own; here only that an approval card triggers it.
 const noteApprovalInParentChat = vi.hoisted(() => vi.fn(async () => undefined));
 vi.mock("./run-parent-notice.js", () => ({ noteApprovalInParentChat }));
@@ -688,7 +694,8 @@ describe("connector read-only metadata and approval enforcement", () => {
     },
   );
 
-  it("writes shared memory directly, including when an always-allow rule exists", async () => {
+  it("keeps a saved page through the wiki, with no approval card, even when an allow rule exists", async () => {
+    keepNoteInWiki.mockClear();
     const args = { path: " MEMORY.md ", content: "Printing: all print jobs go to Clyde." };
     const f = fixture({
       name: "save_shared_memory",
@@ -700,51 +707,25 @@ describe("connector read-only metadata and approval enforcement", () => {
     await f.run();
     expect(f.pauseRunForInput).not.toHaveBeenCalled();
     expect(reviewMock).not.toHaveBeenCalled();
-    expect(f.commit).toHaveBeenCalledOnce();
-    expect(f.commit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        scope: "user",
-        path: "MEMORY.md",
-        content: args.content,
-        expectedRevision: 0,
-      }),
-      expect.objectContaining({ spaceId: "space-1", userId: "user-1" }),
+    expect(keepNoteInWiki).toHaveBeenCalledOnce();
+    expect(keepNoteInWiki).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ path: "MEMORY.md", content: args.content, botName: "Assistant" }),
     );
-    expect(f.commit.mock.calls[0]![0]).not.toHaveProperty("botId");
-    expect(f.results.at(-1)).toEqual({ ok: true, path: "MEMORY.md", revision: 1 });
+    expect(f.commit).not.toHaveBeenCalled();
+    expect(f.results.at(-1)).toEqual({ ok: true, status: "kept", page: "MEMORY" });
   });
 
-  it("replaces an existing shared document at the revision it just read", async () => {
-    const f = fixture({
-      name: "save_shared_memory",
-      builtin: true,
-      existingSharedMemory: "Old rule",
+  it("hands the wiki's answer back to the agent when a change waits for approval", async () => {
+    keepNoteInWiki.mockResolvedValueOnce({
+      ok: true,
+      status: "waiting for approval",
+      page: "MEMORY",
     });
+    const f = fixture({ name: "save_shared_memory", builtin: true });
     f.setCalls([{ args: { path: "MEMORY.md", content: "New rule" }, executionId: "call-1" }]);
     await f.run();
-    expect(f.pauseRunForInput).not.toHaveBeenCalled();
-    expect(f.commit).toHaveBeenCalledWith(
-      expect.objectContaining({ content: "New rule", expectedRevision: 1 }),
-      expect.anything(),
-    );
-    expect(f.results.at(-1)).toEqual({ ok: true, path: "MEMORY.md", revision: 2 });
-  });
-
-  it("does not overwrite shared memory that changed after it was read", async () => {
-    const f = fixture({
-      name: "save_shared_memory",
-      builtin: true,
-      existingSharedMemory: "Old rule",
-      advanceRevisionAfterRead: true,
-    });
-    f.setCalls([{ args: { path: "MEMORY.md", content: "New rule" }, executionId: "call-1" }]);
-    await f.run();
-    expect(f.commit).toHaveBeenCalledWith(
-      expect.objectContaining({ expectedRevision: 1 }),
-      expect.anything(),
-    );
-    expect(f.sharedMemoryState.content).toBe("Someone else edited");
-    expect(f.results.at(-1)).toEqual({ error: MEMORY_REVISION_CONFLICT_ERROR });
+    expect(f.results.at(-1)).toEqual({ ok: true, status: "waiting for approval", page: "MEMORY" });
   });
 
   it("rejects shared memory content over the size limit", async () => {
@@ -752,10 +733,11 @@ describe("connector read-only metadata and approval enforcement", () => {
       path: "MEMORY.md",
       content: "x".repeat(MAX_SHARED_MEMORY_CHARS + 1),
     };
+    keepNoteInWiki.mockClear();
     const f = fixture({ name: "save_shared_memory", builtin: true });
     f.setCalls([{ args, executionId: "call-1" }]);
     await f.run();
-    expect(f.commit).not.toHaveBeenCalled();
+    expect(keepNoteInWiki).not.toHaveBeenCalled();
     expect(f.pauseRunForInput).not.toHaveBeenCalled();
     expect(f.results.at(-1)).toEqual({
       error: `content exceeds ${MAX_SHARED_MEMORY_CHARS} characters`,
