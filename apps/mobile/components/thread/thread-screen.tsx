@@ -51,6 +51,7 @@ import { useThreadSync } from "../../lib/thread-sync";
 import { useThreadTranscript } from "../../lib/thread-transcript";
 import { useAutoSpeakReply, useSpeakMessages, useThreadVoiceCall } from "../../lib/thread-voice";
 import { liveEndRunError } from "../../lib/thread-window";
+import { keepMessageInWiki } from "../../lib/wiki";
 import { FailedSendBubble } from "../failed-send-bubble";
 import type { MarkdownArtifactPreviewTarget } from "../markdown-artifact-preview";
 import { MarkdownArtifactPreview } from "../markdown-artifact-preview";
@@ -405,6 +406,9 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     speak,
     react: composer.react,
     markUnread: markUnreadFrom,
+    keepInWiki: (message) => {
+      void keepMessageInWiki(groupId ? { groupId } : { botId }, message.id).catch(() => undefined);
+    },
     answer: composer.answer,
     openBot,
     openComputer,

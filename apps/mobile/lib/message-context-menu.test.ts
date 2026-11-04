@@ -10,6 +10,7 @@ const labels: Record<MessageMenuSymbol, string> = {
   speak: "Speak message",
   select: "Select text",
   unread: "Mark as unread",
+  wiki: "Keep in the wiki",
 };
 
 const reactions = ["👍", "👎", "❤️", "😂", "🎉", "😮"] as const;
@@ -89,6 +90,28 @@ describe("message context menu", () => {
         }),
       ),
     ).not.toContain("unread");
+  });
+
+  it("offers Keep in the wiki after Copy, only when asked", () => {
+    const menu = buildMessageContextMenu({
+      labels,
+      reactions,
+      include: { quote: false, react: false, speak: false, select: false, wiki: true },
+    });
+    expect(menu.map((entry) => [entry.id, entry.title, entry.symbol])).toEqual([
+      ["reply", "Reply", "reply"],
+      ["copy", "Copy", "copy"],
+      ["wiki", "Keep in the wiki", "wiki"],
+    ]);
+    expect(
+      ids(
+        buildMessageContextMenu({
+          labels,
+          reactions,
+          include: { quote: false, react: false, speak: false, select: false },
+        }),
+      ),
+    ).not.toContain("wiki");
   });
 
   it("reads a reaction id back out of a menu event", () => {

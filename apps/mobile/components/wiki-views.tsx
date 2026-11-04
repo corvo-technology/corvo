@@ -1,5 +1,5 @@
 import { ChatMarkdown } from "@corvo/chat-ui/native";
-import type { WikiPage, WikiPageInfo } from "@corvo/contracts";
+import type { WikiChange, WikiPage, WikiPageInfo } from "@corvo/contracts";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -8,6 +8,7 @@ import { useI18n } from "../lib/i18n";
 import { native, useResolvedAppearance, useThemedStyles } from "../lib/native";
 import type { WikiGroup } from "../lib/wiki";
 import { wikiDisplayBody } from "../lib/wiki";
+import { NativeActionButton } from "./native-action-button";
 
 type Row =
   | { type: "kind"; key: string; kind: string }
@@ -17,9 +18,12 @@ type Row =
 export function WikiList({
   groups,
   onOpen,
+  header,
 }: {
   groups: WikiGroup[];
   onOpen: (title: string) => void;
+  /** What waits for a person, shown above the pages. */
+  header?: ReactNode;
 }) {
   const styles = useThemedStyles(createStyles);
   const rows = useMemo<Row[]>(
@@ -38,6 +42,7 @@ export function WikiList({
     <FlatList
       data={rows}
       keyExtractor={(row) => row.key}
+      ListHeaderComponent={header ? <>{header}</> : undefined}
       contentInsetAdjustmentBehavior="automatic"
       renderItem={({ item }) =>
         item.type === "kind" ? (
@@ -60,6 +65,80 @@ export function WikiList({
         )
       }
     />
+  );
+}
+
+export type WikiChangeCardProps = {
+  change: Pick<WikiChange, "state" | "reason" | "pages" | "canSeeSource" | "sourceText">;
+  /** An answer is on its way, so the buttons wait. */
+  busy?: boolean;
+  onDecide: (decision: "apply" | "refuse" | "undo") => void;
+  onOpenPage: (title: string) => void;
+};
+
+/**
+ * What the wiki kept, or waits to keep, from a conversation: the pages, why, and the one thing a
+ * person can do about it now. Approving and refusing are the phone's part; writing is not.
+ */
+export function WikiChangeCard({ change, busy, onDecide, onOpenPage }: WikiChangeCardProps) {
+  const { t } = useI18n();
+  const styles = useThemedStyles(createStyles);
+  const state = {
+    pending: t("Waiting for approval"),
+    applied: t("Added to the wiki"),
+    refused: t("Refused"),
+    undone: t("Undone"),
+    conflict: t("A page changed since"),
+  }[change.state];
+  return (
+    <View style={styles.change} testID="wiki-change">
+      <Text style={styles.state}>{state}</Text>
+      <View style={styles.pages}>
+        {change.pages.map((page) => (
+          <Pressable
+            key={page.title}
+            accessibilityRole="button"
+            onPress={() => onOpenPage(page.title)}
+          >
+            <Text style={styles.pageName}>{page.title}</Text>
+          </Pressable>
+        ))}
+      </View>
+      {change.reason ? <Text style={styles.reason}>{change.reason}</Text> : null}
+      {change.state === "pending" ? (
+        <View style={styles.actions}>
+          <NativeActionButton
+            label={t("Approve")}
+            size="compact"
+            fill={false}
+            disabled={busy}
+            onPress={() => onDecide("apply")}
+          />
+          <NativeActionButton
+            label={t("Refuse")}
+            size="compact"
+            fill={false}
+            variant="text"
+            prominence="secondary"
+            disabled={busy}
+            onPress={() => onDecide("refuse")}
+          />
+        </View>
+      ) : null}
+      {change.state === "applied" ? (
+        <View style={styles.actions}>
+          <NativeActionButton
+            label={t("Undo")}
+            size="compact"
+            fill={false}
+            variant="text"
+            prominence="secondary"
+            disabled={busy}
+            onPress={() => onDecide("undo")}
+          />
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -120,5 +199,18 @@ function createStyles() {
     link: { color: native.label, fontWeight: "600", textDecorationLine: "underline" },
     citedBy: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
     cite: { color: native.secondaryLabel, fontSize: 14 },
+    change: {
+      gap: 8,
+      marginHorizontal: 16,
+      marginTop: 12,
+      padding: 14,
+      borderRadius: 14,
+      backgroundColor: native.groupedCell,
+    },
+    state: { color: native.secondaryLabel, fontSize: 14 },
+    pages: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    pageName: { color: native.label, fontSize: 16, fontWeight: "600" },
+    reason: { color: native.label, fontSize: 15 },
+    actions: { flexDirection: "row", alignItems: "center", gap: 8 },
   });
 }

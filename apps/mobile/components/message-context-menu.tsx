@@ -15,6 +15,7 @@ const symbols = {
   speak: "speaker.wave.2",
   select: "character.cursor.ibeam",
   unread: "message.badge",
+  wiki: "books.vertical",
 } as const satisfies Record<MessageMenuSymbol, Extract<NonNullable<MenuAction["image"]>, string>>;
 
 const tapPoint = (event: GestureResponderEvent) => ({

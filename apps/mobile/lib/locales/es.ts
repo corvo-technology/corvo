@@ -1083,5 +1083,12 @@ export const ES_MESSAGES: Record<string, string> = {
   Wiki: "Wiki",
   "No pages yet": "Aún no hay páginas",
   "Cited by": "Citada por",
+  "Waiting for approval": "Esperando aprobación",
+  "Added to the wiki": "Añadido a la wiki",
+  Refused: "Rechazado",
+  Undone: "Deshecho",
+  "A page changed since": "Una página cambió desde entonces",
+  Refuse: "Rechazar",
+  "Keep in the wiki": "Guardar en la wiki",
   "Could not load pages": "No se pudieron cargar las páginas",
 };
