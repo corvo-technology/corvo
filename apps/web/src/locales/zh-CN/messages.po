@@ -1317,6 +1317,10 @@ msgstr "正在修改…"
 msgid "Channels"
 msgstr "频道"
 
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Character"
+msgstr "角色"
+
 #: src/pages/shell/message-cards.tsx
 msgid "Chart failed to render: {error}"
 msgstr "图表渲染失败：{error}"
@@ -2524,6 +2528,7 @@ msgstr "拒绝"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
+#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "默认"
 

@@ -4,6 +4,38 @@ import * as z from "zod";
 export const BOT_AVATAR_SHAPE_COUNT = 8;
 
 /**
+ * The characters a bot can wear in its own color, from Open Bot Avatar (MIT), by the id of their
+ * definition. Their geometry lives where they are drawn; this is what a stored value may name.
+ */
+export const BOT_AVATAR_CHARACTER_IDS = [
+  "controller",
+  "barbell",
+  "mug",
+  "lightbulb",
+  "chat",
+  "sprout",
+  "watering-can",
+  "book",
+  "brain",
+  "bull",
+  "bunny",
+  "camera",
+  "cat",
+  "cloud",
+  "ghost",
+  "magnifier",
+  "paint-brush",
+  "palette",
+  "rocket",
+  "shield",
+  "star",
+  "witch-hat",
+] as const;
+export type BotAvatarCharacterId = (typeof BOT_AVATAR_CHARACTER_IDS)[number];
+
+const CHARACTER_IDS: ReadonlySet<string> = new Set(BOT_AVATAR_CHARACTER_IDS);
+
+/**
  * 256x256 webp data URLs from Avatar Studio stay well under this. Cap writes so
  * a pasted raw photo cannot bloat every bot list payload.
  */
@@ -11,17 +43,33 @@ export const BOT_AVATAR_VALUE_MAX_LENGTH = 200_000;
 
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const SHAPE_SUFFIX = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})::shape_\d+$/;
+const CHARACTER_SUFFIX = /^(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}))::char_([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 const DATA_IMAGE = /^data:image\/(?:png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/;
 
 export type ParsedBotAvatar =
   | { kind: "image"; imageUrl: string }
   | { kind: "shape"; color: string; shapeIndex: number }
+  | { kind: "character"; color: string; characterId: BotAvatarCharacterId }
   | { kind: "color"; color: string }
   | { kind: "other"; raw: string };
 
 export function parseBotAvatarValue(raw: string): ParsedBotAvatar {
   if (raw.startsWith("data:image/")) {
     return { kind: "image", imageUrl: raw };
+  }
+  if (raw.includes("::char_")) {
+    const found = CHARACTER_SUFFIX.exec(raw);
+    if (found && CHARACTER_IDS.has(found[2] ?? "")) {
+      return {
+        kind: "character",
+        color: found[1] ?? "#F97316",
+        characterId: found[2] as BotAvatarCharacterId,
+      };
+    }
+    // A character that is gone or never was still has its color to show.
+    const color = raw.split("::char_")[0] ?? "";
+    if (HEX_COLOR.test(color)) return { kind: "color", color };
+    return { kind: "other", raw };
   }
   if (raw.includes("::shape_")) {
     const parts = raw.split("::shape_");
@@ -35,10 +83,26 @@ export function parseBotAvatarValue(raw: string): ParsedBotAvatar {
   return { kind: "other", raw };
 }
 
-/** True for values we persist on `bots.color` (hex, encoded shape, or data image). */
+/** True for values we persist on `bots.color` (hex, encoded shape or character, or data image). */
 export function isBotAvatarValue(raw: string): boolean {
   if (!raw || raw.length > BOT_AVATAR_VALUE_MAX_LENGTH) return false;
-  return HEX_COLOR.test(raw) || SHAPE_SUFFIX.test(raw) || DATA_IMAGE.test(raw);
+  if (HEX_COLOR.test(raw) || SHAPE_SUFFIX.test(raw) || DATA_IMAGE.test(raw)) return true;
+  const character = CHARACTER_SUFFIX.exec(raw);
+  return Boolean(character && CHARACTER_IDS.has(character[2] ?? ""));
+}
+
+/** A color wearing a character, or the color alone when there is none. */
+export function composeBotAvatarValue(
+  color: string,
+  characterId?: BotAvatarCharacterId | null,
+): string {
+  return characterId ? `${color}::char_${characterId}` : color;
+}
+
+/** The character a stored value wears, if it wears one. */
+export function botAvatarCharacter(raw: string): BotAvatarCharacterId | null {
+  const parsed = parseBotAvatarValue(raw);
+  return parsed.kind === "character" ? parsed.characterId : null;
 }
 
 export const BotAvatarValueSchema = z

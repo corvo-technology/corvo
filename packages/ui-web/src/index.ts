@@ -7,6 +7,8 @@ export {
   parseBotAvatar,
   resolvePersonaColorDef,
 } from "./bot-avatar.js";
+export type { BotCharacter } from "./bot-characters.js";
+export { BOT_CHARACTERS, botCharacter } from "./bot-characters.js";
 export * from "./components/ui/alert-dialog.js";
 export * from "./components/ui/badge.js";
 export * from "./components/ui/button.js";

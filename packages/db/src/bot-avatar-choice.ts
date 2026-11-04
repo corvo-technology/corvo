@@ -95,7 +95,10 @@ export function chooseBotAvatar(
         avatar.kind === "color" || avatar.kind === "other"
           ? organicAvatarLook(organicAvatarFamily(bot.id))
           : null,
-      color: avatar.kind === "color" || avatar.kind === "shape" ? avatar.color.toUpperCase() : null,
+      color:
+        avatar.kind === "color" || avatar.kind === "shape" || avatar.kind === "character"
+          ? avatar.color.toUpperCase()
+          : null,
     };
   });
   const lookOf = (botId: string) => organicAvatarLook(organicAvatarFamily(botId));

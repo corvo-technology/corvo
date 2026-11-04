@@ -1317,6 +1317,10 @@ msgstr "Alterando…"
 msgid "Channels"
 msgstr "Canais"
 
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Character"
+msgstr "Personagem"
+
 #: src/pages/shell/message-cards.tsx
 msgid "Chart failed to render: {error}"
 msgstr "Falha na renderização do gráfico: {error}"
@@ -2524,6 +2528,7 @@ msgstr "Recusar"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
+#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "Padrão"
 

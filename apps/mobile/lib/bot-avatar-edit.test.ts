@@ -20,6 +20,13 @@ describe("bot avatar editing", () => {
     expect(avatarColor("#F5A03C::shape_5")).toBe("#F5A03C");
   });
 
+  it("reads the color of a character, and drops the character when the shape or color is set", () => {
+    expect(avatarColor("#F5A03C::char_ghost")).toBe("#F5A03C");
+    expect(avatarShape("#F5A03C::char_ghost")).toBeNull();
+    expect(withAvatarColor("#F5A03C::char_ghost", "#3EC5A8")).toBe("#3EC5A8");
+    expect(withAvatarShape("#F5A03C::char_ghost", 2)).toBe("#F5A03C::shape_2");
+  });
+
   it("replaces a photo with a plain color", () => {
     const photo = "data:image/webp;base64,AAAA";
     expect(isAvatarPhoto(photo)).toBe(true);
