@@ -56,6 +56,15 @@ describe("offering to keep a document in the wiki", () => {
     expect(wikiOfferInstruction([pdf], { ...interactive, background: true })).toBe("");
   });
 
+  it("never fails a run over a file that arrives without a type or a name", () => {
+    const odd = [{ name: undefined, mimeType: undefined }, { mimeType: "application/pdf" }];
+    expect(() => wikiOfferInstruction(odd as never, interactive)).not.toThrow();
+    // A file with no type is judged by its name, so a PDF without one is still a document.
+    expect(
+      wikiOfferInstruction([{ name: "scan.pdf", mimeType: undefined }] as never, interactive),
+    ).toContain("ask_user");
+  });
+
   it("is a short paragraph, since it travels with every turn that has a document", () => {
     expect(wikiOfferInstruction([pdf], interactive).length).toBeLessThan(900);
   });
