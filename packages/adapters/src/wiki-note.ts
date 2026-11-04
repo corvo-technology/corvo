@@ -6,9 +6,9 @@ import { postWikiChangeCard } from "./wiki-curator-run.js";
 type Thread = Parameters<typeof postWikiChangeCard>[1] & { spaceId: string; userId: string };
 
 /**
- * An agent's request to keep a page, as the wiki handles it: a new page is written at once, a
- * change to an existing page waits for the owner's approval unless the Space lets edits in, and the
- * conversation shows what was kept. The agent never writes a page on its own authority.
+ * An agent's request to keep a page, as the wiki handles it: a new page is written at once, text
+ * for an existing page is added to it and waits for the owner's approval unless the Space lets
+ * edits in, and the conversation shows what was kept. The agent never writes a page on its own authority.
  */
 export async function keepNoteInWiki(
   deps: { prisma: PrismaClient; events: ThreadEvents },
@@ -32,9 +32,20 @@ export async function keepNoteInWiki(
       text: input.content,
       threadId: input.thread.id,
     },
-    // Rewriting a page is swapping the whole text it has for the text sent.
+    // Text for an existing page is added to it, never put in its place: the agent's copy of the page
+    // may be older than the page. When it sent the page as it now stands with more on the end, only
+    // the end is added.
     ops: current
-      ? [{ op: "replace", page, old: current.body, new: input.content }]
+      ? [
+          {
+            op: "append",
+            page,
+            text: (input.content.startsWith(current.body)
+              ? input.content.slice(current.body.length)
+              : input.content
+            ).trim(),
+          },
+        ]
       : [{ op: "create", page, body: input.content }],
     reason: `Saved by ${input.botName}`,
     anchor: { threadId: input.thread.id },

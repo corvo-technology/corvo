@@ -89,7 +89,8 @@ postgres("an agent's note kept through the wiki (PostgreSQL)", () => {
     await fixture(() => setWikiSettings(prisma, ids.spaceId, { edits: "auto" }));
     try {
       expect(await keep("Coffee Rota", "Mon: Leo.")).toMatchObject({ ok: true, status: "kept" });
-      expect(await body("Coffee Rota")).toBe("Mon: Leo.");
+      // Text for an existing page is added to it, never put in its place.
+      expect(await body("Coffee Rota")).toBe("Mon: Ana.\n\nMon: Leo.");
     } finally {
       await fixture(() => setWikiSettings(prisma, ids.spaceId, { edits: "approve" }));
     }
@@ -121,5 +122,37 @@ postgres("an agent's note kept through the wiki (PostgreSQL)", () => {
     expect(await keep("???", "Text.")).toEqual({
       error: "path must name a page with a letter or a digit in it",
     });
+  });
+
+  it("adds only what is new when the agent sends the page it read with a line on the end", async () => {
+    await tenant(() => writeWikiPage(prisma, scope, { title: "Frozen Rules", body: "Rule one." }));
+    expect(await keep("Frozen Rules", "Rule one.\n\nRule two.")).toMatchObject({
+      status: "waiting for approval",
+    });
+    const change = await fixture(() =>
+      prisma.wikiChange.findFirstOrThrow({ orderBy: { createdAt: "desc" } }),
+    );
+    expect(change.ops).toEqual([{ op: "append", page: "Frozen Rules", text: "Rule two." }]);
+  });
+
+  it("never wipes what was written on a page after the agent last read it", async () => {
+    await tenant(() => writeWikiPage(prisma, scope, { title: "Moved On", body: "Rule one." }));
+    await tenant(() =>
+      writeWikiPage(prisma, scope, {
+        title: "Moved On",
+        body: "Rule one.\n\nWritten by a colleague.",
+        expectedRevision: 1,
+      }),
+    );
+    // The agent still has the old copy and adds a line to it.
+    await fixture(() => setWikiSettings(prisma, ids.spaceId, { edits: "auto" }));
+    try {
+      await keep("Moved On", "Rule one.\n\nRule two.");
+      const text = await body("Moved On");
+      expect(text).toContain("Written by a colleague.");
+      expect(text).toContain("Rule two.");
+    } finally {
+      await fixture(() => setWikiSettings(prisma, ids.spaceId, { edits: "approve" }));
+    }
   });
 });
