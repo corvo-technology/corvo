@@ -10,6 +10,11 @@ const workflow = readFileSync(
 const expression = (inner: string) => `\${{ ${inner} }}`;
 
 describe("desktop release workflow", () => {
+  it("refuses a macOS build whose helper apps do not match the bundle's name", () => {
+    expect(workflow).toContain('Print :CFBundleName" "$app/Contents/Info.plist');
+    expect(workflow).toContain("$name Helper.app");
+  });
+
   it("cannot execute contributor pull-request code with release credentials", () => {
     expect(workflow).not.toMatch(/^\s*pull_request:/m);
     expect(workflow).toContain("permissions:\n  contents: read");
