@@ -166,6 +166,7 @@ msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 行} other {# 行}}"
 
 #: src/pages/shell/channel-header.tsx
+#: src/pages/TeamBoard.tsx
 msgid "{count} agents"
 msgstr "{count} 个代理"
 
@@ -429,7 +430,7 @@ msgstr "平均{value}分钟"
 msgid "{value} s avg"
 msgstr "平均{value}秒"
 
-#: src/pages/TeamPage.tsx
+#: src/pages/TeamBoard.tsx
 msgid "{working} working"
 msgstr "{working} 个正在工作"
 
@@ -4327,7 +4328,7 @@ msgstr "尚未检查"
 msgid "Not imported"
 msgstr "未导入"
 
-#: src/pages/TeamPage.tsx
+#: src/pages/TeamBoard.tsx
 msgid "Not in a team"
 msgstr "未加入团队"
 
