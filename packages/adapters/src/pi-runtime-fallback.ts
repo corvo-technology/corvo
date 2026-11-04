@@ -204,6 +204,11 @@ function contextImageCount(context: Context): number {
  * modalities decide for native providers, and the connection's acceptsImages flag
  * only applies to OpenAI-compatible models, whose runtime model is built from it.
  */
+/** Whether a model is known not to see: it declares its input and images are not in it. */
+export function modelCannotSeeImages(candidate: RuntimeModelTarget): boolean {
+  return Array.isArray(candidate.model.input) && !fallbackSeesImages(candidate);
+}
+
 function fallbackSeesImages(candidate: RuntimeModelTarget): boolean {
   if (!candidate.model.input.includes("image")) return false;
   return (
@@ -212,12 +217,40 @@ function fallbackSeesImages(candidate: RuntimeModelTarget): boolean {
   );
 }
 
+/**
+ * A model that cannot see is given no screenshot tools, as a primary model that cannot see is
+ * (see `filterImageReturningComputerTools`): later system messages may take tools away, so the
+ * transcript says these are gone and the rest of it is untouched.
+ */
+function withoutScreenshotTools(context: TranscriptContext): TranscriptContext {
+  const declared = new Set<string>();
+  for (const message of context.messages) {
+    if (message.role !== "system") continue;
+    for (const tool of message.toolsAdded ?? []) {
+      if (IMAGE_RETURNING_COMPUTER_TOOLS.has(tool.name)) declared.add(tool.name);
+    }
+    for (const tool of message.toolsRemoved ?? []) declared.delete(tool.name);
+  }
+  if (declared.size === 0) return context;
+  return {
+    ...context,
+    messages: [
+      ...context.messages,
+      {
+        role: "system",
+        content: "This model cannot see images, so the screenshot tools are unavailable.",
+        toolsRemoved: [...declared].map((name) => ({ name })),
+        timestamp: Date.now(),
+      },
+    ],
+  };
+}
+
 function fallbackIncompatibility(
   candidate: RuntimeModelTarget,
   context: TranscriptContext,
   options: ModelsSimpleStreamOptions | undefined,
   requestedThinkingLevel: AgentRunRequest["model"]["thinkingLevel"],
-  tools: readonly ConnectorTool[],
 ): string | undefined {
   // The backup's own context policy prunes on its first call; judge what it would send. Too
   // many user images for its limit throws, and the caller skips the backup.
@@ -246,10 +279,8 @@ function fallbackIncompatibility(
   if (candidate.model.contextWindow <= inputTokens + outputTokens + contextSafetyMargin)
     return "Conversation exceeds the backup model's context limit.";
   const imageCount = contextImageCount(context);
-  if (
-    (imageCount > 0 || tools.some((tool) => IMAGE_RETURNING_COMPUTER_TOOLS.has(tool.name))) &&
-    !fallbackSeesImages(candidate)
-  ) {
+  // Screenshot tools do not count: a backup that cannot see is simply not offered them.
+  if (imageCount > 0 && !fallbackSeesImages(candidate)) {
     return "The backup model cannot use the images required by this request.";
   }
   if (
@@ -387,7 +418,6 @@ export function fallbackAwareModelStream(
           requestContext(true),
           options,
           state.request.model.thinkingLevel,
-          state.request.tools,
         );
         if (incompatibility) {
           skip(incompatibility);
@@ -463,7 +493,7 @@ export function fallbackAwareModelStream(
         const reasoning = thinkingLevel === "off" ? undefined : thinkingLevel;
         stream = state.stream(
           sentTarget,
-          requestContext(),
+          fallbackSeesImages(target) ? requestContext() : withoutScreenshotTools(requestContext()),
           // With backups the switch replaces the SDK's retry, so a hung model is not waited on twice.
           state.request.fallbackModels?.length
             ? { ...attemptOptions, apiKey, reasoning, maxRetries: 0 }
