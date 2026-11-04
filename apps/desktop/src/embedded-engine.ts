@@ -291,6 +291,31 @@ const INHERITED_ENV = [
   "NODE_EXTRA_CA_CERTS",
 ] as const;
 
+/** Calls this computer makes to itself, which no proxy should carry. */
+const LOOPBACK_HOSTS = ["127.0.0.1", "localhost", "::1", "[::1]"] as const;
+
+/**
+ * How the engine's Node programs reach the network. Node trusts only its own bundled certificates,
+ * so on a computer where a security program inspects HTTPS every model request fails with
+ * "fetch failed"; it is asked to trust the computer's certificates too, which only adds to the set.
+ * And Node's fetch ignores HTTP_PROXY and HTTPS_PROXY unless asked to read them, so when a proxy is
+ * set the engine is asked to use it, with this computer's own addresses kept off it.
+ */
+export function engineNetworkEnv(env: Readonly<Record<string, string>>): Record<string, string> {
+  const result: Record<string, string> = { NODE_USE_SYSTEM_CA: "1" };
+  const proxied = ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].some((key) =>
+    Boolean(env[key]?.trim()),
+  );
+  if (!proxied) return result;
+  const bypass = [
+    ...new Set([...(env.NO_PROXY ?? env.no_proxy ?? "").split(","), ...LOOPBACK_HOSTS]),
+  ]
+    .map((host) => host.trim())
+    .filter(Boolean)
+    .join(",");
+  return { ...result, NODE_USE_ENV_PROXY: "1", NO_PROXY: bypass, no_proxy: bypass };
+}
+
 const START_INTERRUPTED = "Starting was interrupted. Retry.";
 
 /**
@@ -542,8 +567,10 @@ export class EmbeddedEngineController {
         }
       : null;
     const connections = await this.readConnections();
+    const baseEnv = this.baseEnv();
     const engineEnv: Record<string, string> = {
-      ...this.baseEnv(),
+      ...baseEnv,
+      ...engineNetworkEnv(baseEnv),
       ELECTRON_RUN_AS_NODE: "1",
       NODE_ENV: "production",
       DATABASE_URL: urls.app,

@@ -113,6 +113,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "The model returned an unusable response. Try again.": "模型返回了无法使用的回复。请重试。",
   "This model's context window is too small. Choose another model.":
     "此模型的上下文窗口太小。请选择其他模型。",
+  "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection.":
+    "无法安全连接到{provider}。可能是安全软件或网络过滤器拦截了连接。",
   "{provider} took too long to respond. Try again.": "{provider}响应超时。请重试。",
   "{provider} is overloaded right now. Try again in a moment.":
     "{provider}当前负载过高。请稍后再试。",

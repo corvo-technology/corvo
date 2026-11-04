@@ -118,6 +118,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "{provider} rejected the API key. Check your connection settings.":
     "{provider}がAPIキーを拒否しました。接続設定を確認してください。",
   "{provider} can't run this model.": "{provider}ではこのモデルを実行できません。",
+  "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection.":
+    "{provider}に安全に接続できませんでした。セキュリティソフトまたはネットワークフィルターが接続を妨げている可能性があります。",
   "{provider} took too long to respond. Try again.":
     "{provider}の応答に時間がかかりすぎました。もう一度お試しください。",
   "{provider} is overloaded right now. Try again in a moment.":

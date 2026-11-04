@@ -96,6 +96,13 @@ export const translateRunError: RunErrorTranslator = (message, values) => {
         message: "{provider} took too long to respond. Try again.",
         values,
       });
+    case "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection.":
+      return i18n._({
+        id: "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection.",
+        message:
+          "{provider} couldn't be reached securely. A security program or network filter may be intercepting the connection.",
+        values,
+      });
     case "{provider} couldn't be reached. Check that it's running.":
       return i18n._({
         id: "{provider} couldn't be reached. Check that it's running.",
