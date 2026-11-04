@@ -30,6 +30,10 @@ vi.mock("./computer-lifecycle.js", async (importOriginal) => ({
   provisionComputer: async () => ({ id: "computer-1", kind: "desktop" }),
 }));
 
+// What the notice writes is tested on its own; here only that an approval card triggers it.
+const noteApprovalInParentChat = vi.hoisted(() => vi.fn(async () => undefined));
+vi.mock("./run-parent-notice.js", () => ({ noteApprovalInParentChat }));
+
 // Group writes run against Postgres in the journeys; here only the dispatch is under test.
 const createFleetGroupMock = vi.hoisted(() => vi.fn());
 vi.mock("./fleet-tools.js", async (importOriginal) => ({
@@ -605,6 +609,20 @@ it("enqueues pending work when an approval pauses its current run", async () => 
   await f.run();
   expect(f.enqueue).toHaveBeenCalledWith(
     expect.objectContaining({ payload: { runId: "pending-run" } }),
+  );
+});
+
+it("tells the chat of the bot that created this one when an approval card is shown", async () => {
+  noteApprovalInParentChat.mockClear();
+  const f = fixture({ name: "shell", trigger: "webhook" });
+  await f.run();
+  expect(noteApprovalInParentChat).toHaveBeenCalledOnce();
+  expect(noteApprovalInParentChat).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      effectId: expect.any(String),
+      bot: expect.objectContaining({ name: "Assistant" }),
+    }),
   );
 });
 
