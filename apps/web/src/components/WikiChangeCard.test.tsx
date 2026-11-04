@@ -21,6 +21,10 @@ const change: WikiChangeCardProps["change"] = {
     { title: "Alpha Builders", op: "create" },
     { title: "Plan", op: "replace" },
   ],
+  edits: [
+    { title: "Alpha Builders", op: "create" as const, added: "Chosen for the lobby." },
+    { title: "Plan", op: "replace" as const, removed: "Start Nov 18.", added: "Start Nov 25." },
+  ],
   canSeeSource: true,
   sourceText: "Ana: we are going with Alpha Builders.",
 };
@@ -69,6 +73,19 @@ describe("a card for what the wiki kept", () => {
     expect(onDecide).toHaveBeenCalledWith("refuse");
   });
 
+  it("shows what would be written, the old words and the new, before anyone approves it", async () => {
+    const { container } = await show();
+    const edits = container.querySelector('[data-testid="wiki-change-edits"]');
+    expect(edits?.textContent).toContain("Chosen for the lobby.");
+    expect(edits?.textContent).toContain("Start Nov 18.");
+    expect(edits?.textContent).toContain("Start Nov 25.");
+  });
+
+  it("does not repeat the text once the change is answered", async () => {
+    const { container } = await show({ change: { ...change, state: "applied" } });
+    expect(container.querySelector('[data-testid="wiki-change-edits"]')).toBeNull();
+  });
+
   it("offers only to undo what was already added", async () => {
     const { container, buttons, click, onDecide } = await show({
       change: { ...change, state: "applied" },
@@ -96,6 +113,20 @@ describe("a card for what the wiki kept", () => {
     const { click, onOpenPage } = await show();
     await click("Alpha Builders");
     expect(onOpenPage).toHaveBeenCalledWith("Alpha Builders");
+  });
+
+  it("shows no reason or source to a reader who may not read the conversation", async () => {
+    const { container } = await show({
+      change: {
+        ...change,
+        reason: "",
+        sourceTitle: "",
+        canSeeSource: false,
+        sourceText: undefined,
+      },
+    });
+    expect(container.textContent).not.toContain("A contractor was chosen");
+    expect(container.querySelector("details")).toBeNull();
   });
 
   it("quotes the source only for the person who may read it, and only on request", async () => {

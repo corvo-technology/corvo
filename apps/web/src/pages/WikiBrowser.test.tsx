@@ -416,6 +416,7 @@ const waiting = (id: string, title: string): WikiChange => ({
   reason: "Plan moved on",
   sourceTitle: "Planning call",
   pages: [{ title, op: "replace" }],
+  edits: [{ title, op: "replace", removed: "planning", added: "building" }],
   createdAt: new Date(NOW).toISOString(),
   canSeeSource: false,
 });

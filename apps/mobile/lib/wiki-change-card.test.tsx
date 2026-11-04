@@ -65,6 +65,10 @@ const change = {
     { title: "Alpha Builders", op: "create" as const },
     { title: "Plan", op: "replace" as const },
   ],
+  edits: [
+    { title: "Alpha Builders", op: "create" as const, added: "Chosen for the lobby." },
+    { title: "Plan", op: "replace" as const, removed: "Start Nov 18.", added: "Start Nov 25." },
+  ],
   canSeeSource: true,
   sourceText: "Ana: we are going with Alpha Builders.",
 };
@@ -101,6 +105,20 @@ it("names the pages and, while the change waits, offers to approve or refuse it"
   expect(onDecide).toHaveBeenCalledWith("apply");
   await press("Refuse");
   expect(onDecide).toHaveBeenCalledWith("refuse");
+  await unmount();
+});
+
+it("shows what would be written, the old words and the new, before anyone approves it", async () => {
+  const { unmount } = await render();
+  expect(host.textContent).toContain("Chosen for the lobby.");
+  expect(host.textContent).toContain("Start Nov 18.");
+  expect(host.textContent).toContain("Start Nov 25.");
+  await unmount();
+});
+
+it("does not repeat the text once the change is answered", async () => {
+  const { unmount } = await render({ change: { ...change, state: "applied" } });
+  expect(host.textContent).not.toContain("Chosen for the lobby.");
   await unmount();
 });
 

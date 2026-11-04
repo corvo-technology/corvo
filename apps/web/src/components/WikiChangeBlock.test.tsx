@@ -27,6 +27,7 @@ const change = (state: string) => ({
   reason: "A contractor was chosen",
   sourceTitle: "Lobby renovation",
   pages: [{ title: "Alpha Builders", op: "create" }],
+  edits: [],
   createdAt: "2026-11-04T10:00:00.000Z",
   canSeeSource: false,
 });

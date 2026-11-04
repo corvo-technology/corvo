@@ -69,7 +69,7 @@ export function WikiList({
 }
 
 export type WikiChangeCardProps = {
-  change: Pick<WikiChange, "state" | "reason" | "pages" | "canSeeSource" | "sourceText">;
+  change: Pick<WikiChange, "state" | "reason" | "pages" | "edits" | "canSeeSource" | "sourceText">;
   /** An answer is on its way, so the buttons wait. */
   busy?: boolean;
   onDecide: (decision: "apply" | "refuse" | "undo") => void;
@@ -104,6 +104,17 @@ export function WikiChangeCard({ change, busy, onDecide, onOpenPage }: WikiChang
           </Pressable>
         ))}
       </View>
+      {change.state === "pending"
+        ? change.edits.map((edit, index) => (
+            <View key={index} style={styles.edit}>
+              <Text style={styles.editTitle}>
+                {edit.section ? `${edit.title} · ${edit.section}` : edit.title}
+              </Text>
+              {edit.removed ? <Text style={styles.removed}>{edit.removed}</Text> : null}
+              <Text style={styles.reason}>{edit.added}</Text>
+            </View>
+          ))
+        : null}
       {change.reason ? <Text style={styles.reason}>{change.reason}</Text> : null}
       {change.state === "pending" ? (
         <View style={styles.actions}>
@@ -211,6 +222,9 @@ function createStyles() {
     pages: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
     pageName: { color: native.label, fontSize: 16, fontWeight: "600" },
     reason: { color: native.label, fontSize: 15 },
+    edit: { gap: 2, paddingVertical: 6 },
+    editTitle: { color: native.secondaryLabel, fontSize: 12 },
+    removed: { color: native.secondaryLabel, fontSize: 15, textDecorationLine: "line-through" },
     actions: { flexDirection: "row", alignItems: "center", gap: 8 },
   });
 }
