@@ -79,6 +79,7 @@ import {
   finalBlocksAfterMidTurnProgress,
   userProgressClientNonce,
 } from "./user-progress.js";
+import { wikiCurateJobAfterTurn } from "./wiki-curator-run.js";
 
 type RuntimeEvent<T extends AgentRuntimeEvent["type"]> = Extract<AgentRuntimeEvent, { type: T }>;
 
@@ -723,6 +724,13 @@ export async function completeRun(ctx: RunContext) {
     }
   } catch (error) {
     getLogger().error("history.compact enqueue failed", error);
+  }
+  // The wiki curator reads the conversation once it has been quiet; a failure here is never fatal.
+  try {
+    const curate = await wikiCurateJobAfterTurn(deps.prisma, thread);
+    if (curate) await deps.jobs.enqueue(curate);
+  } catch (error) {
+    getLogger().error("wiki.curate enqueue failed", error);
   }
 }
 

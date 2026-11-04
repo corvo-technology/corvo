@@ -7,6 +7,9 @@ import {
   messagingDeliverJob,
   parseBackgroundJob,
   routineRetryJob,
+  WIKI_CURATE_MAX_ATTEMPTS,
+  WIKI_CURATE_QUIET_MS,
+  wikiCurateJob,
 } from "./background-jobs.js";
 import type { BackgroundJobHandlers } from "./types.js";
 
@@ -22,6 +25,7 @@ function handlers(): BackgroundJobHandlers {
     "skill.teaching-expire": vi.fn(async () => undefined),
     "call.expire": vi.fn(async () => undefined),
     "history.compact": vi.fn(async () => undefined),
+    "wiki.curate": vi.fn(async () => undefined),
     "messaging.deliver": vi.fn(async () => undefined),
     "messaging.credential-cleanup": vi.fn(async () => undefined),
     "cloud_agent.poll": vi.fn(async () => undefined),
@@ -116,5 +120,37 @@ describe("historyCompactJob", () => {
 
   it("keys different threads differently", () => {
     expect(historyCompactJobKey("thread-1")).not.toBe(historyCompactJobKey("thread-2"));
+  });
+});
+
+describe("wikiCurateJob", () => {
+  const now = new Date("2026-11-04T12:00:00.000Z");
+
+  it("waits for the conversation to go quiet, and a newer reply pushes it back", () => {
+    const job = wikiCurateJob("thread-1", { now });
+    expect(job).toEqual({
+      name: "wiki.curate",
+      payload: { threadId: "thread-1" },
+      replaceKey: "wiki.curate:thread-1",
+      availableAt: new Date(now.getTime() + WIKI_CURATE_QUIET_MS),
+      maxAttempts: WIKI_CURATE_MAX_ATTEMPTS,
+    });
+    expect(WIKI_CURATE_QUIET_MS).toBe(20_000);
+    expect(WIKI_CURATE_MAX_ATTEMPTS).toBe(3);
+  });
+
+  it("keeps a message at once, under a key of its own so it never replaces the quiet read", () => {
+    const job = wikiCurateJob("thread-1", { messageId: "message-9" });
+    expect(job.payload).toEqual({ threadId: "thread-1", messageId: "message-9" });
+    expect(job.replaceKey).toBe("wiki.curate:thread-1:message-9");
+    expect(job.availableAt).toBeUndefined();
+  });
+
+  it("parses back from the queue, and refuses a payload without a thread", () => {
+    expect(parseBackgroundJob("wiki.curate", { threadId: "t", messageId: "m" }).payload).toEqual({
+      threadId: "t",
+      messageId: "m",
+    });
+    expect(() => parseBackgroundJob("wiki.curate", {})).toThrow();
   });
 });

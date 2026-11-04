@@ -34,6 +34,18 @@ vi.mock("./computer-lifecycle.js", async (importOriginal) => ({
 const noteApprovalInParentChat = vi.hoisted(() => vi.fn(async () => undefined));
 vi.mock("./run-parent-notice.js", () => ({ noteApprovalInParentChat }));
 
+// Which conversations the curator reads is tested on its own; here only that a finished turn asks.
+const wikiCurateJobAfterTurn = vi.hoisted(() =>
+  vi.fn(
+    async (): Promise<unknown> => ({
+      name: "wiki.curate",
+      payload: { threadId: "thread-1" },
+      replaceKey: "wiki.curate:thread-1",
+    }),
+  ),
+);
+vi.mock("./wiki-curator-run.js", () => ({ wikiCurateJobAfterTurn }));
+
 // Group writes run against Postgres in the journeys; here only the dispatch is under test.
 const createFleetGroupMock = vi.hoisted(() => vi.fn());
 vi.mock("./fleet-tools.js", async (importOriginal) => ({
@@ -624,6 +636,20 @@ it("tells the chat of the bot that created this one when an approval card is sho
       bot: expect.objectContaining({ name: "Assistant" }),
     }),
   );
+});
+
+it("queues the wiki curator's read once a turn has finished", async () => {
+  wikiCurateJobAfterTurn.mockClear();
+  const f = fixture({ name: "demo_get_item" });
+  await f.run();
+  expect(wikiCurateJobAfterTurn).toHaveBeenCalledOnce();
+  expect(f.enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "wiki.curate" }));
+});
+
+it("still finishes the turn when the curator's read cannot be queued", async () => {
+  wikiCurateJobAfterTurn.mockRejectedValueOnce(new Error("database is down"));
+  const f = fixture({ name: "demo_get_item" });
+  await expect(f.run()).resolves.not.toThrow();
 });
 
 describe("disabled builtins", () => {
