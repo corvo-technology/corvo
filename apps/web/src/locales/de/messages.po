@@ -2463,6 +2463,10 @@ msgstr "Cron-Ausdruck"
 msgid "Current password"
 msgstr "Aktuelles Passwort"
 
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Custom color"
+msgstr "Eigene Farbe"
+
 #: src/pages/shell/bot-credentials.tsx
 msgid "Custom header"
 msgstr "Eigener Header"

@@ -5,6 +5,7 @@ import {
   ACTIVE_RUN_STATUSES,
   BOT_AVATAR_COLORS,
   BOT_COLOR_LIST,
+  customMascotBody,
   DEFAULT_BOT_AVATAR_COLOR,
   mascotForColorDef,
   mascotMood,
@@ -133,6 +134,8 @@ export const BotAvatar = memo(function BotAvatar({
     () => resolvePersonaColorDef(identity || parsed.color || "agent", parsed.color).eyeColor,
     [identity, parsed.color],
   );
+  // A color of one's own gives the chick that body; a swatch keeps the shade it was drawn in.
+  const body = useMemo(() => customMascotBody(parsed.color), [parsed.color]);
 
   if (parsed.isImage && parsed.imageUrl) {
     return (
@@ -183,6 +186,7 @@ export const BotAvatar = memo(function BotAvatar({
           mood={mood}
           blink={blinkBeat(identity || mascot)}
           detailed={size >= 30}
+          body={body}
         />
       </span>
       {isWorking ? <WorkingRing size={size} /> : null}

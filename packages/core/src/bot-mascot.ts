@@ -1,4 +1,5 @@
 import type { BotColorDef } from "./bot-avatar-colors.js";
+import { BOT_COLOR_LIST } from "./bot-avatar-colors.js";
 
 /** The Rook mascot's colors, in the order the avatar picker shows them. `hex` is what a bot saves. */
 export const MASCOT_COLORS = [
@@ -106,3 +107,87 @@ export const MASCOT_LOOKS: Record<
   cyan: { color: "#4bbdcf", accessory: "bow", blush: false, sleepy: true },
   neutral: { color: "#55555c", accessory: null, blush: false, sleepy: false },
 };
+
+const FULL_HEX = /^#[0-9a-f]{6}$/i;
+const SHORT_HEX = /^#[0-9a-f]{3}$/i;
+
+const PRESET_HEXES = new Set(
+  [...MASCOT_COLORS, ...BOT_COLOR_LIST].map((color) => color.hex.toLowerCase()),
+);
+
+/** Whether a color is one of the swatches the avatar picker offers, which have looks of their own. */
+export function isPresetAvatarColor(hex: string): boolean {
+  return PRESET_HEXES.has(hex.toLowerCase());
+}
+
+function toRgb(hex: string): [number, number, number] | undefined {
+  const full = SHORT_HEX.test(hex)
+    ? `#${[...hex.slice(1)].map((channel) => channel + channel).join("")}`
+    : hex;
+  if (!FULL_HEX.test(full)) return undefined;
+  return [1, 3, 5].map((at) => Number.parseInt(full.slice(at, at + 2), 16) / 255) as [
+    number,
+    number,
+    number,
+  ];
+}
+
+function hslToHex(hue: number, saturation: number, lightness: number): string {
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const part = chroma * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const base = lightness - chroma / 2;
+  const [r, g, b] =
+    hue < 60
+      ? [chroma, part, 0]
+      : hue < 120
+        ? [part, chroma, 0]
+        : hue < 180
+          ? [0, chroma, part]
+          : hue < 240
+            ? [0, part, chroma]
+            : hue < 300
+              ? [part, 0, chroma]
+              : [chroma, 0, part];
+  return `#${[r, g, b]
+    .map((channel) =>
+      Math.round((channel + base) * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+}
+
+const BODY_LIGHTNESS = { min: 0.42, max: 0.78 } as const;
+const BODY_MAX_SATURATION = 0.75;
+
+/**
+ * The body a chick wears in a color of one's own: the hue that was chosen, softened like the
+ * drawn ones, and kept light enough for its dark eyes and dark enough for a white page. Nothing
+ * for a swatch, which already has a look, or for what is not a color.
+ */
+export function customMascotBody(hex: string): string | undefined {
+  const rgb = toRgb(hex);
+  if (!rgb || isPresetAvatarColor(hex)) return undefined;
+  const [r, g, b] = rgb;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const lightness = (max + min) / 2;
+  const delta = max - min;
+  const saturation = delta === 0 ? 0 : delta / (1 - Math.abs(2 * lightness - 1));
+  const hue =
+    delta === 0
+      ? 0
+      : ((max === r
+          ? ((g - b) / delta) % 6
+          : max === g
+            ? (b - r) / delta + 2
+            : (r - g) / delta + 4) *
+          60 +
+          360) %
+        360;
+  return hslToHex(
+    hue,
+    Math.min(saturation * 0.9, BODY_MAX_SATURATION),
+    Math.min(BODY_LIGHTNESS.max, Math.max(BODY_LIGHTNESS.min, lightness + 0.06)),
+  );
+}

@@ -139,8 +139,10 @@ export function resolvePersonaColorDef(
       return {
         id: "custom",
         name: "Custom",
-        light: explicitColor,
-        dark: darkenHex(explicitColor, 20),
+        // A color of one's own is shown as text on both kinds of page, so each accent is moved
+        // just far enough to read there; one that already reads is kept as it was chosen.
+        light: readableOn(explicitColor, DARK_SURFACE, "lighten"),
+        dark: readableOn(explicitColor, LIGHT_SURFACE, "darken"),
         eyeColor: isBright ? "#141414" : "#FFFFFF",
         hex: explicitColor,
       };
@@ -149,6 +151,23 @@ export function resolvePersonaColorDef(
   const seed = (shippedHash(identity) ^ Math.imul(1, 2654435769)) >>> 0;
   const index = Math.floor(shippedRandom((seed ^ 2654435769) >>> 0)() * BOT_COLOR_LIST.length);
   return BOT_COLOR_LIST[index % BOT_COLOR_LIST.length] ?? BOT_COLOR_LIST[0]!;
+}
+
+const DARK_SURFACE = "#0A0A0A";
+const LIGHT_SURFACE = "#FFFFFF";
+const TEXT_CONTRAST_STEP = 4;
+
+/** The color itself when it reads on the surface, else the nearest shade of it that does. */
+function readableOn(hex: string, surface: string, direction: "lighten" | "darken"): string {
+  let shade = hex;
+  for (let step = 0; step < 100 / TEXT_CONTRAST_STEP; step += 1) {
+    if (contrastRatio(shade, surface) >= BUBBLE_TEXT_CONTRAST) return shade;
+    shade =
+      direction === "darken"
+        ? darkenHex(shade, TEXT_CONTRAST_STEP)
+        : lightenHex(shade, TEXT_CONTRAST_STEP);
+  }
+  return shade;
 }
 
 /** WCAG AA contrast for body text. */
@@ -207,6 +226,16 @@ function isColorBright(hex: string): boolean {
   const b = Number.parseInt(c.substring(4, 6), 16) || 0;
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   return brightness > 180;
+}
+
+function lightenHex(hex: string, percent: number): string {
+  const num = Number.parseInt(expandHex(hex), 16);
+  const mix = (channel: number) =>
+    Math.min(255, Math.ceil(channel + (255 - channel) * (percent / 100)));
+  const r = mix((num >> 16) & 255);
+  const g = mix((num >> 8) & 255);
+  const b = mix(num & 255);
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
 function darkenHex(hex: string, percent: number): string {

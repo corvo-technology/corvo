@@ -107,3 +107,50 @@ it("keeps choosing a plain color for the chick as before", async () => {
   expect(pressed(host)).toEqual(["Color #3B82F6"]);
   await unmount();
 });
+
+async function pickColor(host: HTMLElement, hex: string) {
+  const input = host.querySelector<HTMLInputElement>('input[type="color"]') as HTMLInputElement;
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, hex);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+it("keeps the character on a color of one's own, once the drag settles", async () => {
+  vi.useFakeTimers();
+  try {
+    const { host, unmount } = await mount(
+      <BotLookPicker value="#3B82F6::char_cat" onChange={onChange} />,
+    );
+    await pickColor(host, "#112233");
+    expect(onChange).not.toHaveBeenCalled();
+    await act(async () => vi.advanceTimersByTime(500));
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("#112233::char_cat");
+    await unmount();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("keeps the character on a color still waiting when the picker closes", async () => {
+  vi.useFakeTimers();
+  try {
+    const { host, unmount } = await mount(
+      <BotLookPicker value="#3B82F6::char_ghost" onChange={onChange} />,
+    );
+    await pickColor(host, "#445566");
+    await unmount();
+    expect(onChange).toHaveBeenCalledExactlyOnceWith("#445566::char_ghost");
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("shows the character in the tile of a color of one's own", async () => {
+  const { host, unmount } = await mount(
+    <BotLookPicker value="#14B8A6::char_rocket" onChange={onChange} />,
+  );
+  expect(host.querySelectorAll('[data-character="rocket"]').length).toBeGreaterThan(10);
+  expect(host.querySelector("[data-custom-color]")?.textContent).toContain("#14B8A6");
+  await unmount();
+});
