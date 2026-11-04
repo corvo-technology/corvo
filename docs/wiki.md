@@ -44,8 +44,9 @@ reads it is treated like one that read any other outside text. Runs that answer 
 channel get no wiki tools and no index.
 
 Agents never write a page on their own. `save_shared_memory` still exists, but it now asks the
-wiki to keep a page: a new page is written at once, and a change to an existing page waits for
-approval unless the space lets edits in.
+wiki to keep a page: a new page is written at once, and text for an existing page is added to it
+(never put in its place, since the agent's copy may be old) and waits for approval unless the space
+lets edits in.
 
 ## The curator
 
@@ -56,22 +57,34 @@ member's `fast` model, or the main model when none is set, for strict JSON chang
 not what an agent did, small talk, open questions or work in progress; a change the model does not
 call lasting is dropped, and so is a `replace` whose old text is not on the page.
 
-- **What it reads.** Channels by default. A chat with one agent only when you keep a message
-  ("Keep in the wiki" in a message's menu) or switch capture on for it. A conversation held by
-  outsiders over a messaging channel is never read. The space can turn the curator off.
+- **What it reads.** A channel belongs to one person, and what is learned from it is readable by
+  the whole space, so channels are read by default only in a space with a single member; in a
+  space with other people a channel is read only when its own switch is on. A chat with one agent
+  is read only when you keep a message ("Keep in the wiki" in a message's menu) or switch capture
+  on for it. A conversation held by outsiders over a messaging channel is never read. An owner of
+  the space can turn the curator off. The per-conversation switch exists as a procedure and a
+  database column but has no screen yet.
 - **What it keeps.** The stretch it read is stored as a source, as it was said (encrypted), and
   every change points to it. Tokens, keys and email addresses are masked before the model sees the
   text and before it is stored. Only the person whose conversation it was can read the quoted
   source; everyone else sees the pages and the reason.
 - **Approval.** A new page is written at once. A change to an existing page waits for approval by
-  default (the setting "Approve edits" turns that off). The conversation shows a card with what
-  was kept and a way to approve, refuse or undo it, and the Wiki screen lists what waits.
+  default (the setting "Approve edits" turns that off; only an owner of the space changes the
+  settings). The conversation shows a card with what was kept and a way to approve, refuse or undo
+  it, and the Wiki screen lists what waits. While a change waits, the card shows the text it would
+  write (the old words and the new), so nobody approves blind. The reason and the title the model
+  gave are shown only to the person whose conversation it was, like the quoted source.
+- **One answer at a time.** A change is claimed before its pages are written, so two answers (two
+  members, the phone and the screen, an approval and a refusal) cannot both write pages. Refusing
+  a change takes back the pages it had already written, unless someone edited them since.
 - **Undo.** Undoing restores each page to what it said before the change, but only if nobody has
   edited the page since; otherwise nothing is changed and the change is marked as conflicting.
   A change made against a page that moved on before it could be approved is also marked
   conflicting, and nothing is overwritten.
 - **When it cannot run.** With no model ready, nothing is read and nothing is lost: the cursor
-  stays where it was. A model answer that is not usable is tried again up to three times.
+  stays where it was. A model answer that is not usable is tried again up to three times. A
+  stretch with too little text is not read yet and is read together with what follows. What the
+  model costs is recorded as its own kind of usage.
 
 Not done yet: a switch on each conversation to turn the curator on or off (the procedure and the
 database column exist; no screen has the control), and a way to ask the curator to try a

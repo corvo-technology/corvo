@@ -23,6 +23,7 @@ import {
 } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
 import { ORPCError } from "@orpc/server";
+import { requireSpaceOwner } from "../space-owner.js";
 import { resolveThreadTarget } from "../thread-target.js";
 import type { RouterContext } from "./context.js";
 
@@ -48,9 +49,13 @@ export function wikiChangeView(record: WikiChangeRecord, viewerUserId: string): 
   return {
     id: record.id,
     state: record.state,
-    reason: record.reason,
-    sourceTitle: record.sourceTitle,
+    // The title and the reason are the model's summary of the conversation, so only the person
+    // whose conversation it was is shown them. What would be written is page text, which every
+    // member of the Space can read once it is in the wiki, so everyone sees it before approving.
+    reason: canSeeSource ? record.reason : "",
+    sourceTitle: canSeeSource ? record.sourceTitle : "",
     pages: record.pages,
+    edits: record.edits,
     createdAt: record.createdAt.toISOString(),
     canSeeSource,
     ...(canSeeSource ? { sourceText: record.sourceText } : {}),
@@ -131,9 +136,12 @@ export function wikiRoutes(ctx: RouterContext) {
         get: authed.wiki.settings.get.handler(({ context }) =>
           getWikiSettings(db, context.actor.spaceId),
         ),
-        set: authed.wiki.settings.set.handler(({ context, input }) =>
-          setWikiSettings(db, context.actor.spaceId, input),
-        ),
+        // These settings decide what is learned from everyone's conversations and whether edits wait
+        // for approval, so only an owner of the Space changes them.
+        set: authed.wiki.settings.set.handler(async ({ context, input }) => {
+          await requireSpaceOwner(db, context.actor);
+          return setWikiSettings(db, context.actor.spaceId, input);
+        }),
       },
       keep: authed.wiki.keep.handler(async ({ context, input }) => {
         const target = await resolveThreadTarget(db, context.actor, input);

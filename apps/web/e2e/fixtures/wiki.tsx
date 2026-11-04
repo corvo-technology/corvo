@@ -113,6 +113,14 @@ const changes: WikiChange[] =
           reason: "The quote was approved and the start date is set.",
           sourceTitle: "Renovation kickoff",
           pages: [{ title: "Office Renovation", op: "replace" }],
+          edits: [
+            {
+              title: "Office Renovation",
+              op: "replace",
+              removed: "Start planned for Nov 18",
+              added: "Start planned for Nov 25",
+            },
+          ],
           createdAt: ago(HOUR),
           canSeeSource: true,
           sourceText:

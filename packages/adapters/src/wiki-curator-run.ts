@@ -19,6 +19,7 @@ import {
   listWikiChanges,
   listWikiPages,
   readWikiPage,
+  recordUsage,
   searchWiki,
   withTransactionRetry,
 } from "@corvo/db";
@@ -60,6 +61,11 @@ function kindOf(thread: ThreadFacts): CuratorThreadKind {
   return "external";
 }
 
+/** A channel is one person's, and what the curator learns is read by everyone in the Space. */
+async function hasOtherMembers(prisma: PrismaClient, spaceId: string): Promise<boolean> {
+  return (await prisma.spaceMember.count({ where: { spaceId } })) > 1;
+}
+
 /**
  * The quiet read to queue after a reply, or nothing when the curator does not read this
  * conversation (a chat with one agent unless asked, anything an outsider said, or the Space has it off).
@@ -74,6 +80,7 @@ export async function wikiCurateJobAfterTurn(
     kind: kindOf(thread),
     threadCapture: thread.wikiCapture,
     settingsCapture: settings.capture,
+    sharedSpace: await hasOtherMembers(prisma, thread.spaceId),
   })
     ? wikiCurateJob(thread.id, { now })
     : undefined;
@@ -129,6 +136,7 @@ export async function curateWiki(
       kind,
       threadCapture: thread.wikiCapture,
       settingsCapture: settings.capture,
+      sharedSpace: await hasOtherMembers(prisma, thread.spaceId),
     })
   )
     return;
@@ -172,10 +180,8 @@ export async function curateWiki(
     return [{ author, text }];
   });
   const said = lines.reduce((total, line) => total + line.text.length, 0);
-  if (!kept && said < WIKI_CURATE_MIN_CHARS) {
-    await advanceWikiCursor(prisma, thread.id, thread.wikiCuratedUpToSeq, toSeq);
-    return;
-  }
+  // Too little to be worth a model call: the lines stay unread, so the next read has them too.
+  if (!kept && said < WIKI_CURATE_MIN_CHARS) return;
   if (!lines.length) return;
 
   const transcript = lines.map((line) => `${line.author}: ${line.text}`).join("\n");
@@ -204,7 +210,16 @@ export async function curateWiki(
       change.pages.map((page) => `[[${page.title}]] ${page.op}`),
     ),
     messages: lines,
+    kept,
   });
+  const usageOf = (event: Parameters<typeof recordUsage>[1]) =>
+    recordUsage(prisma, event, {
+      spaceId: thread.spaceId,
+      userId: thread.userId,
+      botId: thread.botId ?? undefined,
+      operationId: `wiki:${thread.id}`,
+      operationKind: "wiki",
+    });
 
   let answer = "";
   let failed = false;
@@ -214,6 +229,9 @@ export async function curateWiki(
       threadId: thread.id,
       runId: `wiki:${thread.id}:${fromSeq}:${toSeq}`,
       usageOperationKind: "wiki",
+      onUsage: async (event) => {
+        await usageOf(event);
+      },
       prompt,
       instructions: curatorSystemPrompt(
         rules ? parseWikiPage(rules.body).body.trim() || CURATOR_RULES : CURATOR_RULES,
@@ -231,6 +249,7 @@ export async function curateWiki(
       signal: AbortSignal.timeout(summarizeTimeoutMs(prompt.length)),
     },
   )) {
+    if (event.type === "usage" && !event.accounted) await usageOf(event);
     if (event.type === "text" && FAILED_TEXT.test(event.text.trim())) failed = true;
     if (event.type === "done" && event.text) {
       answer = event.text.trim();

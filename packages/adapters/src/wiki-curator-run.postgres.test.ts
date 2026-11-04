@@ -195,12 +195,27 @@ postgres("the wiki curator (PostgreSQL)", () => {
     expect(request?.prompt).toContain("Leo: Great, noted.");
   });
 
-  it("reads nothing when too little was said, and moves on", async () => {
+  it("reads nothing when too little was said, and keeps those lines for the next read", async () => {
     const thread = await conversation("channel", ["Ok", "Fine", "Sure"]);
     const d = deps(proposal());
     await curate(d, thread.id);
     expect(d.requests).toHaveLength(0);
-    expect(await cursorOf(thread.id)).toBe(2);
+    expect(await cursorOf(thread.id)).toBeNull();
+  });
+
+  it("reads short lines together with what is said after them, so a short fact is not lost", async () => {
+    const thread = await conversation("channel", ["Start moved to Nov 25.", "Noted.", "Ok"]);
+    await curate(deps(proposal()), thread.id);
+    await fixture(async () => {
+      await prisma.message.create({
+        data: { threadId: thread.id, seq: 3, role: "user", blocks: [{ kind: "text", text: LONG }] },
+      });
+      await prisma.thread.update({ where: { id: thread.id }, data: { nextMessageSeq: 4 } });
+    });
+    const d = deps(proposal({ worth: false }));
+    await curate(d, thread.id);
+    expect(d.requests[0]?.prompt).toContain("Start moved to Nov 25.");
+    expect(await cursorOf(thread.id)).toBe(3);
   });
 
   it("starts after the cursor, so what it read before is never read twice", async () => {
@@ -339,5 +354,104 @@ postgres("the wiki curator (PostgreSQL)", () => {
       wikiCapture: true,
     }));
     expect(await tenant(() => wikiCurateJobAfterTurn(prisma, outsiders, now))).toBeUndefined();
+  });
+
+  /** Adds a second member to the Space for the length of one test, and takes them out again. */
+  async function withAnotherMember<T>(work: () => Promise<T>) {
+    const other = `${id}-other`;
+    await fixture(async () => {
+      await prisma.user.create({
+        data: { id: other, name: "Other", email: `${other}@corvo.test` },
+      });
+      for (const userId of [ids.userId, other]) {
+        await prisma.member.create({
+          data: {
+            id: `${id}-org-member-${userId}`,
+            organizationId: ids.orgId,
+            userId,
+            role: "owner",
+            createdAt: new Date(),
+          },
+        });
+        await prisma.spaceMember.create({
+          data: {
+            id: `${id}-member-${userId}`,
+            spaceId: ids.spaceId,
+            organizationId: ids.orgId,
+            userId,
+            role: "member",
+            createdAt: new Date(),
+          },
+        });
+      }
+    });
+    try {
+      return await work();
+    } finally {
+      await fixture(async () => {
+        await prisma.spaceMember.deleteMany({ where: { spaceId: ids.spaceId } });
+        await prisma.member.deleteMany({ where: { organizationId: ids.orgId } });
+        await prisma.user.deleteMany({ where: { id: other } });
+      });
+    }
+  }
+
+  it("does not read a channel by default once the Space has other people, but reads one switched on", async () => {
+    await withAnotherMember(async () => {
+      const channel = await conversation("channel", [LONG, "ok", "ok"]);
+      const d = deps(proposal());
+      await curate(d, channel.id);
+      expect(d.requests).toHaveLength(0);
+      const switchedOn = await conversation("channel", [LONG, "ok", "ok"], { wikiCapture: true });
+      const on = deps(proposal({ worth: false }));
+      await curate(on, switchedOn.id);
+      expect(on.requests).toHaveLength(1);
+      const row = await fixture(() =>
+        prisma.thread.findUniqueOrThrow({ where: { id: channel.id } }),
+      );
+      const now = new Date("2026-11-04T12:00:00.000Z");
+      expect(await tenant(() => wikiCurateJobAfterTurn(prisma, row, now))).toBeUndefined();
+    });
+  });
+
+  it("records what the curator's model cost, as its own kind of spend", async () => {
+    const thread = await conversation("channel", [LONG, "ok", "ok"]);
+    const callId = `wiki-usage-${randomUUID()}`;
+    const d = deps(proposal({ worth: false }));
+    const run = d.value.runtime.run.bind(d.value.runtime);
+    d.value.runtime.run = async function* (request, context) {
+      yield {
+        type: "usage",
+        provider: "test",
+        model: "fast-1",
+        callId,
+        inputTokens: 120,
+        outputTokens: 30,
+      } as never;
+      yield* run(request, context);
+    };
+    await curate(d, thread.id);
+    const rows = await fixture(() => prisma.usageRecord.findMany({ where: { callId } }));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      operationKind: "wiki",
+      spaceId: ids.spaceId,
+      userId: ids.userId,
+      inputTokens: 120,
+    });
+  });
+
+  it("tells the model a message was kept on purpose", async () => {
+    const thread = await conversation("agent", ["Short note: the vendor is Acme.", "ok", "ok"]);
+    const message = await fixture(() =>
+      prisma.message.findFirstOrThrow({ where: { threadId: thread.id, seq: 0 } }),
+    );
+    const d = deps(proposal({ worth: false }));
+    await curate(d, thread.id, message.id);
+    expect(d.requests[0]?.prompt).toMatch(/asked to keep/i);
+    const quiet = await conversation("channel", [LONG, "ok", "ok"]);
+    const q = deps(proposal({ worth: false }));
+    await curate(q, quiet.id);
+    expect(q.requests[0]?.prompt).not.toMatch(/asked to keep/i);
   });
 });

@@ -6,7 +6,7 @@ import { BuiCard } from "./ai/primitives";
 export type WikiChangeCardProps = {
   change: Pick<
     WikiChange,
-    "state" | "reason" | "sourceTitle" | "pages" | "canSeeSource" | "sourceText"
+    "state" | "reason" | "sourceTitle" | "pages" | "edits" | "canSeeSource" | "sourceText"
   >;
   /** An answer is on its way, so the buttons wait. */
   busy?: boolean;
@@ -56,6 +56,28 @@ export function WikiChangeCard({ change, busy, onDecide, onOpenPage }: WikiChang
           </li>
         ))}
       </ul>
+      {change.state === "pending" && change.edits.length ? (
+        <div
+          className="flex max-h-56 flex-col gap-1.5 overflow-y-auto"
+          data-testid="wiki-change-edits"
+        >
+          {change.edits.map((edit, index) => (
+            <div key={index} className="rounded-md bg-muted px-2.5 py-1.5 text-sm">
+              <span className="block text-xs text-muted-foreground">
+                {edit.section ? `${edit.title} · ${edit.section}` : edit.title}
+              </span>
+              {edit.removed ? (
+                <p className="whitespace-pre-wrap text-muted-foreground line-through" dir="auto">
+                  {edit.removed}
+                </p>
+              ) : null}
+              <p className="whitespace-pre-wrap" dir="auto">
+                {edit.added}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {change.reason ? <p className="text-sm">{change.reason}</p> : null}
       {change.canSeeSource && change.sourceText ? (
         <details className="text-sm text-muted-foreground">

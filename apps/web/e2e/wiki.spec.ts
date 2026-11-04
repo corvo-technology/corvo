@@ -83,6 +83,8 @@ test("a change the curator left waits in the list, and approving it clears it", 
   await expect(waiting).toContainText("Waiting for approval");
   await expect(waiting).toContainText("Office Renovation");
   await expect(waiting).toContainText("The quote was approved");
+  // What would be written is there to read before approving.
+  await expect(waiting.getByTestId("wiki-change-edits")).toContainText("Start planned for Nov 25");
   await captureScreenshot(page, testInfo, "wiki-pending");
 
   // What was quoted is there to read, but only on request.

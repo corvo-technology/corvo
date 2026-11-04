@@ -170,6 +170,21 @@ describe("which conversations the curator reads", () => {
     expect(wikiCaptureDefault("external")).toBe(false);
   });
 
+  it("reads no channel by default in a Space with other people, since a channel is one person's", () => {
+    const shared = { settingsCapture: true, sharedSpace: true };
+    expect(curatesThread({ kind: "channel", threadCapture: null, ...shared })).toBe(false);
+    expect(curatesThread({ kind: "channel", threadCapture: true, ...shared })).toBe(true);
+    expect(
+      curatesThread({
+        kind: "channel",
+        threadCapture: null,
+        settingsCapture: true,
+        sharedSpace: false,
+      }),
+    ).toBe(true);
+    expect(curatesThread({ kind: "agent", threadCapture: true, ...shared })).toBe(true);
+  });
+
   it("lets the conversation's own switch decide, never reading outsiders' conversations", () => {
     const on = { settingsCapture: true };
     expect(curatesThread({ kind: "channel", threadCapture: null, ...on })).toBe(true);
@@ -208,6 +223,17 @@ describe("the curator's prompt", () => {
     expect(prompt).toContain('title="Plan"');
     expect(prompt).toContain("[[Plan]] replace (Status)");
     expect(prompt).toContain("Ana: We are going with Alpha Builders.");
+  });
+
+  it("tells the model when the person asked to keep the message, and only then", () => {
+    const base = {
+      index: "",
+      related: [],
+      pending: [],
+      messages: [{ author: "User", text: "The vendor is Acme." }],
+    };
+    expect(buildCuratorPrompt({ ...base, kept: true })).toMatch(/asked to keep/i);
+    expect(buildCuratorPrompt(base)).not.toMatch(/asked to keep/i);
   });
 
   it("keeps words that try to close the conversation inside it", () => {

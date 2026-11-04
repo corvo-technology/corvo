@@ -1,7 +1,14 @@
 import type { CuratorOp } from "@corvo/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runAsSystem } from "./row-security.js";
-import { readWikiPage, WikiNotFoundError, writeWikiPage } from "./wiki.js";
+import {
+  readWikiPage,
+  removeWikiPage,
+  restoreWikiRevision,
+  WikiConflictError,
+  WikiNotFoundError,
+  writeWikiPage,
+} from "./wiki.js";
 import {
   advanceWikiCursor,
   createWikiChange,
@@ -279,5 +286,133 @@ describePostgres("wiki changes (PostgreSQL)", () => {
       expect(
         await setThreadWikiCapture(fx.prisma, { ...owner, spaceId: fx.otherSpaceId }, false),
       ).toBe(false);
+    }));
+
+  it("never puts back or deletes a page that someone edited since", () =>
+    system(async () => {
+      await write("Guarded Page", "One.");
+      await write("Guarded Page", "Two.", 1);
+      await write("Guarded Page", "Three.", 2);
+      await expect(
+        restoreWikiRevision(fx.prisma, mine(), "Guarded Page", 1, { expectedRevision: 2 }),
+      ).rejects.toThrow(WikiConflictError);
+      expect(await body("Guarded Page")).toBe("Three.");
+      expect(await removeWikiPage(fx.prisma, mine(), "Guarded Page", { expectedRevision: 2 })).toBe(
+        false,
+      );
+      expect(await body("Guarded Page")).toBe("Three.");
+      expect(await removeWikiPage(fx.prisma, mine(), "Guarded Page", { expectedRevision: 3 })).toBe(
+        true,
+      );
+    }));
+
+  it("lets only one of two approvals write the pages, and the other is refused", () =>
+    system(async () => {
+      for (let round = 0; round < 4; round += 1) {
+        const title = `Race Plan ${round}`;
+        await write(title, "Status: planning.");
+        const change = await propose([
+          { op: "replace", page: title, old: "planning", new: "building" },
+        ]);
+        const results = await Promise.allSettled([
+          decideWikiChange(fx.prisma, mine(), change!.id, "apply"),
+          decideWikiChange(fx.prisma, colleague(), change!.id, "apply"),
+        ]);
+        expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+        const loser = results.find((r) => r.status === "rejected") as PromiseRejectedResult;
+        expect(loser.reason).toBeInstanceOf(WikiChangeStateError);
+        expect(await body(title)).toBe("Status: building.");
+        const [settled] = await listWikiChanges(fx.prisma, mine(), { state: ["applied"] });
+        expect(settled?.id).toBeTruthy();
+        // What was written is recorded, so the change can still be undone.
+        const undone = await decideWikiChange(fx.prisma, mine(), change!.id, "undo");
+        expect(undone.state).toBe("undone");
+        expect(await body(title)).toBe("Status: planning.");
+      }
+    }));
+
+  it("keeps an approval and a refusal from leaving pages written under a refused change", () =>
+    system(async () => {
+      for (let round = 0; round < 4; round += 1) {
+        const title = `Race Refuse ${round}`;
+        await write(title, "Status: planning.");
+        const change = await propose([
+          { op: "replace", page: title, old: "planning", new: "building" },
+        ]);
+        await Promise.allSettled([
+          decideWikiChange(fx.prisma, mine(), change!.id, "apply"),
+          decideWikiChange(fx.prisma, colleague(), change!.id, "refuse"),
+        ]);
+        const [after] = (await listWikiChanges(fx.prisma, mine())).filter(
+          (c) => c.id === change!.id,
+        );
+        const text = await body(title);
+        if (after?.state === "refused") expect(text).toBe("Status: planning.");
+        else {
+          expect(after?.state).toBe("applied");
+          expect(text).toBe("Status: building.");
+        }
+      }
+    }));
+
+  it("does not let a decision that stopped half way block the change for ever", () =>
+    system(async () => {
+      await write("Stale Claim", "Status: planning.");
+      const change = await propose([
+        { op: "replace", page: "Stale Claim", old: "planning", new: "building" },
+      ]);
+      await fx.prisma.wikiChange.update({
+        where: { id: change!.id },
+        data: { claimedAt: new Date(Date.now() - 10 * 60_000) },
+      });
+      expect((await decideWikiChange(fx.prisma, mine(), change!.id, "apply")).state).toBe(
+        "applied",
+      );
+    }));
+
+  it("takes back the pages a refused change had already written, when nobody edited them", () =>
+    system(async () => {
+      await write("Mixed Plan", "Status: planning.");
+      const change = await propose([
+        { op: "create", page: "Mixed New Page", body: "Chosen." },
+        { op: "replace", page: "Mixed Plan", old: "planning", new: "building" },
+      ]);
+      expect(await body("Mixed New Page")).toBe("Chosen.");
+      const refused = await decideWikiChange(fx.prisma, mine(), change!.id, "refuse");
+      expect(refused.state).toBe("refused");
+      expect(await body("Mixed New Page")).toBeUndefined();
+      expect(await body("Mixed Plan")).toBe("Status: planning.");
+    }));
+
+  it("leaves a page someone edited alone when a change is refused, and still refuses it", () =>
+    system(async () => {
+      await write("Mixed Plan Two", "Status: planning.");
+      const change = await propose([
+        { op: "create", page: "Mixed New Page Two", body: "Chosen." },
+        { op: "replace", page: "Mixed Plan Two", old: "planning", new: "building" },
+      ]);
+      await write("Mixed New Page Two", "Chosen. And edited by a person.", 1);
+      const refused = await decideWikiChange(fx.prisma, mine(), change!.id, "refuse");
+      expect(refused.state).toBe("refused");
+      expect(await body("Mixed New Page Two")).toBe("Chosen. And edited by a person.");
+    }));
+
+  it("says what each operation would write, so a person can read it before approving", () =>
+    system(async () => {
+      await write("Preview Page", "Status: planning.");
+      const change = await propose([
+        { op: "create", page: "Preview New", kind: "Client", body: "Chosen for the lobby." },
+        { op: "append", page: "Preview Page", section: "Risks", text: "Permit delay." },
+        { op: "replace", page: "Preview Page", old: "planning", new: "building" },
+      ]);
+      expect(change?.edits).toEqual([
+        {
+          title: "Preview New",
+          op: "create",
+          added: "---\nkind: Client\n---\nChosen for the lobby.",
+        },
+        { title: "Preview Page", op: "append", section: "Risks", added: "Permit delay." },
+        { title: "Preview Page", op: "replace", removed: "planning", added: "building" },
+      ]);
     }));
 });
