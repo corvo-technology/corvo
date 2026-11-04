@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { contentEncryptionOf } from "./content-encryption.js";
+import { exportContent } from "./content-export.js";
 import { runAsSystem } from "./row-security.js";
 import { wikiTestFixture } from "./wiki-test-fixture.js";
 
@@ -99,5 +100,40 @@ describePostgres("wiki page columns (PostgreSQL)", () => {
       await fx.prisma.memoryDocument.create({
         data: page(fx.spaceId, "cafe-notes.md", "d", "cafe", "user"),
       });
+    }));
+
+  it("is part of the full content export, decrypted", () =>
+    system(async () => {
+      await fx.prisma.memoryDocument.create({
+        data: page(fx.spaceId, "Exported.md", "Zebra crossing notes", "exported"),
+      });
+      const records: Array<{ type: string; scope?: string; content?: string }> = [];
+      for await (const record of exportContent(fx.prisma, { spaceId: fx.spaceId }))
+        records.push(record);
+      expect(
+        records.some(
+          (r) =>
+            r.type === "memory_document" &&
+            r.scope === "wiki" &&
+            r.content === "Zebra crossing notes",
+        ),
+      ).toBe(true);
+    }));
+
+  it("goes away with its space", () =>
+    system(async () => {
+      const doomed = `${fx.spaceId}-doomed`;
+      await fx.prisma.space.create({
+        data: { id: doomed, organizationId: fx.organizationId, name: "Doomed" },
+      });
+      const row = await fx.prisma.memoryDocument.create({
+        data: page(doomed, "Gone.md", "soon", "gone"),
+      });
+      await fx.prisma.space.delete({ where: { id: doomed } });
+      const rows = await fx.query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM memory_documents WHERE id = $1`,
+        [row.id],
+      );
+      expect(rows[0]!.n).toBe(0);
     }));
 });

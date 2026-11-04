@@ -1,6 +1,6 @@
 import { MEMORY_REVISION_CONFLICT_ERROR } from "@corvo/adapter-kit";
 import { isScratchpadStatus, listScratchpadItems, mapScratchpadItem } from "@corvo/adapters";
-import { isDeletableMemoryDocument } from "@corvo/contracts";
+import { isDeletableMemoryDocument, MemoryScope } from "@corvo/contracts";
 import { findSpaceMemoryConfig, IsolationError } from "@corvo/db";
 import { ORPCError } from "@orpc/server";
 import {
@@ -10,6 +10,9 @@ import {
   updateMemoryProviderDefaultScope,
 } from "../memory-provider-config.js";
 import type { RouterContext } from "./context.js";
+
+/** Memory a person or an agent keeps. The space's wiki is memory documents too, but has its own procedures. */
+const MEMORY_SCOPES = { in: MemoryScope.options } as const;
 
 export function memoryRoutes(ctx: RouterContext) {
   const { deps, repos, taughtSkills, agentSkills, authed } = ctx;
@@ -21,7 +24,7 @@ export function memoryRoutes(ctx: RouterContext) {
             spaceId: context.actor.spaceId,
             userId: context.actor.userId,
             ...(input.botId ? { botId: input.botId } : {}),
-            ...(input.scope ? { scope: input.scope } : {}),
+            scope: input.scope ?? MEMORY_SCOPES,
           },
         });
         return docs.map((doc) => ({
@@ -40,6 +43,7 @@ export function memoryRoutes(ctx: RouterContext) {
             id: input.documentId,
             spaceId: context.actor.spaceId,
             userId: context.actor.userId,
+            scope: MEMORY_SCOPES,
           },
         });
         if (!doc) throw new IsolationError();
@@ -82,6 +86,7 @@ export function memoryRoutes(ctx: RouterContext) {
             id: input.documentId,
             spaceId: context.actor.spaceId,
             userId: context.actor.userId,
+            scope: MEMORY_SCOPES,
           },
         });
         if (!doc) throw new IsolationError();
@@ -112,6 +117,7 @@ export function memoryRoutes(ctx: RouterContext) {
           where: {
             spaceId: context.actor.spaceId,
             userId: context.actor.userId,
+            scope: MEMORY_SCOPES,
             ...(input.botId ? { botId: input.botId } : {}),
           },
         });
