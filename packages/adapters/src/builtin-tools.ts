@@ -1056,7 +1056,8 @@ export const builtinAgentTools: ConnectorTool[] = [
   },
   {
     name: "ticket_update",
-    description: "Update a ticket, including status and owner.",
+    description:
+      "Update a ticket, including status, owner and fields. Moving it to review or done tells the person.",
     inputSchema: {
       type: "object",
       properties: {
