@@ -48,7 +48,7 @@ managed keystore, and replaces the rolling `android` GitHub release, so the
 download link stays the same:
 
 ```text
-https://github.com/corvo-technology/corvo/releases/download/android/corvo.apk
+https://github.com/corvo-technology/rook/releases/download/android/corvo.apk
 ```
 
 The APK uses the production update channel, so JavaScript changes reach it

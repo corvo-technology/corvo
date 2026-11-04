@@ -37,7 +37,7 @@ const publishWorkflow = parse(readFileSync(publishWorkflowFile, "utf8")) as {
 };
 
 const appServices = ["api", "worker", "web", "supervisor"] as const;
-const FIRST_PARTY_IMAGE = /ghcr\.io\/corvo-technology\/corvo\/([a-z0-9][a-z0-9._-]*)/g;
+const FIRST_PARTY_IMAGE = /ghcr\.io\/corvo-technology\/rook\/([a-z0-9][a-z0-9._-]*)/g;
 
 function firstPartyImageNames(value: unknown): string[] {
   if (typeof value !== "string") return [];
@@ -61,10 +61,10 @@ describe("the images compose file", () => {
       "worker",
     ]);
     for (const service of appServices) {
-      expect(compose.services[service]?.image).toContain("ghcr.io/corvo-technology/corvo/app");
+      expect(compose.services[service]?.image).toContain("ghcr.io/corvo-technology/rook/app");
       expect(compose.services[service]?.image).toContain("CORVO_IMAGE_TAG");
     }
-    expect(compose.services.computer?.image).toContain("ghcr.io/corvo-technology/corvo/computer");
+    expect(compose.services.computer?.image).toContain("ghcr.io/corvo-technology/rook/computer");
     expect(compose.services.computer?.image).toContain("CORVO_COMPUTER_IMAGE_TAG");
     expect(compose.services.postgres?.image).toMatch(
       /^\$\{POSTGRES_IMAGE:-postgres:16@sha256:[0-9a-f]{64}\}$/,
@@ -76,7 +76,7 @@ describe("the images compose file", () => {
     expect(firstPartyImageNames(null)).toEqual([]);
     expect(firstPartyImageNames(true)).toEqual([]);
     expect(firstPartyImageNames(7091)).toEqual([]);
-    expect(firstPartyImageNames("ghcr.io/corvo-technology/corvo/computer:edge")).toEqual([
+    expect(firstPartyImageNames("ghcr.io/corvo-technology/rook/computer:edge")).toEqual([
       "computer",
     ]);
   });

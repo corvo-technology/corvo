@@ -49,7 +49,7 @@ export const DEFAULT_CORVO_EMULATED_RELEASES: readonly EmulatedGithubRelease[] =
     name: "v0.4.2 — routine tools + connector emulators",
     body: "Routines can bind connector tools. Composio emulator covers GitHub releases offline.",
     publishedAt: "2026-08-28T12:00:00.000Z",
-    htmlUrl: "https://github.com/corvo-technology/corvo/releases/tag/v0.4.2",
+    htmlUrl: "https://github.com/corvo-technology/rook/releases/tag/v0.4.2",
   },
   {
     owner: "corvo-technology",
@@ -58,7 +58,7 @@ export const DEFAULT_CORVO_EMULATED_RELEASES: readonly EmulatedGithubRelease[] =
     name: "v0.4.1 — computer + plugin guidance",
     body: "Prefer connected plugins over browsing when reading app data.",
     publishedAt: "2026-08-20T12:00:00.000Z",
-    htmlUrl: "https://github.com/corvo-technology/corvo/releases/tag/v0.4.1",
+    htmlUrl: "https://github.com/corvo-technology/rook/releases/tag/v0.4.1",
   },
 ];
 
@@ -116,7 +116,7 @@ export function assessReleaseWatchRoutinePrompt(prompt: string): {
 
   if (!mentionsRepo || !mentionsReleases || !mentionsGithubTool) {
     const missing = [
-      !mentionsRepo ? "repo (corvo-technology/corvo)" : null,
+      !mentionsRepo ? "repo (corvo-technology/rook)" : null,
       !mentionsReleases ? "releases" : null,
       !mentionsGithubTool ? "GitHub/releases tool steps" : null,
     ]

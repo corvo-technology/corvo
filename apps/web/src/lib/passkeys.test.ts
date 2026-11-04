@@ -37,7 +37,7 @@ describe("passkeysSupported", () => {
 
   it("on the macOS app, offers passkeys only for relying parties the build is associated with", async () => {
     const mac = (rpIds?: string[] | Error) => ({
-      ...browser("app.bots.corvo.tech"),
+      ...browser("app.rookup.run"),
       desktop: {
         platform: "darwin",
         passkeys:
@@ -51,18 +51,12 @@ describe("passkeysSupported", () => {
               },
       },
     });
-    await expect(
-      passkeysSupported("app.bots.corvo.tech", mac(["app.bots.corvo.tech"])),
-    ).resolves.toBe(true);
-    await expect(
-      passkeysSupported("App.Bots.Corvo.Tech", mac(["app.bots.corvo.tech"])),
-    ).resolves.toBe(true);
-    await expect(passkeysSupported("app.bots.corvo.tech", mac([]))).resolves.toBe(false);
-    await expect(passkeysSupported("app.bots.corvo.tech", mac())).resolves.toBe(false);
-    await expect(passkeysSupported("app.bots.corvo.tech", mac(new Error("ipc")))).resolves.toBe(
-      false,
-    );
-    const selfHosted = { ...mac(["app.bots.corvo.tech"]), host: "corvo.example.com" };
+    await expect(passkeysSupported("app.rookup.run", mac(["app.rookup.run"]))).resolves.toBe(true);
+    await expect(passkeysSupported("App.Rookup.Run", mac(["app.rookup.run"]))).resolves.toBe(true);
+    await expect(passkeysSupported("app.rookup.run", mac([]))).resolves.toBe(false);
+    await expect(passkeysSupported("app.rookup.run", mac())).resolves.toBe(false);
+    await expect(passkeysSupported("app.rookup.run", mac(new Error("ipc")))).resolves.toBe(false);
+    const selfHosted = { ...mac(["app.rookup.run"]), host: "corvo.example.com" };
     await expect(passkeysSupported("corvo.example.com", selfHosted)).resolves.toBe(false);
     expect(
       selfHosted.credential.isUserVerifyingPlatformAuthenticatorAvailable,

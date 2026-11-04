@@ -5,7 +5,7 @@ import { isLoopbackHost, isPrivateNetworkHost } from "@corvo/contracts/network-h
 /** Managed desktop origin; development keeps its usual web/API ports. */
 export const DEFAULT_LOCAL_WEB_URL = "http://127.0.0.1:45173";
 /** Hosted Rook; setup saves it as an `existing` server so it opens like any other. */
-export const CORVO_CLOUD_URL = "https://app.corvo.tech";
+export const CORVO_CLOUD_URL = "https://app.rookup.run";
 export const PROBE_RESPONSE_LIMIT_BYTES = 64 * 1024;
 
 export const SETUP_FILE_NAME = "setup.json";

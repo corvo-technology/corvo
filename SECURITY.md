@@ -2,7 +2,7 @@
 
 ## Reporting vulnerabilities
 
-Email **security@corvo.tech** only. Do not open public GitHub issues for security bugs.
+Email **security@rookup.run** only. Do not open public GitHub issues for security bugs.
 
 Please include:
 
@@ -14,7 +14,7 @@ We will acknowledge your report and work on a fix. Please do not file a public i
 
 ## Other contact
 
-- General support: **support@corvo.tech**
+- General support: **support@rookup.run**
 
 ## Scope
 

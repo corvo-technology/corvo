@@ -75,15 +75,15 @@ describe("graphical computer spec", () => {
     // Explicit "" stands for unset, so exported CORVO_COMPUTER_IMAGE* values cannot leak in.
     expect(resolveComputerImage("", "")).toBe("corvo/computer:local");
     expect(resolveComputerImage("", "edge")).toBe("corvo/computer:local");
-    expect(resolveComputerImage("ghcr.io/corvo-technology/corvo/computer", "edge")).toBe(
-      "ghcr.io/corvo-technology/corvo/computer:edge",
+    expect(resolveComputerImage("ghcr.io/corvo-technology/rook/computer", "edge")).toBe(
+      "ghcr.io/corvo-technology/rook/computer:edge",
     );
-    expect(resolveComputerImage("ghcr.io/corvo-technology/corvo/computer", "")).toBe(
-      "ghcr.io/corvo-technology/corvo/computer",
+    expect(resolveComputerImage("ghcr.io/corvo-technology/rook/computer", "")).toBe(
+      "ghcr.io/corvo-technology/rook/computer",
     );
     // Compose already appends the tag, so a tagged or pinned image is never tagged twice.
-    expect(resolveComputerImage("ghcr.io/corvo-technology/corvo/computer:edge", "edge")).toBe(
-      "ghcr.io/corvo-technology/corvo/computer:edge",
+    expect(resolveComputerImage("ghcr.io/corvo-technology/rook/computer:edge", "edge")).toBe(
+      "ghcr.io/corvo-technology/rook/computer:edge",
     );
     expect(resolveComputerImage("registry.example.com:5000/corvo/computer", "v1.2.3")).toBe(
       "registry.example.com:5000/corvo/computer:v1.2.3",

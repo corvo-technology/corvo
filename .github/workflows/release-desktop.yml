@@ -245,7 +245,7 @@ jobs:
           spctl --assess --type execute --verbose=2 "$app"
           grep -Fqx "provider: github" "$app/Contents/Resources/app-update.yml"
           grep -Fqx "owner: corvo-technology" "$app/Contents/Resources/app-update.yml"
-          grep -Fqx "repo: corvo" "$app/Contents/Resources/app-update.yml"
+          grep -Fqx "repo: rook" "$app/Contents/Resources/app-update.yml"
 
       - name: Verify packaged native dependencies
         if: runner.os == 'macOS'
@@ -310,7 +310,7 @@ jobs:
             throw "Windows update config is not bound to the signing publisher."
           }
           $feed = Get-Content -Raw $config
-          foreach ($expected in @("provider: github", "owner: corvo-technology", "repo: corvo")) {
+          foreach ($expected in @("provider: github", "owner: corvo-technology", "repo: rook")) {
             if ($feed -notmatch "(?m)^$([regex]::Escape($expected))\r?$") {
               throw "Windows update config missing '$expected'."
             }
@@ -336,7 +336,7 @@ jobs:
           test -f "$config"
           grep -Fqx "provider: github" "$config"
           grep -Fqx "owner: corvo-technology" "$config"
-          grep -Fqx "repo: corvo" "$config"
+          grep -Fqx "repo: rook" "$config"
           test -f apps/desktop/out/latest-linux.yml
           grep -Fqx "version: $RELEASE_VERSION" apps/desktop/out/latest-linux.yml
 

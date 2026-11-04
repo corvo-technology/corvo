@@ -7,9 +7,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        For **security vulnerabilities**, email [security@corvo.tech](mailto:security@corvo.tech). See [SECURITY.md](https://github.com/corvo-technology/corvo/blob/main/SECURITY.md).
+        For **security vulnerabilities**, email [security@rookup.run](mailto:security@rookup.run). See [SECURITY.md](https://github.com/corvo-technology/rook/blob/main/SECURITY.md).
 
-        Setup steps are in [README.md](https://github.com/corvo-technology/corvo/blob/main/README.md). Do not paste `.env` contents or API keys.
+        Setup steps are in [README.md](https://github.com/corvo-technology/rook/blob/main/README.md). Do not paste `.env` contents or API keys.
 
   - type: dropdown
     id: step
