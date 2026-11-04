@@ -19,6 +19,35 @@ function fakeFanout() {
 }
 
 describe("createBoardEvents", () => {
+  const moved = {
+    ref: "RAK-3",
+    title: "Call Ana",
+    status: "review" as const,
+    previousStatus: "doing" as const,
+    statusLabel: "Check",
+    byBotId: "bot-1",
+    byName: "Planner",
+  };
+
+  it("carries what moved through the fanout, and drops a malformed move", async () => {
+    const fanout = fakeFanout();
+    const events = createBoardEvents(fanout as never);
+    const iterator = events.follow("space-1")[Symbol.asyncIterator]();
+    const pending = iterator.next();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await events.notify("space-1", { ticketId: "ticket-1", moved });
+    expect((await pending).value).toMatchObject({ ticketId: "ticket-1", moved });
+    const next = iterator.next();
+    await fanout.publish(
+      "board:space-1",
+      JSON.stringify({ ticketId: "ticket-2", moved: { ref: 4, status: "nope" } }),
+    );
+    const bare = (await next).value;
+    expect(bare).toMatchObject({ ticketId: "ticket-2" });
+    expect(bare).not.toHaveProperty("moved");
+    await iterator.return?.(undefined);
+  });
+
   it("follows only the requested space and yields the change", async () => {
     const fanout = fakeFanout();
     const events = createBoardEvents(fanout as never);

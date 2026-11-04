@@ -90,4 +90,22 @@ describe("ticket changes", () => {
     await s.changes({ ...change, assigneeBotId: null });
     expect(s.transaction).not.toHaveBeenCalled();
   });
+
+  it("forwards what moved to the board signal", async () => {
+    const s = setup(true);
+    const moved = {
+      ref: "RAK-1",
+      title: "T",
+      status: "done" as const,
+      previousStatus: "doing" as const,
+      byBotId: "bot-1",
+      byName: "Planner",
+    };
+    await s.changes({ ...change, wakeAssignee: false, moved });
+    expect(s.notify).toHaveBeenCalledWith("space-1", {
+      boardId: "board-1",
+      ticketId: "ticket-1",
+      moved,
+    });
+  });
 });

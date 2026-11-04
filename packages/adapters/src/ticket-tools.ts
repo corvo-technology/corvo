@@ -5,11 +5,13 @@ import {
   isTicketCompletedStatus,
   mergeTicketFields,
   TicketStatusSchema,
+  ticketRef,
   UpdateTicketInput,
 } from "@corvo/contracts";
 import type { PrismaClient } from "@corvo/db";
 import {
   allocateTicketNumber,
+  coerceTicketStatus,
   ensureBoard,
   findTicket,
   listTicketComments,
@@ -69,6 +71,25 @@ async function ownBotInSpace(
     }),
   );
 }
+/** Who made a change: the acting bot, or else the person. */
+async function moverOf(
+  deps: TicketToolDeps,
+  input: { spaceId: string; userId: string; botId?: string },
+): Promise<{ byBotId: string | null; byName: string | null }> {
+  if (input.botId) {
+    const bot = await deps.prisma.bot.findFirst({
+      where: { id: input.botId, spaceId: input.spaceId },
+      select: { name: true },
+    });
+    return { byBotId: input.botId, byName: bot?.name ?? null };
+  }
+  const user = await deps.prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { name: true },
+  });
+  return { byBotId: null, byName: user?.name ?? null };
+}
+
 const LIST_TICKETS_LIMIT = 50;
 const LIST_DESCRIPTION_CHARS = 200;
 
@@ -277,6 +298,7 @@ export async function updateTicket(
       });
       return {
         row,
+        previousStatus: coerceTicketStatus(current.status),
         reassigned:
           data.assigneeBotId !== undefined && data.assigneeBotId !== current.assigneeBotId,
       };
@@ -284,12 +306,27 @@ export async function updateTicket(
     .catch((cause: unknown) => (cause instanceof FieldLimitError ? cause : Promise.reject(cause)));
   if (result instanceof FieldLimitError) return { error: result.message };
   if (!result) return { error: "Ticket not found." };
+  const status = coerceTicketStatus(result.row.status);
+  const moved =
+    status !== result.previousStatus
+      ? {
+          ref: ticketRef(board.ticketPrefix, result.row.number),
+          title: result.row.title,
+          status,
+          previousStatus: result.previousStatus,
+          ...(toBoardDto(board).statusLabels[status]
+            ? { statusLabel: toBoardDto(board).statusLabels[status] }
+            : {}),
+          ...(await moverOf(deps, input)),
+        }
+      : undefined;
   await deps.onTicketChange?.({
     spaceId: input.spaceId,
     boardId: board.id,
     ticketId: result.row.id,
     assigneeBotId: result.row.assigneeBotId,
     wakeAssignee: result.reassigned && result.row.assigneeBotId !== input.botId,
+    ...(moved ? { moved } : {}),
   });
   return { ticket: toTicketDto(result.row, board.ticketPrefix) };
 }

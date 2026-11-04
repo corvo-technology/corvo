@@ -209,10 +209,24 @@ export const CommentTicketInput = z.object({
 });
 export type CommentTicketInput = z.infer<typeof CommentTicketInput>;
 
+/** A ticket changed column. `byBotId` is null when a person moved it. */
+export const BoardMoveSchema = z.object({
+  ref: z.string(),
+  title: z.string(),
+  status: TicketStatusSchema,
+  previousStatus: TicketStatusSchema,
+  /** The board's own name for the new column, when it set one. */
+  statusLabel: z.string().optional(),
+  byBotId: Id.nullable(),
+  byName: z.string().nullable(),
+});
+export type BoardMove = z.infer<typeof BoardMoveSchema>;
+
 export const BoardEventSchema = z.object({
   spaceId: Id,
   boardId: Id.optional(),
   ticketId: Id.optional(),
+  moved: BoardMoveSchema.optional(),
   createdAt: z.string(),
 });
 export type BoardEvent = z.infer<typeof BoardEventSchema>;

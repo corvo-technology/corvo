@@ -197,6 +197,7 @@ function mutationDeps(ticketBoardEnabled = true) {
   const prisma = {
     ...boardSpace(),
     bot: { findFirst: vi.fn(async () => ({ id: "bot-2" })) },
+    user: { findUnique: vi.fn(async () => ({ name: "Pat" })) },
     ticket: tx.ticket,
     ticketComment: { findMany: vi.fn(async () => []) },
     $transaction: vi.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
@@ -284,6 +285,52 @@ describe("ticket mutations", () => {
     expect(s.prisma.board.findUnique).not.toHaveBeenCalled();
     expect(s.prisma.$transaction).not.toHaveBeenCalled();
     expect(s.changes).not.toHaveBeenCalled();
+  });
+
+  it("says what moved when the status changes, with the mover's name", async () => {
+    const s = mutationDeps();
+    s.prisma.bot.findFirst = vi.fn(async () => ({ id: "bot-1", name: "Planner" })) as never;
+    await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      botId: "bot-1",
+      id: "t1",
+      status: "review",
+    });
+    expect(s.changes).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        moved: {
+          ref: "RAK-1",
+          title: "Ticket",
+          status: "review",
+          previousStatus: "todo",
+          byBotId: "bot-1",
+          byName: "Planner",
+        },
+      }),
+    );
+  });
+
+  it("sends no move for a title change, a comment or the same status again", async () => {
+    const s = mutationDeps();
+    await updateTicket(s.deps, { spaceId: "ws", userId: "user-1", id: "t1", title: "New" });
+    await updateTicket(s.deps, { spaceId: "ws", userId: "user-1", id: "t1", status: "todo" });
+    for (const [change] of s.changes.mock.calls) expect(change).not.toHaveProperty("moved");
+  });
+
+  it("names a person who moves a ticket, with no bot id", async () => {
+    const s = mutationDeps();
+    await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      status: "done",
+    });
+    expect(s.changes).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        moved: expect.objectContaining({ status: "done", byBotId: null, byName: "Pat" }),
+      }),
+    );
   });
 
   it("keeps named fields on a ticket, merging them under the row lock", async () => {
