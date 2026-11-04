@@ -1121,4 +1121,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "No runs yet": "実行はまだありません",
   "Load older runs": "過去の実行を読み込む",
   "Could not load run history": "実行履歴を読み込めませんでした",
+  Wiki: "Wiki",
+  "No pages yet": "まだページがありません",
+  "Cited by": "引用元",
+  "Could not load pages": "ページを読み込めませんでした",
 };

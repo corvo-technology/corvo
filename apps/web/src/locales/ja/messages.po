@@ -1062,6 +1062,7 @@ msgstr "Avatar Studio"
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/SquadPage.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Back"
 msgstr "戻る"
 
@@ -1262,6 +1263,7 @@ msgstr "画像を読み取れません"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -1438,6 +1440,10 @@ msgstr "Rookの使い方を選択"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Choose where bots run"
 msgstr "ボットの実行場所を選ぶ"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Cited by"
+msgstr "引用元"
 
 #: src/lib/localized-provider-hint.ts
 msgid "Claude subscription"
@@ -2176,6 +2182,7 @@ msgstr "これらのファイルを読み込めませんでした"
 
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Could not remove"
 msgstr "削除できませんでした"
 
@@ -2232,6 +2239,7 @@ msgstr "ルーティンを実行できませんでした"
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/chat-model-switcher.tsx
 #: src/pages/shell/use-space-roster.ts
+#: src/pages/WikiBrowser.tsx
 #: src/pages/Workflows.tsx
 msgid "Could not save"
 msgstr "保存できませんでした"
@@ -2563,6 +2571,7 @@ msgstr "ヘルパーに任せています: {value}"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Delete"
 msgstr "削除"
 
@@ -2819,6 +2828,7 @@ msgstr "各名前は一度だけ使用できます。"
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Edit"
 msgstr "編集"
 
@@ -3275,6 +3285,10 @@ msgstr "高"
 #: src/lib/model-catalog.ts
 msgid "High"
 msgstr "高"
+
+#: src/pages/WikiBrowser.tsx
+msgid "History"
+msgstr "履歴"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Hold to talk"
@@ -4149,6 +4163,10 @@ msgstr "新着メッセージ"
 msgid "New open-work item"
 msgstr "新しい未完了の作業"
 
+#: src/pages/WikiBrowser.tsx
+msgid "New page"
+msgstr "新しいページ"
+
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4265,6 +4283,10 @@ msgstr "モデルが一覧にありません。"
 #: src/pages/shell/agent-import.tsx
 msgid "No OpenClaw, Hermes or agent document found."
 msgstr "OpenClaw、Hermes、またはエージェントのドキュメントが見つかりません。"
+
+#: src/pages/WikiBrowser.tsx
+msgid "No pages yet"
+msgstr "まだページがありません"
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
@@ -4573,6 +4595,14 @@ msgstr "オーナー"
 #: src/components/markdown-copy.tsx
 msgid "Page {page} of {count}"
 msgstr "{page} / {count} ページ"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page options"
+msgstr "ページのオプション"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page text"
+msgstr "ページの本文"
 
 #: src/pages/RoutineEditor.tsx
 msgid "PagerDuty incident"
@@ -4953,6 +4983,7 @@ msgid "Release control"
 msgstr "操作を戻す"
 
 #: src/components/InstructionSettings.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Reload"
 msgstr "再読み込み"
 
@@ -5148,6 +5179,7 @@ msgstr "再起動中…"
 
 #: src/components/InstructionSettings.tsx
 #: src/pages/shell/archived-chats.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Restore"
 msgstr "復元"
 
@@ -5205,6 +5237,11 @@ msgstr "実行前に確認: {reviewing}"
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
 msgstr "プロバイダー設定を確認して、もう一度テストしてください。"
+
+#. placeholder {0}: revision.revision
+#: src/pages/WikiBrowser.tsx
+msgid "Revision {0}"
+msgstr "リビジョン {0}"
 
 #: src/pages/Onboarding.tsx
 msgid "Rook credits"
@@ -5322,6 +5359,7 @@ msgstr "土曜日"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Save"
 msgstr "保存"
 
@@ -5405,6 +5443,7 @@ msgstr "画面が接続されていません"
 #: src/pages/shell/command-palette.tsx
 #: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/sidebar-header.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Search"
 msgstr "検索"
 
@@ -6166,6 +6205,10 @@ msgstr "このモデルのコンテキストウィンドウは小さすぎます
 msgid "This month"
 msgstr "今月"
 
+#: src/pages/WikiBrowser.tsx
+msgid "This page changed. Reload to see the latest."
+msgstr "このページは更新されました。再読み込みして最新の内容を確認してください。"
+
 #: src/components/AccountAccess.tsx
 msgid "This permanently deletes your account and data."
 msgstr "アカウントとデータが完全に削除されます。"
@@ -6228,6 +6271,7 @@ msgstr "実行タイミングが異なる場合があります"
 
 #: src/pages/Board.tsx
 #: src/pages/shell/bot-panel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Title"
 msgstr "タイトル"
 
@@ -6733,6 +6777,11 @@ msgstr "ボットをどこで実行しますか？"
 #: src/pages/shell/agent-import.tsx
 msgid "Where to import"
 msgstr "インポート先"
+
+#: src/components/AppRail.tsx
+#: src/pages/WikiPage.tsx
+msgid "Wiki"
+msgstr "Wiki"
 
 #: src/lib/ticket-status.ts
 msgid "Won't do"

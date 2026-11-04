@@ -21,3 +21,18 @@ describe("workflow_stop", () => {
     expect(names({ trigger: "user" })).not.toContain("workflow_stop");
   });
 });
+
+describe("the wiki tools", () => {
+  const wiki = ["wiki_index", "wiki_search", "wiki_read"];
+
+  it("are offered to every run that talks to the team, not only some", () => {
+    for (const trigger of ["user", "routine", "agent"]) {
+      expect(names({ trigger })).toEqual(expect.arrayContaining(wiki));
+    }
+  });
+
+  it("are withheld from a run that answers a messaging channel", () => {
+    for (const name of wiki)
+      expect(names({ trigger: "user", messagingChannelRun: true })).not.toContain(name);
+  });
+});

@@ -10,7 +10,7 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Chat messages | `messages.blocks` |
 | Thread events (they repeat message content) | `events.payload` |
 | Compacted history summaries | `threads.historyCompactionSummary` |
-| Memory documents and their revisions | `memory_documents.content`, `memory_revisions.content` |
+| Memory documents and their revisions, wiki pages included (scope `wiki`) | `memory_documents.content`, `memory_revisions.content` |
 | Uploaded and generated files | `DATA_DIR/artifacts/<space>/<file>` |
 | Bot computer homes kept in [object storage](./self-host.md#bot-homes-in-object-storage) (always, whatever `CONTENT_ENCRYPTION` says) | `homes/<id>/<revision>` in the bucket |
 | Credentials (unchanged scheme) | `secrets`, `bot_secrets`, `integration_provider_configs` |
@@ -79,6 +79,13 @@ characters from every string in the message. Agent history search matches
 whole words, as before. Space search matches word prefixes, then decrypts the
 candidates and applies its usual filter. Rows not yet migrated keep matching
 through the old full-text and substring predicates.
+
+Wiki pages are searched the same way. A page with scope `wiki` carries `searchTokens`, keyed
+HMACs (per space) of the words and word prefixes of its title and text, and the wiki matches
+them, decrypts the candidates and checks them against the real text, since a token can collide.
+Pages written while encryption is off have no tokens and are read and matched directly. The
+tradeoffs below apply to pages as they do to messages, with one difference worth knowing: pages
+are denser and more curated than messages, so shared words reveal a little more about topics.
 
 Tradeoffs:
 

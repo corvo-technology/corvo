@@ -1062,6 +1062,7 @@ msgstr "Estudio de avatares"
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/SquadPage.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Back"
 msgstr "Atrás"
 
@@ -1262,6 +1263,7 @@ msgstr "No puede leer imágenes"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -1438,6 +1440,10 @@ msgstr "Elige cómo usar Rook"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Choose where bots run"
 msgstr "Elegir dónde se ejecutan los bots"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Cited by"
+msgstr "Citada por"
 
 #: src/lib/localized-provider-hint.ts
 msgid "Claude subscription"
@@ -2176,6 +2182,7 @@ msgstr "No se pudieron leer estos archivos"
 
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Could not remove"
 msgstr "No se pudo quitar"
 
@@ -2232,6 +2239,7 @@ msgstr "No se pudo ejecutar la rutina"
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/chat-model-switcher.tsx
 #: src/pages/shell/use-space-roster.ts
+#: src/pages/WikiBrowser.tsx
 #: src/pages/Workflows.tsx
 msgid "Could not save"
 msgstr "No se pudo guardar"
@@ -2563,6 +2571,7 @@ msgstr "Delegando al ayudante: {value}"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Delete"
 msgstr "Eliminar"
 
@@ -2819,6 +2828,7 @@ msgstr "Cada nombre solo se puede usar una vez."
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Edit"
 msgstr "Editar"
 
@@ -3275,6 +3285,10 @@ msgstr "Alto"
 #: src/lib/model-catalog.ts
 msgid "High"
 msgstr "Alto"
+
+#: src/pages/WikiBrowser.tsx
+msgid "History"
+msgstr "Historial"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Hold to talk"
@@ -4149,6 +4163,10 @@ msgstr "Mensajes nuevos"
 msgid "New open-work item"
 msgstr "Nuevo elemento de trabajo abierto"
 
+#: src/pages/WikiBrowser.tsx
+msgid "New page"
+msgstr "Nueva página"
+
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4265,6 +4283,10 @@ msgstr "No hay modelos en la lista."
 #: src/pages/shell/agent-import.tsx
 msgid "No OpenClaw, Hermes or agent document found."
 msgstr "No se encontraron archivos de OpenClaw, Hermes ni un documento de agente."
+
+#: src/pages/WikiBrowser.tsx
+msgid "No pages yet"
+msgstr "Aún no hay páginas"
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
@@ -4573,6 +4595,14 @@ msgstr "Propietario"
 #: src/components/markdown-copy.tsx
 msgid "Page {page} of {count}"
 msgstr "Página {page} de {count}"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page options"
+msgstr "Opciones de la página"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page text"
+msgstr "Texto de la página"
 
 #: src/pages/RoutineEditor.tsx
 msgid "PagerDuty incident"
@@ -4953,6 +4983,7 @@ msgid "Release control"
 msgstr "Ceder el control"
 
 #: src/components/InstructionSettings.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Reload"
 msgstr "Recargar"
 
@@ -5148,6 +5179,7 @@ msgstr "Reiniciando…"
 
 #: src/components/InstructionSettings.tsx
 #: src/pages/shell/archived-chats.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Restore"
 msgstr "Restaurar"
 
@@ -5205,6 +5237,11 @@ msgstr "Revisa antes: {reviewing}"
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
 msgstr "Revisa la configuración del proveedor y vuelve a probar."
+
+#. placeholder {0}: revision.revision
+#: src/pages/WikiBrowser.tsx
+msgid "Revision {0}"
+msgstr "Revisión {0}"
 
 #: src/pages/Onboarding.tsx
 msgid "Rook credits"
@@ -5322,6 +5359,7 @@ msgstr "sábado"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Save"
 msgstr "Guardar"
 
@@ -5405,6 +5443,7 @@ msgstr "Pantalla no conectada"
 #: src/pages/shell/command-palette.tsx
 #: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/sidebar-header.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Search"
 msgstr "Buscar"
 
@@ -6166,6 +6205,10 @@ msgstr "La ventana de contexto de este modelo es demasiado pequeña. Elige otro 
 msgid "This month"
 msgstr "Este mes"
 
+#: src/pages/WikiBrowser.tsx
+msgid "This page changed. Reload to see the latest."
+msgstr "Esta página cambió. Recárgala para ver la última versión."
+
 #: src/components/AccountAccess.tsx
 msgid "This permanently deletes your account and data."
 msgstr "Esto elimina permanentemente tu cuenta y tus datos."
@@ -6228,6 +6271,7 @@ msgstr "El horario puede variar"
 
 #: src/pages/Board.tsx
 #: src/pages/shell/bot-panel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Title"
 msgstr "Título"
 
@@ -6733,6 +6777,11 @@ msgstr "¿Dónde deben ejecutarse los bots?"
 #: src/pages/shell/agent-import.tsx
 msgid "Where to import"
 msgstr "Dónde importar"
+
+#: src/components/AppRail.tsx
+#: src/pages/WikiPage.tsx
+msgid "Wiki"
+msgstr "Wiki"
 
 #: src/lib/ticket-status.ts
 msgid "Won't do"

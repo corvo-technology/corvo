@@ -117,9 +117,15 @@ it("keeps four areas in sight and the rest behind three dots", async () => {
   await cleanup();
 });
 
-it("lists Usage, Artifacts, Approvals and Memory behind the dots, and goes where one points", async () => {
+it("lists Usage, Artifacts, Wiki, Approvals and Memory behind the dots, and goes where one points", async () => {
   const { container, cleanup } = await renderRail();
-  expect(await openMore(container)).toEqual(["Usage", "Artifacts", "Approvals", "Memory"]);
+  expect(await openMore(container)).toEqual(["Usage", "Artifacts", "Wiki", "Approvals", "Memory"]);
+  const wiki = [...document.querySelectorAll("button")].find(
+    (button) => button.textContent === "Wiki",
+  ) as HTMLButtonElement;
+  await act(async () => wiki.click());
+  expect(container.querySelector('[data-testid="where"]')?.textContent).toBe("/app/wiki");
+  await openMore(container);
   const approvals = [...document.querySelectorAll("button")].find(
     (button) => button.textContent === "Approvals",
   ) as HTMLButtonElement;
@@ -133,7 +139,7 @@ it("lists Usage, Artifacts, Approvals and Memory behind the dots, and goes where
 it("keeps only the places that are not account settings inside a partner's frame", async () => {
   embedded.value = true;
   const { container, cleanup } = await renderRail();
-  expect(await openMore(container)).toEqual(["Usage", "Artifacts"]);
+  expect(await openMore(container)).toEqual(["Usage", "Artifacts", "Wiki"]);
   expect(footer).not.toHaveBeenCalled();
   await cleanup();
 });
@@ -151,6 +157,6 @@ it("leaves out what a partner hides from its customers, never the agents", async
     "Workflows",
     "More",
   ]);
-  expect(await openMore(container)).toEqual(["Artifacts", "Approvals", "Memory"]);
+  expect(await openMore(container)).toEqual(["Artifacts", "Wiki", "Approvals", "Memory"]);
   await cleanup();
 });

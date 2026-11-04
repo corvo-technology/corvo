@@ -14,6 +14,13 @@ describe("withTransactionRetry", () => {
     ["a Postgres deadlock", driverConflict("40P01")],
     ["a Postgres serialization failure", driverConflict("40001")],
     [
+      "a write conflict the driver reports when the transaction commits",
+      Object.assign(new Error("TransactionWriteConflict"), {
+        name: "DriverAdapterError",
+        cause: { kind: "TransactionWriteConflict", originalCode: "40001" },
+      }),
+    ],
+    [
       "a transaction that never started",
       Object.assign(
         new Error("Transaction API error: Unable to start a transaction in the given time."),

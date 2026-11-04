@@ -42,3 +42,4 @@ export * from "./settings-scope.js";
 export * from "./skill-store.js";
 export * from "./terminal.js";
 export * from "./voice-errors.js";
+export * from "./wiki.js";

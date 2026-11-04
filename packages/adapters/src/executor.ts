@@ -198,6 +198,7 @@ import {
 import { loadAgentTicketContext } from "./ticket-context.js";
 import { appendToolCompletionAudit } from "./tool-completion-audit.js";
 import { createWebProvider } from "./web-provider-factory.js";
+import { loadWikiIndexContext } from "./wiki-context.js";
 
 export function createRunExecutor(deps: ExecutorDeps) {
   const contextStrategy = deps.contextStrategy ?? DEFAULT_CONTEXT_STRATEGY;
@@ -659,7 +660,8 @@ export function createRunExecutor(deps: ExecutorDeps) {
         const [
           discovered,
           currentTurnImages,
-          memoryContext,
+          durableMemoryContext,
+          wikiContext,
           scratchpadContext,
           ticketContext,
           recalled,
@@ -669,6 +671,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
           messagingChannelRun
             ? Promise.resolve("")
             : loadAgentMemoryContext(deps.memory, bot.id, context),
+          messagingChannelRun
+            ? Promise.resolve(undefined)
+            : loadWikiIndexContext(deps.prisma, { spaceId: run.spaceId, userId: run.userId }),
           messagingChannelRun
             ? Promise.resolve("")
             : loadAgentScratchpadContext(deps, {
@@ -683,6 +688,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
               }),
           recallPromise,
         ]);
+        // What the team wrote down travels with the durable memory, so both are redacted and kept
+        // out of a messaging channel's run the same way.
+        const memoryContext = [durableMemoryContext, wikiContext].filter(Boolean).join("\n\n");
         const semanticMemoryEnabled = Boolean(semanticMemory) && !messagingChannelRun;
         let recalledMemory = "";
         let recallSucceeded = false;

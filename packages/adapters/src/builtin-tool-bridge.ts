@@ -42,6 +42,8 @@ export const CORE_BUILTIN_TOOL_NAMES: ReadonlySet<string> = new Set([
   "remember",
   "save_memory",
   "recall_memory",
+  "wiki_search",
+  "wiki_read",
   "schedule_create",
   "schedule_list",
   "workflow_stop",

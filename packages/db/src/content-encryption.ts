@@ -4,6 +4,7 @@ import {
   ciphertextKeyId,
   decryptText,
   encryptText,
+  foldAccents,
   jsonKeyIds,
   openJson,
   querySearchTokens,
@@ -67,6 +68,8 @@ export const ENCRYPTED_MODELS: Record<string, ModelSpec> = {
     fields: { content: {} },
     space: { column: "spaceId" },
     ownerRelation: "user",
+    // Only a wiki page keeps word tokens (see wikiScope); other memory has none.
+    searchTokens: true,
   },
   MemoryRevision: {
     table: "memory_revisions",
@@ -148,6 +151,8 @@ export interface ContentEncryption {
     query: string,
     domain: SearchTokenDomain,
   ): Promise<number[][]>;
+  /** The same for wiki pages, matched by the start of each word. */
+  wikiSearchTokens(spaceId: string, query: string): Promise<number[][]>;
 }
 
 /** Undefined for clients built without content encryption (fakes and temp-table tests). */
@@ -360,11 +365,26 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
             strings: stringsIn(value),
           });
         next[field] = sealJson(value, plainKeys, encrypt);
-      } else if (typeof value === "string") next[field] = encrypt(value);
-      else throw new Error(`Unsupported write to encrypted ${spec.table}.${field}`);
+      } else if (typeof value === "string") {
+        // A wiki page keeps word tokens of its title and its text. A rewrite must name the scope
+        // and the path again, so the tokens are made from what the page says now and not left
+        // describing what it used to say.
+        if (spec.searchTokens && wikiScope(data)) {
+          const title = typeof data.path === "string" ? data.path.replace(/\.md$/, "") : "";
+          // Accents are taken off before tokens are made, so a search without them still matches.
+          const text = foldAccents(`${title}\n${value}`);
+          next.searchTokens = searchTokens(key, { words: text, strings: [text] });
+        }
+        next[field] = encrypt(value);
+      } else throw new Error(`Unsupported write to encrypted ${spec.table}.${field}`);
     }
     ring.remember(spec.table, rowId, context);
     return next;
+  }
+
+  function wikiScope(data: RecordValue): boolean {
+    const scope = isRecord(data.scope) && "set" in data.scope ? data.scope.set : data.scope;
+    return scope === "wiki";
   }
 
   function touches(spec: ModelSpec, data: unknown): boolean {
@@ -495,6 +515,10 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
     async messageSearchTokens(spaceId, query, domain) {
       const keys = await ring.allFresh(spaceId);
       return keys.map((key) => querySearchTokens(key, query, domain));
+    },
+    async wikiSearchTokens(spaceId, query) {
+      const keys = await ring.allFresh(spaceId);
+      return keys.map((key) => querySearchTokens(key, foldAccents(query), "prefix"));
     },
   };
 

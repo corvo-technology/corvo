@@ -2,6 +2,7 @@ import type { AppBootstrap, NavLink as AppNavLink } from "@corvo/contracts";
 import { useLingui } from "@lingui/react/macro";
 import { skipToken, useQuery } from "@tanstack/react-query";
 import {
+  BookOpen,
   Bot,
   Brain,
   CalendarClock,
@@ -76,6 +77,7 @@ export function AppRail({ ticketBoardEnabled }: { ticketBoardEnabled: boolean })
       Icon: FolderOpen,
       onSelect: () => navigate("/app/artifacts"),
     },
+    { key: "wiki", label: t`Wiki`, Icon: BookOpen, onSelect: () => navigate("/app/wiki") },
     ...(embedded
       ? []
       : [
@@ -121,7 +123,7 @@ export function AppRail({ ticketBoardEnabled }: { ticketBoardEnabled: boolean })
         ))}
       <RailMore
         items={more}
-        active={active === "usage" || active === "artifacts"}
+        active={active === "usage" || active === "artifacts" || active === "wiki"}
         className={`${RAIL_ITEM} before:absolute before:-start-[6px] before:top-1/2 before:h-0 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary before:transition-[height] before:duration-200 before:ease-out motion-reduce:before:transition-none aria-[current=page]:bg-sidebar-accent aria-[current=page]:text-foreground aria-[current=page]:before:h-5`}
         labelClassName={RAIL_LABEL}
       />

@@ -45,6 +45,7 @@ import { partnerRoutes } from "./routes/partner.js";
 import { routinesRoutes } from "./routes/routines.js";
 import { spacesRoutes } from "./routes/spaces.js";
 import { threadsRoutes } from "./routes/threads.js";
+import { wikiRoutes } from "./routes/wiki.js";
 import type { VoiceDeps } from "./voice.js";
 
 export { nextConnectionLabel } from "./model-credentials.js";
@@ -156,6 +157,7 @@ export function createRouter(deps: RouterDeps) {
     ...threadsRoutes(ctx),
     ...computerRoutes(ctx),
     ...memoryRoutes(ctx),
+    ...wikiRoutes(ctx),
     ...routinesRoutes(ctx),
     ...boardsRoutes(ctx),
     ...mcpRoutes(ctx),

@@ -409,6 +409,13 @@ function LayoutContent() {
                       }}
                     />
                     <Stack.Screen name="artifacts" options={glassHeaderOptions(t("Artifacts"))} />
+                    <Stack.Screen name="wiki" options={glassHeaderOptions(t("Wiki"))} />
+                    <Stack.Screen
+                      name="wiki-page"
+                      options={({ route }) => ({
+                        title: (route.params as { title?: string } | undefined)?.title ?? t("Wiki"),
+                      })}
+                    />
                     <Stack.Screen name="artifact" options={{ title: t("Artifact") }} />
                     <Stack.Screen
                       name="group-thread"

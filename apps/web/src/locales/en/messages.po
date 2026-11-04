@@ -1062,6 +1062,7 @@ msgstr "Avatar Studio"
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/SquadPage.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Back"
 msgstr "Back"
 
@@ -1262,6 +1263,7 @@ msgstr "Can't read images"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -1438,6 +1440,10 @@ msgstr "Choose how to use Rook"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Choose where bots run"
 msgstr "Choose where bots run"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Cited by"
+msgstr "Cited by"
 
 #: src/lib/localized-provider-hint.ts
 msgid "Claude subscription"
@@ -2176,6 +2182,7 @@ msgstr "Could not read these files"
 
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Could not remove"
 msgstr "Could not remove"
 
@@ -2232,6 +2239,7 @@ msgstr "Could not run the routine"
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/chat-model-switcher.tsx
 #: src/pages/shell/use-space-roster.ts
+#: src/pages/WikiBrowser.tsx
 #: src/pages/Workflows.tsx
 msgid "Could not save"
 msgstr "Could not save"
@@ -2563,6 +2571,7 @@ msgstr "Delegating to helper: {value}"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Delete"
 msgstr "Delete"
 
@@ -2819,6 +2828,7 @@ msgstr "Each name can be used once."
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Edit"
 msgstr "Edit"
 
@@ -3275,6 +3285,10 @@ msgstr "High"
 #: src/lib/model-catalog.ts
 msgid "High"
 msgstr "High"
+
+#: src/pages/WikiBrowser.tsx
+msgid "History"
+msgstr "History"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Hold to talk"
@@ -4149,6 +4163,10 @@ msgstr "New messages"
 msgid "New open-work item"
 msgstr "New open-work item"
 
+#: src/pages/WikiBrowser.tsx
+msgid "New page"
+msgstr "New page"
+
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4265,6 +4283,10 @@ msgstr "No models listed."
 #: src/pages/shell/agent-import.tsx
 msgid "No OpenClaw, Hermes or agent document found."
 msgstr "No OpenClaw, Hermes or agent document found."
+
+#: src/pages/WikiBrowser.tsx
+msgid "No pages yet"
+msgstr "No pages yet"
 
 #: src/pages/AgentsStore.tsx
 msgid "No public address here, so it checks your inbox on a schedule you approve."
@@ -4573,6 +4595,14 @@ msgstr "Owner"
 #: src/components/markdown-copy.tsx
 msgid "Page {page} of {count}"
 msgstr "Page {page} of {count}"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page options"
+msgstr "Page options"
+
+#: src/pages/WikiBrowser.tsx
+msgid "Page text"
+msgstr "Page text"
 
 #: src/pages/RoutineEditor.tsx
 msgid "PagerDuty incident"
@@ -4953,6 +4983,7 @@ msgid "Release control"
 msgstr "Release control"
 
 #: src/components/InstructionSettings.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Reload"
 msgstr "Reload"
 
@@ -5148,6 +5179,7 @@ msgstr "Restarting…"
 
 #: src/components/InstructionSettings.tsx
 #: src/pages/shell/archived-chats.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Restore"
 msgstr "Restore"
 
@@ -5205,6 +5237,11 @@ msgstr "Review before {reviewing}"
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
 msgstr "Review provider settings and test again."
+
+#. placeholder {0}: revision.revision
+#: src/pages/WikiBrowser.tsx
+msgid "Revision {0}"
+msgstr "Revision {0}"
 
 #: src/pages/Onboarding.tsx
 msgid "Rook credits"
@@ -5322,6 +5359,7 @@ msgstr "Saturday"
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Save"
 msgstr "Save"
 
@@ -5405,6 +5443,7 @@ msgstr "Screen not connected"
 #: src/pages/shell/command-palette.tsx
 #: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/sidebar-header.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Search"
 msgstr "Search"
 
@@ -6166,6 +6205,10 @@ msgstr "This model's context window is too small. Choose another model."
 msgid "This month"
 msgstr "This month"
 
+#: src/pages/WikiBrowser.tsx
+msgid "This page changed. Reload to see the latest."
+msgstr "This page changed. Reload to see the latest."
+
 #: src/components/AccountAccess.tsx
 msgid "This permanently deletes your account and data."
 msgstr "This permanently deletes your account and data."
@@ -6228,6 +6271,7 @@ msgstr "Timing may differ"
 
 #: src/pages/Board.tsx
 #: src/pages/shell/bot-panel.tsx
+#: src/pages/WikiBrowser.tsx
 msgid "Title"
 msgstr "Title"
 
@@ -6733,6 +6777,11 @@ msgstr "Where should bots run?"
 #: src/pages/shell/agent-import.tsx
 msgid "Where to import"
 msgstr "Where to import"
+
+#: src/components/AppRail.tsx
+#: src/pages/WikiPage.tsx
+msgid "Wiki"
+msgstr "Wiki"
 
 #: src/lib/ticket-status.ts
 msgid "Won't do"

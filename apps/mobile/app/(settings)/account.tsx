@@ -662,6 +662,7 @@ export default function Account() {
           {(
             [
               { title: t("Artifacts"), href: "/artifacts" },
+              { title: t("Wiki"), href: "/wiki" },
               { title: t("Models"), href: "/models" },
               { title: t("Voice"), href: "/voice" },
               { title: t("Approvals"), href: "/approvals" },

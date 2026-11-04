@@ -1080,4 +1080,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "No runs yet": "Aún no hay ejecuciones",
   "Load older runs": "Cargar ejecuciones anteriores",
   "Could not load run history": "No se pudo cargar el historial de ejecuciones",
+  Wiki: "Wiki",
+  "No pages yet": "Aún no hay páginas",
+  "Cited by": "Citada por",
+  "Could not load pages": "No se pudieron cargar las páginas",
 };

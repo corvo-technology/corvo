@@ -397,6 +397,7 @@ it.each([false, true])(
       );
       const links = [
         "Artifacts",
+        "Wiki",
         "Models",
         "Voice",
         "Approvals",
@@ -414,6 +415,10 @@ it.each([false, true])(
       // Artifacts lives on the root stack, so it closes the settings sheet first.
       await view.press("Artifacts");
       expect(events).toEqual(["close", "/artifacts"]);
+      // The wiki is a root-stack screen too.
+      events.length = 0;
+      await view.press("Wiki");
+      expect(events).toEqual(["close", "/wiki"]);
       for (const [title, href] of [
         ["Models", "/models"],
         ["Approvals", "/approvals"],

@@ -714,3 +714,16 @@ it("requires human confirmation to approve an agent connection", () => {
   expect(toolRequiresExplicitApproval("respond_agent_connection")).toBe(true);
   expect(toolRequiresApproval("respond_agent_connection", false)).toBe(true);
 });
+
+describe("the wiki tools", () => {
+  const wiki = ["wiki_index", "wiki_search", "wiki_read"];
+
+  it("only read, so a webhook run may use them without asking", () => {
+    for (const name of wiki)
+      expect(unattendedTriggerToolRequiresApproval("webhook", name, false)).toBe(false);
+  });
+
+  it("bring in text people and agents wrote, so what they return taints the run", () => {
+    for (const name of wiki) expect(toolResultTaintsRun(name)).toBe(true);
+  });
+});

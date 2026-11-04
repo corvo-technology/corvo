@@ -1088,4 +1088,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "No runs yet": "还没有运行记录",
   "Load older runs": "加载更早的运行记录",
   "Could not load run history": "无法加载运行历史记录",
+  Wiki: "Wiki",
+  "No pages yet": "还没有页面",
+  "Cited by": "被引用于",
+  "Could not load pages": "无法加载页面",
 };
