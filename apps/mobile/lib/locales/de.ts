@@ -503,6 +503,7 @@ export const DE_MESSAGES: Record<string, string> = {
   "Uses this server's own {source} credentials to access {provider}.":
     "Verwendet die eigenen {source}-Zugangsdaten dieses Servers für den Zugriff auf {provider}.",
   "Connect API key": "API-Schlüssel verbinden",
+  "Access for {agent}": "Zugriff für {agent}",
   "Connect MCP server {name}": "MCP-Server „{name}“ verbinden",
   "Connected.": "Verbunden.",
   "Context limit": "Kontextlimit",

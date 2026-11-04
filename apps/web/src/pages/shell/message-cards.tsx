@@ -342,7 +342,19 @@ export function McpApprovalCard({
   block: Extract<MessageBlock, { kind: "mcp_approval" }>;
 }) {
   const { t } = useLingui();
-  const { name, serverId, transport, endpoint, needsOAuth, needsKey, status: savedStatus } = block;
+  const {
+    name,
+    serverId,
+    transport,
+    endpoint,
+    needsOAuth,
+    needsKey,
+    status: savedStatus,
+    forBotId,
+    forBotName,
+  } = block;
+  // An agent can ask in its own chat for a teammate; the access is for the teammate.
+  const targetBotId = forBotId ?? botId;
   const [localStatus, setLocalStatus] = useState<McpApprovalState>("pending");
   const [key, setKey] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -360,8 +372,8 @@ export function McpApprovalCard({
     savedStatus === "connected" || savedStatus === "dismissed" ? savedStatus : localStatus;
 
   async function authorize() {
-    if (!botId || busy) {
-      if (!botId) setError(t`This server cannot be assigned without a bot.`);
+    if (!targetBotId || busy) {
+      if (!targetBotId) setError(t`This server cannot be assigned without a bot.`);
       return;
     }
     setBusy(true);
@@ -377,7 +389,7 @@ export function McpApprovalCard({
       }
       // The key goes from here to the vault; the agent and its model never receive it.
       if (needsKey) await rpc.mcp.servers.update({ id: serverId, secret: key.trim() });
-      await rpc.mcp.assignments.approve({ botId, serverId, threadId });
+      await rpc.mcp.assignments.approve({ botId: targetBotId, serverId, threadId });
       setKey("");
       setLocalStatus("connected");
     } catch (err) {
@@ -393,8 +405,8 @@ export function McpApprovalCard({
     setBusy(true);
     setError(null);
     try {
-      if (botId) {
-        await rpc.mcp.assignments.dismiss({ botId, serverId, threadId });
+      if (targetBotId) {
+        await rpc.mcp.assignments.dismiss({ botId: targetBotId, serverId, threadId });
       }
       setLocalStatus("dismissed");
     } catch (err) {
@@ -417,6 +429,9 @@ export function McpApprovalCard({
         </span>
       </div>
       <p className="mt-1.5 truncate text-[12px] text-muted-foreground">{summary}</p>
+      {forBotName ? (
+        <p className="mt-1 text-[13px] font-medium text-foreground">{t`Access for ${forBotName}`}</p>
+      ) : null}
       {state === "pending" || state === "connecting" ? (
         <>
           <p className="mt-2 text-[13px] leading-[1.5] text-foreground/75">

@@ -474,6 +474,10 @@ msgstr "Zugangsdaten für das Abonnement sind sicher gespeichert."
 msgid "About {label}"
 msgstr "Über {label}"
 
+#: src/pages/shell/message-cards.tsx
+msgid "Access for {forBotName}"
+msgstr "Zugriff für {forBotName}"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Access token (optional)"
 msgstr "Zugriffstoken (optional)"

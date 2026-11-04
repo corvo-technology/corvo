@@ -474,6 +474,10 @@ msgstr "A subscription credential is stored securely."
 msgid "About {label}"
 msgstr "About {label}"
 
+#: src/pages/shell/message-cards.tsx
+msgid "Access for {forBotName}"
+msgstr "Access for {forBotName}"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Access token (optional)"
 msgstr "Access token (optional)"

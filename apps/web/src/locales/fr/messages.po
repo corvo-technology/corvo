@@ -474,6 +474,10 @@ msgstr "Un identifiant d'abonnement est stocké de façon sécurisée."
 msgid "About {label}"
 msgstr "À propos de {label}"
 
+#: src/pages/shell/message-cards.tsx
+msgid "Access for {forBotName}"
+msgstr "Accès pour {forBotName}"
+
 #: src/pages/McpServersOverlay.tsx
 msgid "Access token (optional)"
 msgstr "Jeton d'accès (optionnel)"

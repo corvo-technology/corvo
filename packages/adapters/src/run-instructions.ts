@@ -280,7 +280,7 @@ function toolUsageLine(parts: {
     webLookupClause(disabled),
     ...secretGuidance(disabled),
     builtinOffered(disabled, "connect_app")
-      ? "Use connect_app when an app needs connecting or the user asks to connect one, then wait for them."
+      ? "Use connect_app when an app needs connecting or the user asks to connect one, then wait for them. When a teammate you delegated to cannot use an app, pass its name as agent so the user can approve it here."
       : undefined,
     builtinOffered(disabled, "remember") ? "Use remember for durable facts." : undefined,
     scratchpadClause(disabled),

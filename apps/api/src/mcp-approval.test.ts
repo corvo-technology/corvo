@@ -96,7 +96,19 @@ describe("resolveMcpApprovalCards", () => {
         id: "group-thread",
         spaceId: "space",
         userId: "user",
-        OR: [{ botId: "bot" }, { group: { members: { some: { botId: "bot" } } } }],
+        OR: [
+          { botId: "bot" },
+          { group: { members: { some: { botId: "bot" } } } },
+          {
+            messages: {
+              some: {
+                blocks: {
+                  array_contains: [{ kind: "mcp_approval", serverId: "srv-a", forBotId: "bot" }],
+                },
+              },
+            },
+          },
+        ],
       },
       select: { id: true, botId: true },
     });
@@ -218,7 +230,15 @@ describe("resolveMcpApprovalCards", () => {
       where: {
         spaceId: "space",
         userId: "user",
-        OR: [{ botId: "bot" }, { groupId: { not: null }, messages: { some: { botId: "bot" } } }],
+        OR: [
+          { botId: "bot" },
+          { groupId: { not: null }, messages: { some: { botId: "bot" } } },
+          {
+            messages: {
+              some: { blocks: { array_contains: [{ kind: "mcp_approval", forBotId: "bot" }] } },
+            },
+          },
+        ],
       },
       select: { id: true, botId: true },
     });
@@ -322,6 +342,87 @@ describe("resolveMcpApprovalCards", () => {
   });
 });
 
+describe("a card shown in an agent's chat that is for a teammate", () => {
+  const card = {
+    kind: "mcp_approval",
+    name: "Sentry",
+    serverId: "srv-a",
+    status: "pending",
+    forBotId: "infra",
+    forBotName: "Infra",
+  };
+
+  function chiefFixture(blocks: unknown[]) {
+    const f = fixture(blocks);
+    // The card is the chief's own message in the chief's chat.
+    f.tx.message.findMany = vi.fn(async () => [{ id: "card-message", botId: "chief", blocks }]);
+    f.deps.prisma.thread.findMany = vi.fn(async () => [{ id: "chief-thread", botId: "chief" }]);
+    return f;
+  }
+
+  it("is decided for the teammate, even though the chief wrote it", async () => {
+    const { deps, actor, tx } = chiefFixture([card]);
+    await resolveMcpApprovalCards(deps, actor, {
+      botId: "infra",
+      serverId: "srv-a",
+      status: "connected",
+      threadId: "chief-thread",
+    });
+    expect(tx.message.update).toHaveBeenCalledWith({
+      where: { id: "card-message" },
+      data: { blocks: [{ ...card, status: "connected" }] },
+    });
+  });
+
+  it("is not decided for the chief, who only asked", async () => {
+    const { deps, actor, tx } = chiefFixture([card]);
+    await resolveMcpApprovalCards(deps, actor, {
+      botId: "chief",
+      serverId: "srv-a",
+      status: "connected",
+      threadId: "chief-thread",
+    });
+    expect(tx.message.update).not.toHaveBeenCalled();
+  });
+
+  it("goes back to pending when the teammate's assignment is removed", async () => {
+    const { deps, actor, tx } = chiefFixture([{ ...card, status: "connected" }]);
+    await revertConnectedMcpApprovals(deps, actor, {
+      botId: "infra",
+      serverId: "srv-a",
+      status: "pending",
+    });
+    expect(tx.message.update).toHaveBeenCalledWith({
+      where: { id: "card-message" },
+      data: { blocks: [{ ...card, status: "pending" }] },
+    });
+    // The asking agent's chat is found through the card that names the teammate.
+    expect(deps.prisma.thread.findMany).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        OR: expect.arrayContaining([
+          {
+            messages: {
+              some: { blocks: { array_contains: [{ kind: "mcp_approval", forBotId: "infra" }] } },
+            },
+          },
+        ]),
+      }),
+      select: { id: true, botId: true },
+    });
+  });
+
+  it("leaves a card for another teammate of the same server alone", async () => {
+    const { deps, actor, tx } = chiefFixture([{ ...card, forBotId: "marketing" }]);
+    await resolveMcpApprovalCards(deps, actor, {
+      botId: "infra",
+      serverId: "srv-a",
+      status: "connected",
+      threadId: "chief-thread",
+    });
+    expect(tx.message.update).not.toHaveBeenCalled();
+  });
+});
+
 describe("queueMcpConnectedRun", () => {
   const actor = {
     userId: "user",
@@ -381,5 +482,74 @@ describe("queueMcpConnectedRun", () => {
     const tx = connectedFixture({ thread: false });
     await expect(queueMcpConnectedRun(tx, actor, input)).resolves.toBeNull();
     expect(tx.task.create).not.toHaveBeenCalled();
+  });
+
+  describe("for a card that is for a teammate", () => {
+    function teammateFixture(state: { card?: boolean; busy?: boolean } = {}) {
+      const tx = {
+        bot: {
+          findFirst: vi.fn(async (args: { where: { id: string } }) =>
+            args.where.id === "infra" ? { id: "infra", name: "Infra" } : { id: args.where.id },
+          ),
+        },
+        thread: {
+          // The first look finds the thread only through the bot that is in it; the asking
+          // agent's chat is found through the card that names the teammate.
+          findFirst: vi.fn(async (args: { where: { botId?: unknown; OR?: unknown } }) =>
+            args.where.OR ? null : state.card === false ? null : { id: "thread", botId: "chief" },
+          ),
+        },
+        run: {
+          findFirst: vi.fn(async () => (state.busy ? { id: "active" } : null)),
+          create: vi.fn(async () => ({ id: "run" })),
+        },
+        mcpServer: { findFirst: vi.fn(async () => ({ name: "Sentry" })) },
+        task: { create: vi.fn(async () => ({ id: "task" })) },
+      };
+      return tx as typeof tx & Parameters<typeof queueMcpConnectedRun>[0];
+    }
+    const forInfra = { botId: "infra", serverId: "srv-a", threadId: "thread" };
+
+    it("wakes the agent that asked, and names the teammate", async () => {
+      const tx = teammateFixture();
+      await expect(queueMcpConnectedRun(tx, actor, forInfra)).resolves.toBe("run");
+      expect(tx.task.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          botId: "chief",
+          threadId: "thread",
+          prompt: expect.stringContaining("Infra"),
+        }),
+      });
+      expect(tx.run.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ botId: "chief", taskId: "task" }),
+        select: { id: true },
+      });
+      // Only a chat that holds a card for this teammate and server is found.
+      expect(tx.thread.findFirst).toHaveBeenLastCalledWith({
+        where: expect.objectContaining({
+          id: "thread",
+          messages: {
+            some: {
+              blocks: {
+                array_contains: [{ kind: "mcp_approval", serverId: "srv-a", forBotId: "infra" }],
+              },
+            },
+          },
+        }),
+        select: { id: true, botId: true },
+      });
+    });
+
+    it("does nothing in a chat that holds no card for the teammate", async () => {
+      const tx = teammateFixture({ card: false });
+      await expect(queueMcpConnectedRun(tx, actor, forInfra)).resolves.toBeNull();
+      expect(tx.task.create).not.toHaveBeenCalled();
+    });
+
+    it("does not wake the agent that asked while it is still busy in that chat", async () => {
+      const tx = teammateFixture({ busy: true });
+      await expect(queueMcpConnectedRun(tx, actor, forInfra)).resolves.toBeNull();
+      expect(tx.run.create).not.toHaveBeenCalled();
+    });
   });
 });

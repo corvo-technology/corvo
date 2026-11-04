@@ -289,6 +289,12 @@ export const MessageBlock = z.discriminatedUnion("kind", [
       })
       .optional(),
     status: z.enum(["pending", "connected", "dismissed"]).default("pending"),
+    /**
+     * Set when the card asks for access for a teammate of the bot whose chat shows it, such as a
+     * chief asking for an agent it delegated to. Approving gives the teammate the server.
+     */
+    forBotId: Id.optional(),
+    forBotName: z.string().max(200).optional(),
   }),
   z.object({
     kind: z.literal("import_setup"),

@@ -94,12 +94,23 @@ export const integrationTools: ToolHandlers = {
     const { args, executionId, applied } = call;
     await flushProgress(ctx);
     await publishMidTurnNarration(ctx, true);
-    // An app already added to the workspace only needs this agent given access to it.
+    // An app already added to the workspace only needs an agent given access to it: this one, or a
+    // teammate named in `agent`, asked of the user in a card in this chat.
+    const teammate =
+      typeof args.agent === "string" && args.agent.trim() && args.agent.length <= 100
+        ? args.agent
+        : undefined;
     const addedApp =
       typeof args.app === "string" && args.app.trim() && args.app.length <= 100
-        ? await requestSpaceAppAccess(deps, run, args.app)
+        ? await requestSpaceAppAccess(deps, run, args.app, teammate)
         : undefined;
     if (addedApp) return call.finish(addedApp);
+    // A teammate's access is only ever the workspace's own app; never connect it for this agent.
+    if (teammate) {
+      return call.finish({
+        error: `No app named "${String(args.app ?? "").slice(0, 100)}" is added to this workspace or in the app catalog, so it cannot be given to ${teammate}. Ask the user which app they mean.`,
+      });
+    }
     return call.finish(
       await connectApp(
         deps,
