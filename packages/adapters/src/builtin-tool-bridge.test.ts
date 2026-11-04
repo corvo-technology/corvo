@@ -52,11 +52,19 @@ describe("built-in tool bridge", () => {
       "use_tool",
       "web_fetch",
       "web_search",
+      "wiki_read",
+      "wiki_search",
       "write_file",
     ]);
-    expect(definitionBytes(listed)).toBeLessThanOrEqual(30_500);
+    expect(definitionBytes(listed)).toBeLessThanOrEqual(30_700);
     expect(deferred.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(["render_plot", "create_space", "generate_secret", "scratchpad_add"]),
+      expect.arrayContaining([
+        "render_plot",
+        "create_space",
+        "generate_secret",
+        "scratchpad_add",
+        "wiki_index",
+      ]),
     );
   });
 
