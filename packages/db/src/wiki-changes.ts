@@ -21,11 +21,21 @@ export class WikiChangeStateError extends Error {
 }
 
 /** A change as the routes need it: the quoted source is for them to show or hide. */
+/** What one operation would write, in words a person can read before approving it. */
+export type WikiChangeEdit = {
+  title: string;
+  op: "create" | "append" | "replace";
+  section?: string;
+  removed?: string;
+  added: string;
+};
+
 export type WikiChangeRecord = {
   id: string;
   state: WikiChangeState;
   reason: string;
   pages: WikiChangePage[];
+  edits: WikiChangeEdit[];
   createdAt: Date;
   anchorThreadId: string | null;
   anchorMessageId: string | null;
@@ -68,6 +78,21 @@ function byPage(ops: CuratorOp[]): { title: string; slug: string; ops: CuratorOp
   return [...pages.values()];
 }
 
+function previewOf(ops: CuratorOp[]): WikiChangeEdit[] {
+  return ops.map((op) => {
+    if (op.op === "create")
+      return { title: op.page, op: "create", added: applyCuratorOp("", op) ?? op.body };
+    if (op.op === "append")
+      return {
+        title: op.page,
+        op: "append",
+        ...(op.section ? { section: op.section } : {}),
+        added: op.text,
+      };
+    return { title: op.page, op: "replace", removed: op.old, added: op.new };
+  });
+}
+
 function recordOf(row: Row): WikiChangeRecord {
   const base = revisionsOf(row.baseRevisions);
   return {
@@ -83,6 +108,7 @@ function recordOf(row: Row): WikiChangeRecord {
             ? "replace"
             : "append",
     })),
+    edits: previewOf(opsOf(row)),
     createdAt: row.createdAt,
     anchorThreadId: row.anchorThreadId,
     anchorMessageId: row.anchorMessageId,
@@ -255,10 +281,62 @@ async function settle(
 ): Promise<WikiChangeRecord> {
   const { count } = await db.wikiChange.updateMany({
     where: { id: row.id, spaceId: scope.spaceId, state: row.state },
-    data: { ...data, decidedByUserId: scope.userId, decidedAt: new Date() },
+    data: { ...data, claimedAt: null, decidedByUserId: scope.userId, decidedAt: new Date() },
   });
   if (count !== 1) throw new WikiChangeStateError();
   return recordOf(await load(db, scope, row.id));
+}
+
+/** A claim older than this is a decision that stopped half way, and no longer blocks the change. */
+const CLAIM_STALE_MS = 2 * 60_000;
+
+/**
+ * Takes a change for one answer at a time, before any page is written, so two answers (two members,
+ * a phone and a screen, an approval and a refusal) cannot both write pages or settle it.
+ */
+async function claim(db: PrismaClient, scope: WikiScope, row: Row): Promise<void> {
+  const { count } = await db.wikiChange.updateMany({
+    where: {
+      id: row.id,
+      spaceId: scope.spaceId,
+      state: row.state,
+      OR: [{ claimedAt: null }, { claimedAt: { lt: new Date(Date.now() - CLAIM_STALE_MS) } }],
+    },
+    data: { claimedAt: new Date() },
+  });
+  if (count !== 1) throw new WikiChangeStateError();
+}
+
+const release = (db: PrismaClient, row: Row) =>
+  db.wikiChange
+    .updateMany({ where: { id: row.id }, data: { claimedAt: null } })
+    .catch(() => undefined);
+
+/**
+ * Puts each written page back to what it said before the change, and only a page nobody has
+ * edited since: the page is written or deleted at the revision the change produced. Returns
+ * whether every page was put back.
+ */
+async function revertWrittenPages(db: PrismaClient, scope: WikiScope, row: Row): Promise<boolean> {
+  const applied = revisionsOf(row.appliedRevisions);
+  const base = revisionsOf(row.baseRevisions);
+  let all = true;
+  for (const title of Object.keys(applied)) {
+    try {
+      if (base[title] === 0) {
+        if (!(await removeWikiPage(db, scope, title, { expectedRevision: applied[title] })))
+          all = false;
+      } else {
+        await restoreWikiRevision(db, scope, title, base[title]!, {
+          expectedRevision: applied[title],
+        });
+      }
+    } catch (error) {
+      if (!(error instanceof WikiConflictError || error instanceof WikiNotFoundError)) throw error;
+      all = false;
+    }
+  }
+  return all;
 }
 
 /**
@@ -273,31 +351,36 @@ export async function decideWikiChange(
 ): Promise<WikiChangeRecord> {
   const row = await load(db, scope, changeId);
   const state = row.state as WikiChangeState;
-  if (decision === "refuse") {
-    if (state !== "pending") throw new WikiChangeStateError();
-    return settle(db, scope, row, { state: "refused" });
-  }
-  if (decision === "apply") {
-    if (state !== "pending") throw new WikiChangeStateError();
-    const { applied, conflict } = await applyPages(db, scope, row);
-    return settle(db, scope, row, {
-      state: conflict ? "conflict" : "applied",
-      appliedRevisions: applied,
-    });
-  }
   const applied = revisionsOf(row.appliedRevisions);
-  const titles = Object.keys(applied);
-  if (state === "undone" || !titles.length) throw new WikiChangeStateError();
-  for (const title of titles) {
-    const current = await readWikiPage(db, scope, title);
-    if (current?.revision !== applied[title]) return settle(db, scope, row, { state: "conflict" });
+  if (decision !== "undo" && state !== "pending") throw new WikiChangeStateError();
+  if (decision === "undo" && (state === "undone" || !Object.keys(applied).length))
+    throw new WikiChangeStateError();
+  await claim(db, scope, row);
+  try {
+    if (decision === "refuse") {
+      // A refused package keeps nothing: what it already wrote is taken back, unless it was edited.
+      await revertWrittenPages(db, scope, row);
+      return await settle(db, scope, row, { state: "refused" });
+    }
+    if (decision === "apply") {
+      const result = await applyPages(db, scope, row);
+      return await settle(db, scope, row, {
+        state: result.conflict ? "conflict" : "applied",
+        appliedRevisions: result.applied,
+      });
+    }
+    for (const title of Object.keys(applied)) {
+      const current = await readWikiPage(db, scope, title);
+      if (current?.revision !== applied[title])
+        return await settle(db, scope, row, { state: "conflict" });
+    }
+    return await settle(db, scope, row, {
+      state: (await revertWrittenPages(db, scope, row)) ? "undone" : "conflict",
+    });
+  } catch (error) {
+    await release(db, row);
+    throw error;
   }
-  const base = revisionsOf(row.baseRevisions);
-  for (const title of titles) {
-    if (base[title] === 0) await removeWikiPage(db, scope, title);
-    else await restoreWikiRevision(db, scope, title, base[title]!);
-  }
-  return settle(db, scope, row, { state: "undone" });
 }
 
 export async function listWikiChanges(

@@ -1511,6 +1511,8 @@ model WikiChange {
   anchorThreadId   String?
   anchorMessageId  String?
   decidedByUserId  String?
+  /// Set while someone is writing this change's pages, so two answers cannot write them twice.
+  claimedAt        DateTime?
   createdAt        DateTime   @default(now())
   decidedAt        DateTime?
 

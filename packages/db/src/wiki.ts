@@ -353,12 +353,16 @@ export async function wikiHistory(
   }));
 }
 
-/** Writes an earlier revision's text as the page's newest revision. */
+/**
+ * Writes an earlier revision's text as the page's newest revision. With `expectedRevision`, a page
+ * that has moved on since is refused instead of written over.
+ */
 export async function restoreWikiRevision(
   db: PrismaClient,
   scope: WikiScope,
   title: string,
   revision: number,
+  options: { expectedRevision?: number } = {},
 ): Promise<WikiPage> {
   const doc = await documentOf(db, scope, title);
   const old = await db.memoryRevision.findUnique({
@@ -367,17 +371,30 @@ export async function restoreWikiRevision(
   });
   if (!old) throw new WikiNotFoundError();
   const page = await readWikiPage(db, scope, title);
-  return writeWikiPage(db, scope, { title: page!.title, body: old.content });
+  return writeWikiPage(db, scope, {
+    title: page!.title,
+    body: old.content,
+    expectedRevision: options.expectedRevision,
+  });
 }
 
-/** Deletes a page and its history. False when there was none. */
+/**
+ * Deletes a page and its history. False when there was none, or, with `expectedRevision`, when the
+ * page has moved on since.
+ */
 export async function removeWikiPage(
   db: PrismaClient,
   scope: WikiScope,
   title: string,
+  options: { expectedRevision?: number } = {},
 ): Promise<boolean> {
   const { count } = await db.memoryDocument.deleteMany({
-    where: { spaceId: scope.spaceId, scope: SCOPE, slug: slugOfTitle(title) },
+    where: {
+      spaceId: scope.spaceId,
+      scope: SCOPE,
+      slug: slugOfTitle(title),
+      ...(options.expectedRevision === undefined ? {} : { revision: options.expectedRevision }),
+    },
   });
   return count > 0;
 }
