@@ -1,5 +1,5 @@
 import { ChatMarkdown } from "@corvo/chat-ui/web";
-import type { Bot, Ticket, TicketPriority, TicketStatus } from "@corvo/contracts";
+import type { Bot, Ticket, TicketField, TicketPriority, TicketStatus } from "@corvo/contracts";
 import {
   TICKET_COMMENT_MAX_LENGTH,
   TICKET_DESCRIPTION_MAX_LENGTH,
@@ -7,7 +7,7 @@ import {
   TICKET_STATUSES,
   TICKET_TITLE_MAX_LENGTH,
 } from "@corvo/contracts";
-import { isRetryableError, retryDelayMs } from "@corvo/core";
+import { isRunWorking } from "@corvo/core";
 import { fetchFresh, writeSaved } from "@corvo/core/query";
 import {
   Button,
@@ -23,28 +23,50 @@ import {
 } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
-import { useEffect, useId, useState } from "react";
-import { Link } from "react-router-dom";
+import { ChevronLeft, Settings2 } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { followBoard } from "../lib/board-stream";
 import { useSpaceQueries } from "../lib/query";
 import { formatRelativeTime } from "../lib/relative-time";
 import { rpc } from "../lib/rpc";
+import { fieldChanges } from "../lib/ticket-fields";
 import { useTicketPriorityLabels } from "../lib/ticket-priority";
 import { useTicketStatusLabels } from "../lib/ticket-status";
 import { errorText } from "../lib/user-error";
+import { BoardSettings } from "./BoardSettings";
+import { TicketFields } from "./TicketFields";
 import { WindowChrome } from "./WindowChrome";
 
 export function BoardPage() {
   const { t } = useLingui();
-  const statuses = useTicketStatusLabels();
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
+  const boardOptions = queries.boards.get.queryOptions();
+  const boardQuery = useQuery(boardOptions);
+  const statuses = useTicketStatusLabels(boardQuery.data?.statusLabels);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const ticketsOptions = queries.tickets.list.queryOptions({ input: {} });
   const ticketsQuery = useQuery(ticketsOptions);
   const botsQuery = useQuery(queries.bots.list.queryOptions());
   const tickets = ticketsQuery.data?.tickets ?? [];
   const bots = botsQuery.data ?? [];
   const [selected, setSelected] = useState<Ticket | "new" | null>(null);
+  const [ownerFilter, setOwnerFilter] = useState("");
+  const [searchParams] = useSearchParams();
+  const wantedRef = searchParams.get("ticket")?.toLowerCase();
+  const openedRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    // An address that names a ticket opens it once, as a link from the Team screen does.
+    if (!wantedRef || openedRef.current === wantedRef) return;
+    const found = tickets.find((ticket) => ticket.ref.toLowerCase() === wantedRef);
+    if (!found) return;
+    openedRef.current = wantedRef;
+    setSelected(found);
+  }, [tickets, wantedRef]);
+  const visible = ownerFilter
+    ? tickets.filter((ticket) => ticket.assigneeBotId === ownerFilter)
+    : tickets;
   const [streamError, setError] = useState("");
   const loadFailed = ticketsQuery.error ?? botsQuery.error;
   const error = streamError || (loadFailed ? errorText(loadFailed) : "");
@@ -52,8 +74,6 @@ export function BoardPage() {
   const reload = () => fetchFresh(queryClient, ticketsOptions).then(() => undefined);
 
   useEffect(() => {
-    let currentController: AbortController | undefined;
-    let active = true;
     // Live events refresh the board and any open ticket's comments.
     const refreshComments = (ticketId?: string) =>
       void queryClient.invalidateQueries({
@@ -61,48 +81,19 @@ export function BoardPage() {
           ? queries.tickets.comments.queryKey({ input: { ticketId } })
           : queries.tickets.comments.key(),
       });
-    let cancelRetry: (() => void) | undefined;
-    void (async () => {
-      while (active) {
-        const controller = new AbortController();
-        currentController = controller;
-        let failure: unknown;
-        try {
-          const stream = await rpc.boards.subscribe(undefined, {
-            signal: controller.signal,
-          });
-          if (!active) return;
-          await fetchFresh(queryClient, ticketsOptions);
-          if (!active) return;
-          refreshComments();
-          setError("");
-          for await (const event of stream) {
-            if (!active) return;
-            refreshComments(event.ticketId);
-            await fetchFresh(queryClient, ticketsOptions);
-          }
-        } catch (cause) {
-          failure = cause;
-          if (active) setError(errorText(cause));
-        } finally {
-          controller.abort();
-        }
-        if (!active || !isRetryableError(failure)) return;
-        await new Promise<void>((resolve) => {
-          const timer = setTimeout(resolve, retryDelayMs(failure, 1_000));
-          cancelRetry = () => {
-            clearTimeout(timer);
-            resolve();
-          };
-        });
-        cancelRetry = undefined;
-      }
-    })();
-    return () => {
-      active = false;
-      currentController?.abort();
-      cancelRetry?.();
-    };
+    return followBoard({
+      subscribe: (signal) => rpc.boards.subscribe(undefined, { signal }),
+      onOpen: async () => {
+        await fetchFresh(queryClient, ticketsOptions);
+        refreshComments();
+        setError("");
+      },
+      onEvent: async (event) => {
+        refreshComments(event.ticketId);
+        await fetchFresh(queryClient, ticketsOptions);
+      },
+      onError: (cause) => setError(errorText(cause)),
+    });
   }, [queries]);
 
   return (
@@ -119,6 +110,31 @@ export function BoardPage() {
         <h1 className="flex-1 font-medium">
           <Trans>Board</Trans>
         </h1>
+        {bots.length > 1 ? (
+          <NativeSelect
+            aria-label={t`Owner`}
+            className="w-auto"
+            value={ownerFilter}
+            onChange={(event) => setOwnerFilter(event.target.value)}
+          >
+            <NativeSelectOption value="">{t`All`}</NativeSelectOption>
+            {bots.map((bot) => (
+              <NativeSelectOption key={bot.id} value={bot.id}>
+                {bot.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+        ) : null}
+        {boardQuery.data ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t`Board settings`}
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Settings2 />
+          </Button>
+        ) : null}
         <Button onClick={() => setSelected("new")} disabled={bots.length === 0}>
           <Trans>New ticket</Trans>
         </Button>
@@ -133,7 +149,7 @@ export function BoardPage() {
           {TICKET_STATUSES.map((status) => (
             <section key={status} className="min-w-40 flex-1 space-y-2">
               <h2 className="px-1 text-sm font-medium">{statuses[status]}</h2>
-              {tickets
+              {visible
                 .filter((ticket) => ticket.status === status)
                 .map((ticket) => (
                   <Button
@@ -145,7 +161,17 @@ export function BoardPage() {
                   >
                     <span className="text-xs text-muted-foreground">{ticket.ref}</span>
                     <span>{ticket.title}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {ticket.status === "doing" &&
+                      isRunWorking(
+                        bots.find((bot) => bot.id === ticket.assigneeBotId)?.status ?? "",
+                      ) ? (
+                        <span
+                          data-working=""
+                          aria-hidden="true"
+                          className="corvo-presence-dot size-1.5 shrink-0 rounded-full bg-status-working"
+                        />
+                      ) : null}
                       {bots.find((bot) => bot.id === ticket.assigneeBotId)?.name}
                     </span>
                   </Button>
@@ -159,11 +185,22 @@ export function BoardPage() {
           </p>
         ) : null}
       </main>
+      {settingsOpen && boardQuery.data ? (
+        <BoardSettings
+          board={boardQuery.data}
+          onClose={() => setSettingsOpen(false)}
+          onSave={async (changes) => {
+            await rpc.boards.rename({ statusLabels: changes });
+            await fetchFresh(queryClient, boardOptions);
+          }}
+        />
+      ) : null}
       {selected ? (
         <TicketDialog
           key={selected === "new" ? "new" : selected.id}
           ticket={selected === "new" ? null : selected}
           bots={bots}
+          statuses={statuses}
           onClose={() => setSelected(null)}
           onSaved={reload}
         />
@@ -175,23 +212,25 @@ export function BoardPage() {
 function TicketDialog({
   ticket,
   bots,
+  statuses,
   onClose,
   onSaved,
 }: {
   ticket: Ticket | null;
+  statuses: Record<TicketStatus, string>;
   bots: Bot[];
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
   const { t } = useLingui();
   const formId = useId();
-  const statuses = useTicketStatusLabels();
   const priorities = useTicketPriorityLabels();
   const [title, setTitle] = useState(ticket?.title ?? "");
   const [description, setDescription] = useState(ticket?.description ?? "");
   const [owner, setOwner] = useState(ticket?.assigneeBotId ?? bots[0]?.id ?? "");
   const [status, setStatus] = useState<TicketStatus>(ticket?.status ?? "todo");
   const [priority, setPriority] = useState<TicketPriority>(ticket?.priority ?? "normal");
+  const [fields, setFields] = useState<TicketField[]>(ticket?.fields ?? []);
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
   const commentsOptions = queries.tickets.comments.queryOptions({
@@ -203,6 +242,8 @@ function TicketDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const shownError = error || (commentsQuery.error ? errorText(commentsQuery.error) : "");
+
+  const changedFields = ticket ? fieldChanges(ticket.fields, fields) : {};
 
   async function save() {
     setBusy(true);
@@ -218,6 +259,7 @@ function TicketDialog({
             : {}),
           ...(status !== ticket.status ? { status } : {}),
           ...(priority !== ticket.priority ? { priority } : {}),
+          ...(Object.keys(changedFields).length > 0 ? { fields: changedFields } : {}),
         });
       else
         await rpc.tickets.create({
@@ -353,6 +395,7 @@ function TicketDialog({
               ))}
             </NativeSelect>
           </label>
+          {ticket ? <TicketFields rows={fields} onChange={setFields} /> : null}
           <div className="flex justify-end">
             <Button type="submit" disabled={busy || !title.trim() || !owner}>
               {ticket ? t`Save` : t`Create`}

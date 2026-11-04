@@ -1,4 +1,5 @@
 import type { JobPublisher } from "@corvo/adapter-kit";
+import type { BoardMove } from "@corvo/contracts";
 import type { BoardEvents, PrismaClient } from "@corvo/db";
 import { wakeTicketAssignee } from "./ticket-wake.js";
 
@@ -8,6 +9,8 @@ export type TicketChange = {
   ticketId: string;
   assigneeBotId: string | null;
   wakeAssignee: boolean;
+  /** Set when the ticket changed column. */
+  moved?: BoardMove;
 };
 export type TicketChangeNotifier = (change: TicketChange) => Promise<void>;
 
@@ -23,6 +26,7 @@ export function createTicketChangeNotifier(deps: {
       .notify(change.spaceId, {
         boardId: change.boardId,
         ticketId: change.ticketId,
+        ...(change.moved ? { moved: change.moved } : {}),
       })
       .catch(() => undefined);
     if (change.wakeAssignee && change.assigneeBotId) {

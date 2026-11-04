@@ -249,6 +249,16 @@ describe("EmbeddedEngineController", () => {
     expect(api?.env.SANDBOX_SUPERVISOR_URL).toBeUndefined();
   });
 
+  it("turns the ticket board on for the API and the worker", async () => {
+    const engine = new EmbeddedEngineController(deps());
+    await engine.start();
+    for (const program of ["api.mjs", "worker.mjs"]) {
+      expect(children.find((child) => base(child) === program)?.env.TICKET_BOARD_ENABLED).toBe(
+        "true",
+      );
+    }
+  });
+
   it("stops the supervisor with the rest and starts again when Docker appears or goes away", async () => {
     const withDocker = deps({
       docker: {

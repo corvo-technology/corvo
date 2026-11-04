@@ -1,17 +1,22 @@
-import type { TicketStatus } from "@corvo/contracts";
+import type { TicketField, TicketStatus } from "@corvo/contracts";
 import {
   CommentTicketInput,
   CreateTicketInput,
   isTicketCompletedStatus,
+  mergeTicketFields,
   TicketStatusSchema,
+  ticketRef,
   UpdateTicketInput,
 } from "@corvo/contracts";
 import type { PrismaClient } from "@corvo/db";
 import {
   allocateTicketNumber,
+  coerceTicketStatus,
   ensureBoard,
   findTicket,
   listTicketComments,
+  readTicketFields,
+  toBoardDto,
   toTicketCommentDto,
   toTicketDto,
 } from "@corvo/db";
@@ -32,6 +37,17 @@ function ticketInputError(error: { issues: Array<{ path: PropertyKey[]; message:
     })
     .join("; ");
 }
+
+function mergeFieldsOrThrow(current: TicketField[], patch: Record<string, string>) {
+  try {
+    return mergeTicketFields(current, patch);
+  } catch (cause) {
+    throw new FieldLimitError(cause instanceof Error ? cause.message : "Too many fields.");
+  }
+}
+
+/** A field change that would leave the ticket with more fields than it may hold. */
+class FieldLimitError extends Error {}
 
 const STATUS_ERROR = `status must be one of ${TicketStatusSchema.options.join(", ")}.`;
 function coerceInputStatus(value: string) {
@@ -55,6 +71,25 @@ async function ownBotInSpace(
     }),
   );
 }
+/** Who made a change: the acting bot, or else the person. */
+async function moverOf(
+  deps: TicketToolDeps,
+  input: { spaceId: string; userId: string; botId?: string },
+): Promise<{ byBotId: string | null; byName: string | null }> {
+  if (input.botId) {
+    const bot = await deps.prisma.bot.findFirst({
+      where: { id: input.botId, spaceId: input.spaceId },
+      select: { name: true },
+    });
+    return { byBotId: input.botId, byName: bot?.name ?? null };
+  }
+  const user = await deps.prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { name: true },
+  });
+  return { byBotId: null, byName: user?.name ?? null };
+}
+
 const LIST_TICKETS_LIMIT = 50;
 const LIST_DESCRIPTION_CHARS = 200;
 
@@ -134,8 +169,11 @@ export async function listBoardTickets(
   });
   const page = rows.slice(0, LIST_TICKETS_LIMIT);
   const next = rows.length > LIST_TICKETS_LIMIT ? page.at(-1) : undefined;
+  const statusLabels = toBoardDto(board).statusLabels;
   // A list is for scanning; ticket_get returns the full description.
   return {
+    // The person's own column names, so the agent can speak the way the board does.
+    ...(Object.keys(statusLabels).length > 0 ? { statusLabels } : {}),
     tickets: page.map((row) => {
       const dto = toTicketDto(row, board.ticketPrefix);
       return { ...dto, description: truncateDescription(dto.description) };
@@ -219,6 +257,7 @@ export async function updateTicket(
     priority?: string | null;
     status?: string;
     ownerBotId?: string;
+    fields?: Record<string, string>;
   },
 ) {
   if (!deps.ticketBoardEnabled) return { error: "Board unavailable." };
@@ -228,41 +267,66 @@ export async function updateTicket(
   if (data.assigneeBotId && !(await ownBotInSpace(deps, input, data.assigneeBotId)))
     return { error: "Unknown bot." };
   const board = await ensureBoard(deps.prisma, input.spaceId);
-  const result = await deps.prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM tickets WHERE id = ${data.id} AND "spaceId" = ${input.spaceId} FOR UPDATE`;
-    const current = await tx.ticket.findFirst({
-      where: { id: data.id, spaceId: input.spaceId, boardId: board.id },
-    });
-    if (!current) return null;
-    const row = await tx.ticket.update({
-      where: { id: current.id },
-      data: {
-        ...(data.title !== undefined ? { title: data.title } : {}),
-        ...(data.description !== undefined ? { description: data.description } : {}),
-        ...(data.priority !== undefined ? { priority: data.priority ?? "normal" } : {}),
-        ...(data.assigneeBotId !== undefined ? { assigneeBotId: data.assigneeBotId } : {}),
-        ...(data.status !== undefined
-          ? {
-              status: data.status,
-              completedAt: isTicketCompletedStatus(data.status)
-                ? (current.completedAt ?? new Date())
-                : null,
-            }
-          : {}),
-      },
-    });
-    return {
-      row,
-      reassigned: data.assigneeBotId !== undefined && data.assigneeBotId !== current.assigneeBotId,
-    };
-  });
+  const result = await deps.prisma
+    .$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM tickets WHERE id = ${data.id} AND "spaceId" = ${input.spaceId} FOR UPDATE`;
+      const current = await tx.ticket.findFirst({
+        where: { id: data.id, spaceId: input.spaceId, boardId: board.id },
+      });
+      if (!current) return null;
+      const fields =
+        data.fields !== undefined
+          ? mergeFieldsOrThrow(readTicketFields(current.fields), data.fields)
+          : undefined;
+      const row = await tx.ticket.update({
+        where: { id: current.id },
+        data: {
+          ...(fields !== undefined ? { fields } : {}),
+          ...(data.title !== undefined ? { title: data.title } : {}),
+          ...(data.description !== undefined ? { description: data.description } : {}),
+          ...(data.priority !== undefined ? { priority: data.priority ?? "normal" } : {}),
+          ...(data.assigneeBotId !== undefined ? { assigneeBotId: data.assigneeBotId } : {}),
+          ...(data.status !== undefined
+            ? {
+                status: data.status,
+                completedAt: isTicketCompletedStatus(data.status)
+                  ? (current.completedAt ?? new Date())
+                  : null,
+              }
+            : {}),
+        },
+      });
+      return {
+        row,
+        previousStatus: coerceTicketStatus(current.status),
+        reassigned:
+          data.assigneeBotId !== undefined && data.assigneeBotId !== current.assigneeBotId,
+      };
+    })
+    .catch((cause: unknown) => (cause instanceof FieldLimitError ? cause : Promise.reject(cause)));
+  if (result instanceof FieldLimitError) return { error: result.message };
   if (!result) return { error: "Ticket not found." };
+  const status = coerceTicketStatus(result.row.status);
+  const moved =
+    status !== result.previousStatus
+      ? {
+          ref: ticketRef(board.ticketPrefix, result.row.number),
+          title: result.row.title,
+          status,
+          previousStatus: result.previousStatus,
+          ...(toBoardDto(board).statusLabels[status]
+            ? { statusLabel: toBoardDto(board).statusLabels[status] }
+            : {}),
+          ...(await moverOf(deps, input)),
+        }
+      : undefined;
   await deps.onTicketChange?.({
     spaceId: input.spaceId,
     boardId: board.id,
     ticketId: result.row.id,
     assigneeBotId: result.row.assigneeBotId,
     wakeAssignee: result.reassigned && result.row.assigneeBotId !== input.botId,
+    ...(moved ? { moved } : {}),
   });
   return { ticket: toTicketDto(result.row, board.ticketPrefix) };
 }

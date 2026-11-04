@@ -50,5 +50,43 @@ test("board creates a ticket and opens it", async ({ page }, testInfo) => {
   await expect(detail.getByLabel("Title")).toHaveValue(title);
   await expect(detail.getByTestId("ticket-description")).toHaveValue(description);
   await expect(detail.getByTestId("ticket-comments")).toBeVisible();
+  await detail.getByRole("button", { name: "Add field", exact: true }).click();
+  await detail.getByLabel("Field name").fill("Contact");
+  await detail.getByLabel("Field value").fill("ana@example.com");
+  await detail.getByRole("button", { name: "Save", exact: true }).first().click();
+  await expect(detail).toBeHidden();
+  await card.click();
+  await expect(page.getByRole("dialog", { name: title }).getByLabel("Field value")).toHaveValue(
+    "ana@example.com",
+  );
   await captureScreenshot(page, testInfo, "board-ticket-detail");
+
+  await page.keyboard.press("Escape");
+  await expect(detail).toBeHidden();
+  await page.getByRole("button", { name: "Board settings", exact: true }).click();
+  const settings = page.getByRole("dialog", { name: "Board settings" });
+  await settings.getByLabel("In progress", { exact: true }).fill("In contact");
+  await settings.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(settings).toBeHidden();
+  await expect(page.getByRole("heading", { name: "In contact", exact: true })).toBeVisible();
+  await captureScreenshot(page, testInfo, "board-renamed-column");
+
+  // A ticket in progress shows under its owner on the Team screen, and opens on the board.
+  await page
+    .getByTestId(/board-card-/)
+    .first()
+    .click();
+  await page.getByRole("dialog", { name: title }).getByLabel("Status").selectOption("doing");
+  await page
+    .getByRole("dialog", { name: title })
+    .getByRole("button", { name: "Save", exact: true })
+    .first()
+    .click();
+  await page.goto("/app/team");
+  const owned = page.locator("[data-testid^='member-tickets-']").filter({ hasText: title });
+  await expect(owned).toBeVisible();
+  await captureScreenshot(page, testInfo, "team-agent-tickets");
+  await owned.getByRole("button").first().click();
+  await expect(page).toHaveURL(/\/app\/board\?ticket=/);
+  await expect(page.getByRole("dialog", { name: title })).toBeVisible();
 });

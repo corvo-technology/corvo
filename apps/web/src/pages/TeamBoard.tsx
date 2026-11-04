@@ -1,4 +1,4 @@
-import type { SpaceBot } from "@corvo/contracts";
+import type { SpaceBot, Ticket } from "@corvo/contracts";
 import { BotAvatar, Button } from "@corvo/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
@@ -20,9 +20,12 @@ export type TeamBoardRoster = {
  */
 export function TeamBoard({
   roster,
+  tickets,
   onOpen,
 }: {
   roster: TeamBoardRoster;
+  /** What each agent is working on, by agent id. */
+  tickets?: ReadonlyMap<string, readonly Ticket[]>;
   onOpen: (path: string) => void;
 }) {
   const { t } = useLingui();
@@ -54,12 +57,18 @@ export function TeamBoard({
               onOpenTeam={() => onOpen(`/app/g/${team.group.id}/squad`)}
             >
               {team.members.map((member) => (
-                <MemberButton
-                  key={member.bot.id}
-                  member={member}
-                  testId={`member-${member.bot.id}`}
-                  onOpen={() => onOpen(`/app/${member.bot.id}`)}
-                />
+                <div key={member.bot.id}>
+                  <MemberButton
+                    member={member}
+                    testId={`member-${member.bot.id}`}
+                    onOpen={() => onOpen(`/app/${member.bot.id}`)}
+                  />
+                  <MemberTickets
+                    tickets={tickets?.get(member.bot.id)}
+                    botId={member.bot.id}
+                    onOpen={onOpen}
+                  />
+                </div>
               ))}
             </Panel>
           </li>
@@ -73,12 +82,14 @@ export function TeamBoard({
               working={roster.unassigned.filter((bot) => asMember(bot).working).length}
             >
               {roster.unassigned.map((bot) => (
-                <MemberButton
-                  key={bot.id}
-                  member={asMember(bot)}
-                  testId={`member-${bot.id}`}
-                  onOpen={() => onOpen(`/app/${bot.id}`)}
-                />
+                <div key={bot.id}>
+                  <MemberButton
+                    member={asMember(bot)}
+                    testId={`member-${bot.id}`}
+                    onOpen={() => onOpen(`/app/${bot.id}`)}
+                  />
+                  <MemberTickets tickets={tickets?.get(bot.id)} botId={bot.id} onOpen={onOpen} />
+                </div>
               ))}
             </Panel>
           </li>
@@ -222,5 +233,36 @@ function MemberButton({
         ) : null}
       </span>
     </Button>
+  );
+}
+
+/** The tickets an agent has open, each one opening on the board. Nothing for an agent with none. */
+function MemberTickets({
+  tickets,
+  botId,
+  onOpen,
+}: {
+  tickets: readonly Ticket[] | undefined;
+  botId: string;
+  onOpen: (path: string) => void;
+}) {
+  if (!tickets?.length) return null;
+  return (
+    <ul data-testid={`member-tickets-${botId}`} className="ms-11 flex flex-col pb-1">
+      {tickets.map((ticket) => (
+        <li key={ticket.id}>
+          <Button
+            variant="ghost"
+            className="h-auto w-full justify-start gap-2 rounded-lg px-2 py-1 text-start text-xs font-normal text-muted-foreground"
+            onClick={() => onOpen(`/app/board?ticket=${ticket.ref}`)}
+          >
+            <span className="shrink-0">{ticket.ref}</span>
+            <span className="truncate" dir="auto">
+              {ticket.title}
+            </span>
+          </Button>
+        </li>
+      ))}
+    </ul>
   );
 }

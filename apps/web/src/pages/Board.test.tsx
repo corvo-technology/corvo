@@ -9,7 +9,7 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({
-  boards: { subscribe: vi.fn() },
+  boards: { subscribe: vi.fn(), get: vi.fn(), rename: vi.fn() },
   bots: { list: vi.fn() },
   tickets: {
     list: vi.fn(),
@@ -91,6 +91,7 @@ function ticket(
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     completedAt: null,
+    fields: [],
   };
 }
 
@@ -99,8 +100,14 @@ beforeEach(() => {
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 });
 
-async function renderBoard(stream?: AsyncIterable<{ ticketId?: string }>, refusal?: unknown) {
+async function renderBoard(
+  stream?: AsyncIterable<{ ticketId?: string }>,
+  refusal?: unknown,
+  labels: Record<string, string> = {},
+  path = "/app/board",
+) {
   api.boards.subscribe.mockReset();
+  api.boards.get.mockResolvedValue({ id: "board-1", statusLabels: labels });
   api.boards.subscribe.mockResolvedValue(
     stream ?? {
       [Symbol.asyncIterator]: () => ({ next: () => new Promise(() => {}) }),
@@ -113,7 +120,7 @@ async function renderBoard(stream?: AsyncIterable<{ ticketId?: string }>, refusa
   await act(async () =>
     root.render(
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={["/app/board"]}>
+        <MemoryRouter initialEntries={[path]}>
           <BoardPage />
         </MemoryRouter>
       </QueryClientProvider>,
@@ -496,6 +503,167 @@ it("does not repeat a posted comment a refresh already brought", async () => {
     await act(async () => answerPost(posted));
     await settle();
     expect(commentsText(page).split("New note")).toHaveLength(2);
+  } finally {
+    await page.cleanup();
+  }
+});
+
+it("shows the column names the board chose and saves a new one from the settings", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper")]);
+  api.tickets.list.mockResolvedValue({ tickets: [] });
+  api.boards.rename.mockResolvedValue({ id: "board-1", statusLabels: { doing: "In contact" } });
+  const view = await renderBoard(undefined, undefined, { review: "Check" });
+  const headings = [...view.container.querySelectorAll("h2")].map((node) => node.textContent);
+  expect(headings).toContain("Check");
+  expect(headings).toContain("In progress");
+
+  await act(async () =>
+    view.container.querySelector<HTMLButtonElement>('button[aria-label="Board settings"]')?.click(),
+  );
+  const input = view.container.querySelector<HTMLInputElement>('input[name="label-doing"]');
+  expect(input?.value).toBe("");
+  expect(input?.placeholder).toBe("In progress");
+  await act(async () => {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    set?.call(input, "In contact");
+    input?.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await act(async () =>
+    view.container.querySelector<HTMLFormElement>("form#board-settings")?.requestSubmit(),
+  );
+  expect(api.boards.rename).toHaveBeenCalledWith({ statusLabels: { doing: "In contact" } });
+  await view.cleanup();
+});
+
+function typeInto(input: HTMLInputElement | null | undefined, value: string) {
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value);
+  input?.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+it("edits the named fields of a ticket and sends only what changed", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper")]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [
+      {
+        ...ticket("Lead", "ticket-1", "todo", "RAK-1", "bot-1"),
+        fields: [
+          { name: "Contact", value: "ana@example.com" },
+          { name: "Source", value: "Fair" },
+        ],
+      },
+    ],
+  });
+  api.tickets.comments.mockResolvedValue([]);
+  api.tickets.update.mockResolvedValue({});
+  const page = await renderBoard();
+  try {
+    await act(async () =>
+      page.container
+        .querySelector<HTMLButtonElement>('[data-testid="board-card-ticket-1"]')
+        ?.click(),
+    );
+    await settle();
+    const names = () => [
+      ...page.container.querySelectorAll<HTMLInputElement>('input[aria-label="Field name"]'),
+    ];
+    expect(names().map((input) => input.value)).toEqual(["Contact", "Source"]);
+    await act(async () =>
+      page.container
+        .querySelectorAll<HTMLButtonElement>('button[aria-label="Remove field"]')[1]
+        ?.click(),
+    );
+    await act(async () =>
+      [...page.container.querySelectorAll<HTMLButtonElement>("button")]
+        .find((button) => button.textContent === "Add field")
+        ?.click(),
+    );
+    await act(async () => {
+      typeInto(names()[1], "City");
+      typeInto(
+        page.container.querySelectorAll<HTMLInputElement>('input[aria-label="Field value"]')[1],
+        "Lisbon",
+      );
+    });
+    await act(async () => page.container.querySelector<HTMLFormElement>("form")?.requestSubmit());
+    expect(api.tickets.update).toHaveBeenCalledWith({
+      id: "ticket-1",
+      fields: { City: "Lisbon", Source: "" },
+    });
+  } finally {
+    await page.cleanup();
+  }
+});
+
+it("marks a card whose owner is working on it right now", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([
+    { id: "bot-1", name: "Helper", status: "running" },
+    { id: "bot-2", name: "Rest", status: "idle" },
+  ]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [
+      ticket("Live", "ticket-1", "doing", "RAK-1", "bot-1"),
+      ticket("Quiet", "ticket-2", "doing", "RAK-2", "bot-2"),
+      ticket("Waiting", "ticket-3", "todo", "RAK-3", "bot-1"),
+    ],
+  });
+  const page = await renderBoard();
+  try {
+    const marked = (id: string) =>
+      page.container.querySelector(`[data-testid="board-card-${id}"] [data-working]`) !== null;
+    expect(marked("ticket-1")).toBe(true);
+    expect(marked("ticket-2")).toBe(false);
+    // A card that is not started has nothing being worked on, whatever its owner is doing.
+    expect(marked("ticket-3")).toBe(false);
+  } finally {
+    await page.cleanup();
+  }
+});
+
+it("shows only one owner's cards when the board is filtered by owner", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper"), bot("bot-2", "Scout")]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [
+      ticket("Mine", "ticket-1", "todo", "RAK-1", "bot-1"),
+      ticket("Theirs", "ticket-2", "todo", "RAK-2", "bot-2"),
+    ],
+  });
+  const page = await renderBoard();
+  try {
+    const select = page.container.querySelector<HTMLSelectElement>('select[aria-label="Owner"]');
+    expect(select).not.toBeNull();
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set?.call(
+        select,
+        "bot-2",
+      );
+      select?.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    const cards = [...page.container.querySelectorAll('[data-testid^="board-card-"]')].map((node) =>
+      node.getAttribute("data-testid"),
+    );
+    expect(cards).toEqual(["board-card-ticket-2"]);
+  } finally {
+    await page.cleanup();
+  }
+});
+
+it("opens the ticket named in the address", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  api.bots.list.mockResolvedValue([bot("bot-1", "Helper")]);
+  api.tickets.list.mockResolvedValue({
+    tickets: [ticket("Call Ana", "ticket-1", "doing", "RAK-4", "bot-1")],
+  });
+  api.tickets.comments.mockResolvedValue([]);
+  const page = await renderBoard(undefined, undefined, {}, "/app/board?ticket=rak-4");
+  try {
+    await settle();
+    expect(page.container.querySelector<HTMLInputElement>("input[required]")?.value).toBe(
+      "Call Ana",
+    );
   } finally {
     await page.cleanup();
   }

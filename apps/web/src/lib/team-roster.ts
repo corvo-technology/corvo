@@ -1,4 +1,4 @@
-import type { SpaceBot, SpaceGroup } from "@corvo/contracts";
+import type { SpaceBot, SpaceGroup, Ticket, TicketStatus } from "@corvo/contracts";
 import { isRunWorking } from "@corvo/core";
 import { findFirstBot } from "./first-bot";
 
@@ -54,4 +54,22 @@ export function buildTeamRoster(bots: readonly SpaceBot[], groups: readonly Spac
     teams,
     unassigned: staff.filter((bot) => !placed.has(bot.id) && bot.id !== chief?.id),
   };
+}
+
+/** The columns where an agent is actually at work: started, waiting to be checked, or stuck. */
+export const TICKET_WORK_STATUSES: readonly TicketStatus[] = ["doing", "review", "blocked"];
+
+/** What each agent is working on, newest first. */
+export function ticketsByOwner(tickets: readonly Ticket[]): Map<string, Ticket[]> {
+  const byOwner = new Map<string, Ticket[]>();
+  for (const ticket of tickets) {
+    if (!ticket.assigneeBotId || !TICKET_WORK_STATUSES.includes(ticket.status)) continue;
+    const list = byOwner.get(ticket.assigneeBotId) ?? [];
+    list.push(ticket);
+    byOwner.set(ticket.assigneeBotId, list);
+  }
+  for (const list of byOwner.values()) {
+    list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+  return byOwner;
 }

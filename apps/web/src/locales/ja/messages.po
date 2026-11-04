@@ -260,6 +260,10 @@ msgstr "{name}が失敗しました"
 msgid "{name} finished"
 msgstr "{name}が完了しました"
 
+#: src/pages/shell/use-board-notifications.ts
+msgid "{name} moved {ref} to {status}"
+msgstr "{name}が{ref}を{status}に移動しました"
+
 #: src/pages/ModelRoleSettings.tsx
 msgid "{name} options"
 msgstr "{name} のオプション"
@@ -626,6 +630,10 @@ msgstr "Executorを追加"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Add fallback"
 msgstr "フォールバックを追加"
+
+#: src/pages/TicketFields.tsx
+msgid "Add field"
+msgstr "項目を追加"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add GraphQL"
@@ -1126,6 +1134,11 @@ msgstr "ブロック中"
 #: src/pages/Board.tsx
 msgid "Board"
 msgstr "ボード"
+
+#: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
+msgid "Board settings"
+msgstr "ボードの設定"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -3082,6 +3095,14 @@ msgstr "失敗しました。"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Failure handling"
 msgstr "失敗時の対応"
+
+#: src/pages/TicketFields.tsx
+msgid "Field name"
+msgstr "項目名"
+
+#: src/pages/TicketFields.tsx
+msgid "Field value"
+msgstr "項目の値"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Fields that mark a change"
@@ -5051,6 +5072,10 @@ msgstr "{secretName}を削除しますか？このボットはこれを使用で
 msgid "Remove change trigger"
 msgstr "変更トリガーを削除"
 
+#: src/pages/TicketFields.tsx
+msgid "Remove field"
+msgstr "項目を削除"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Gitイベントを削除"
@@ -5380,6 +5405,7 @@ msgstr "土曜日"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx

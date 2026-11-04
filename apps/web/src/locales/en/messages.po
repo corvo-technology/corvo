@@ -260,6 +260,10 @@ msgstr "{name} failed"
 msgid "{name} finished"
 msgstr "{name} finished"
 
+#: src/pages/shell/use-board-notifications.ts
+msgid "{name} moved {ref} to {status}"
+msgstr "{name} moved {ref} to {status}"
+
 #: src/pages/ModelRoleSettings.tsx
 msgid "{name} options"
 msgstr "{name} options"
@@ -626,6 +630,10 @@ msgstr "Add Executor"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Add fallback"
 msgstr "Add fallback"
+
+#: src/pages/TicketFields.tsx
+msgid "Add field"
+msgstr "Add field"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add GraphQL"
@@ -1126,6 +1134,11 @@ msgstr "Blocked"
 #: src/pages/Board.tsx
 msgid "Board"
 msgstr "Board"
+
+#: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
+msgid "Board settings"
+msgstr "Board settings"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -3082,6 +3095,14 @@ msgstr "Failed."
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Failure handling"
 msgstr "Failure handling"
+
+#: src/pages/TicketFields.tsx
+msgid "Field name"
+msgstr "Field name"
+
+#: src/pages/TicketFields.tsx
+msgid "Field value"
+msgstr "Field value"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Fields that mark a change"
@@ -5051,6 +5072,10 @@ msgstr "Remove {secretName}? This bot will no longer be able to use it."
 msgid "Remove change trigger"
 msgstr "Remove change trigger"
 
+#: src/pages/TicketFields.tsx
+msgid "Remove field"
+msgstr "Remove field"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Remove Git event"
@@ -5380,6 +5405,7 @@ msgstr "Saturday"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx

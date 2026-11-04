@@ -260,6 +260,10 @@ msgstr "{name} falhou"
 msgid "{name} finished"
 msgstr "{name} terminou"
 
+#: src/pages/shell/use-board-notifications.ts
+msgid "{name} moved {ref} to {status}"
+msgstr "{name} moveu {ref} para {status}"
+
 #: src/pages/ModelRoleSettings.tsx
 msgid "{name} options"
 msgstr "Opções de {name}"
@@ -626,6 +630,10 @@ msgstr "Adicionar Executor"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Add fallback"
 msgstr "Adicionar alternativo"
+
+#: src/pages/TicketFields.tsx
+msgid "Add field"
+msgstr "Adicionar campo"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add GraphQL"
@@ -1126,6 +1134,11 @@ msgstr "Bloqueado"
 #: src/pages/Board.tsx
 msgid "Board"
 msgstr "Quadro"
+
+#: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
+msgid "Board settings"
+msgstr "Configurações do quadro"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -3082,6 +3095,14 @@ msgstr "Falhou."
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Failure handling"
 msgstr "Tratamento de falhas"
+
+#: src/pages/TicketFields.tsx
+msgid "Field name"
+msgstr "Nome do campo"
+
+#: src/pages/TicketFields.tsx
+msgid "Field value"
+msgstr "Valor do campo"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Fields that mark a change"
@@ -5051,6 +5072,10 @@ msgstr "Remover {secretName}? Este bot não poderá mais usá-lo."
 msgid "Remove change trigger"
 msgstr "Remover gatilho de alteração"
 
+#: src/pages/TicketFields.tsx
+msgid "Remove field"
+msgstr "Remover campo"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Remover evento do Git"
@@ -5380,6 +5405,7 @@ msgstr "sábado"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx

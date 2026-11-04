@@ -39,6 +39,7 @@ import { IntegrationCallbackPage } from "./pages/IntegrationCallback";
 import { IntegrationSetupPage } from "./pages/IntegrationSetup";
 import { McpOAuthCallbackPage } from "./pages/McpOAuthCallback";
 import { ShellPage } from "./pages/Shell";
+import { useBoardNotifications } from "./pages/shell/use-board-notifications";
 
 const AuthPage = lazyComponent(() => import("./pages/Auth").then((module) => module.AuthPage));
 const NamePage = lazyComponent(() => import("./pages/Auth").then((module) => module.NamePage));
@@ -246,6 +247,7 @@ function SessionApp() {
 
 /** The narrow bar beside every signed-in screen; the wide agent list belongs to the agents screen. */
 function AppFrame({ ticketBoardEnabled }: { ticketBoardEnabled: boolean }) {
+  useBoardNotifications(ticketBoardEnabled);
   // Moving between areas fades the new one in; moving between agents keeps the same screen.
   const area = railSection(useLocation().pathname, "") ?? "other";
   useEffect(() => {

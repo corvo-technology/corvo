@@ -51,11 +51,18 @@ export function parseTicketRef(
   return { prefix, number };
 }
 
+export const BOARD_LABEL_MAX_LENGTH = 40;
+const BoardLabelSchema = z.string().trim().min(1).max(BOARD_LABEL_MAX_LENGTH);
+/** The column names a board changed. A status with no entry keeps its built-in name. */
+export const BoardStatusLabelsSchema = z.partialRecord(TicketStatusSchema, BoardLabelSchema);
+export type BoardStatusLabels = z.infer<typeof BoardStatusLabelsSchema>;
+
 export const BoardSchema = z.object({
   id: Id,
   spaceId: Id,
   name: z.string(),
   ticketPrefix: z.string(),
+  statusLabels: BoardStatusLabelsSchema.default({}),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -65,10 +72,16 @@ export const RenameBoardInput = z
   .object({
     name: z.string().trim().min(1).max(80).optional(),
     ticketPrefix: TicketPrefixSchema.optional(),
+    /** A label of null removes the override, so the column goes back to its built-in name. */
+    statusLabels: z.partialRecord(TicketStatusSchema, BoardLabelSchema.nullable()).optional(),
   })
-  .refine((value) => value.name !== undefined || value.ticketPrefix !== undefined, {
-    message: "Provide a name or ticketPrefix",
-  });
+  .refine(
+    (value) =>
+      value.name !== undefined ||
+      value.ticketPrefix !== undefined ||
+      value.statusLabels !== undefined,
+    { message: "Provide a name, ticketPrefix or statusLabels" },
+  );
 export type RenameBoardInput = z.infer<typeof RenameBoardInput>;
 
 export const TicketCommentSchema = z.object({
@@ -82,6 +95,45 @@ export const TicketCommentSchema = z.object({
   updatedAt: z.string(),
 });
 export type TicketComment = z.infer<typeof TicketCommentSchema>;
+
+export const TICKET_FIELDS_MAX = 20;
+export const TICKET_FIELD_NAME_MAX_LENGTH = 60;
+export const TICKET_FIELD_VALUE_MAX_LENGTH = 500;
+const TicketFieldNameSchema = z.string().trim().min(1).max(TICKET_FIELD_NAME_MAX_LENGTH);
+const TicketFieldValueSchema = z.string().max(TICKET_FIELD_VALUE_MAX_LENGTH);
+export const TicketFieldSchema = z.object({
+  name: TicketFieldNameSchema,
+  value: TicketFieldValueSchema,
+});
+export type TicketField = z.infer<typeof TicketFieldSchema>;
+export const TicketFieldsSchema = z.array(TicketFieldSchema).max(TICKET_FIELDS_MAX);
+
+/**
+ * Apply a change to a ticket's fields: a name sets or replaces the field of that name (case does
+ * not matter, the first spelling stays), and an empty value removes it.
+ */
+export function mergeTicketFields(
+  current: readonly TicketField[],
+  patch: Record<string, string>,
+): TicketField[] {
+  const next = current.map((field) => ({ ...field }));
+  for (const [rawName, value] of Object.entries(patch)) {
+    const name = rawName.trim();
+    const at = next.findIndex((field) => field.name.toLowerCase() === name.toLowerCase());
+    if (value === "") {
+      if (at >= 0) next.splice(at, 1);
+    } else if (at >= 0) {
+      const existing = next[at];
+      if (existing) existing.value = value;
+    } else {
+      next.push({ name, value });
+    }
+  }
+  if (next.length > TICKET_FIELDS_MAX) {
+    throw new Error(`A ticket holds at most ${TICKET_FIELDS_MAX} fields.`);
+  }
+  return next;
+}
 
 export const TicketSchema = z.object({
   id: Id,
@@ -99,12 +151,15 @@ export const TicketSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   completedAt: z.string().nullable(),
+  fields: TicketFieldsSchema.default([]),
 });
 export type Ticket = z.infer<typeof TicketSchema>;
 
 export const ListTicketsInput = z.object({
   boardId: Id.optional(),
   status: TicketStatusSchema.optional(),
+  /** More than one status at once; combined with `status` by union. Empty means no filter. */
+  statuses: z.array(TicketStatusSchema).max(TICKET_STATUSES.length).optional(),
   assigneeBotId: Id.optional(),
   q: z.string().trim().max(200).optional(),
 });
@@ -139,6 +194,8 @@ export const UpdateTicketInput = z.object({
   priority: TicketPrioritySchema.nullable().optional(),
   status: TicketStatusSchema.optional(),
   assigneeBotId: Id.optional(),
+  /** Set a field by name; an empty value removes it. */
+  fields: z.record(TicketFieldNameSchema, TicketFieldValueSchema).optional(),
 });
 export type UpdateTicketInput = z.infer<typeof UpdateTicketInput>;
 
@@ -154,10 +211,24 @@ export const CommentTicketInput = z.object({
 });
 export type CommentTicketInput = z.infer<typeof CommentTicketInput>;
 
+/** A ticket changed column. `byBotId` is null when a person moved it. */
+export const BoardMoveSchema = z.object({
+  ref: z.string(),
+  title: z.string(),
+  status: TicketStatusSchema,
+  previousStatus: TicketStatusSchema,
+  /** The board's own name for the new column, when it set one. */
+  statusLabel: z.string().optional(),
+  byBotId: Id.nullable(),
+  byName: z.string().nullable(),
+});
+export type BoardMove = z.infer<typeof BoardMoveSchema>;
+
 export const BoardEventSchema = z.object({
   spaceId: Id,
   boardId: Id.optional(),
   ticketId: Id.optional(),
+  moved: BoardMoveSchema.optional(),
   createdAt: z.string(),
 });
 export type BoardEvent = z.infer<typeof BoardEventSchema>;

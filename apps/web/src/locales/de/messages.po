@@ -260,6 +260,10 @@ msgstr "{name} ist fehlgeschlagen"
 msgid "{name} finished"
 msgstr "{name} ist fertig"
 
+#: src/pages/shell/use-board-notifications.ts
+msgid "{name} moved {ref} to {status}"
+msgstr "{name} hat {ref} nach {status} verschoben"
+
 #: src/pages/ModelRoleSettings.tsx
 msgid "{name} options"
 msgstr "{name} Optionen"
@@ -626,6 +630,10 @@ msgstr "Executor hinzufügen"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Add fallback"
 msgstr "Fallback hinzufügen"
+
+#: src/pages/TicketFields.tsx
+msgid "Add field"
+msgstr "Feld hinzufügen"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add GraphQL"
@@ -1126,6 +1134,11 @@ msgstr "Blockiert"
 #: src/pages/Board.tsx
 msgid "Board"
 msgstr "Board"
+
+#: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
+msgid "Board settings"
+msgstr "Board-Einstellungen"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -3082,6 +3095,14 @@ msgstr "Fehlgeschlagen."
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Failure handling"
 msgstr "Fehlerbehandlung"
+
+#: src/pages/TicketFields.tsx
+msgid "Field name"
+msgstr "Feldname"
+
+#: src/pages/TicketFields.tsx
+msgid "Field value"
+msgstr "Feldwert"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Fields that mark a change"
@@ -5051,6 +5072,10 @@ msgstr "{secretName} entfernen? Dieser Bot kann es dann nicht mehr verwenden."
 msgid "Remove change trigger"
 msgstr "Änderungsauslöser entfernen"
 
+#: src/pages/TicketFields.tsx
+msgid "Remove field"
+msgstr "Feld entfernen"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Git-Ereignis entfernen"
@@ -5380,6 +5405,7 @@ msgstr "Samstag"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Board.tsx
+#: src/pages/BoardSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx

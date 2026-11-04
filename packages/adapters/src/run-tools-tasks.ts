@@ -36,6 +36,14 @@ import {
   updateTicket,
 } from "./ticket-tools.js";
 
+/** The `fields` argument as name and text pairs; anything else a model sends is ignored. */
+function ticketFieldsArg(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  return Object.fromEntries(
+    Object.entries(value).map(([name, text]) => [name, text === null ? "" : String(text)]),
+  );
+}
+
 /** The task catalog, scratchpad, ticket board, schedules and skills. */
 export const taskTools: ToolHandlers = {
   async task_catalog(ctx) {
@@ -157,6 +165,7 @@ export const taskTools: ToolHandlers = {
         priority: args.priority !== undefined ? String(args.priority) : undefined,
         status: args.status !== undefined ? String(args.status) : undefined,
         ownerBotId: args.ownerBotId !== undefined ? String(args.ownerBotId) : undefined,
+        fields: ticketFieldsArg(args.fields),
       }),
     );
   },

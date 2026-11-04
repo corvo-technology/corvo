@@ -2,13 +2,15 @@ import { commentTicket, createTicket, updateTicket } from "@corvo/adapters";
 import type { BoardEvent } from "@corvo/contracts";
 import { parseTicketRef } from "@corvo/contracts";
 import { escapeSearchWildcards } from "@corvo/core";
-import type { Board as BoardRow, Prisma, PrismaClient } from "@corvo/db";
+import type { Board as BoardRow, PrismaClient } from "@corvo/db";
 import {
   ensureBoard,
   findTicket,
   IsolationError,
   listBoards,
   listTicketComments,
+  mergeStatusLabels,
+  Prisma,
   toBoardDto,
   toTicketCommentDto,
   toTicketDto,
@@ -60,6 +62,12 @@ export function boardsRoutes(ctx: RouterContext) {
           data: {
             ...(input.name !== undefined ? { name: input.name } : {}),
             ...(nextPrefix !== undefined ? { ticketPrefix: nextPrefix } : {}),
+            ...(input.statusLabels !== undefined
+              ? {
+                  statusLabels:
+                    mergeStatusLabels(board.statusLabels, input.statusLabels) ?? Prisma.DbNull,
+                }
+              : {}),
           },
         });
         return toBoardDto(row);
@@ -103,6 +111,9 @@ export function boardsRoutes(ctx: RouterContext) {
     tickets: {
       list: boardEnabled.tickets.list.handler(async ({ context, input }) => {
         const board = await resolveSpaceBoard(deps.prisma, context.actor.spaceId, input.boardId);
+        const statuses = [
+          ...new Set([...(input.status ? [input.status] : []), ...(input.statuses ?? [])]),
+        ];
         const q = input.q?.trim();
         // The database side has to match the text the user typed: a `%` or `_`
         // would otherwise widen the match, and a `\` would swallow the
@@ -111,7 +122,8 @@ export function boardsRoutes(ctx: RouterContext) {
         const where: Prisma.TicketWhereInput = {
           spaceId: context.actor.spaceId,
           boardId: board.id,
-          ...(input.status ? { status: input.status } : {}),
+          ...(statuses.length === 1 ? { status: statuses[0] } : {}),
+          ...(statuses.length > 1 ? { status: { in: statuses } } : {}),
           ...(input.assigneeBotId ? { assigneeBotId: input.assigneeBotId } : {}),
           ...(q
             ? {

@@ -81,6 +81,24 @@ describe("ticket tools", () => {
     expect(result).toEqual({ tickets: [expect.objectContaining({ ref: "RAK-1" })] });
   });
 
+  it("tells the agent the column names the person chose, and only then", async () => {
+    const findMany = vi.fn(async () => []);
+    const labelled = boardSpace();
+    labelled.board.findUnique = vi.fn(async () =>
+      board({ statusLabels: { doing: "In contact" } }),
+    ) as never;
+    const withLabels = await listBoardTickets(
+      { prisma: { ...labelled, ticket: { findMany } }, ticketBoardEnabled: true } as never,
+      { spaceId: "ws" },
+    );
+    expect(withLabels).toMatchObject({ statusLabels: { doing: "In contact" } });
+    const plain = await listBoardTickets(
+      { prisma: { ...boardSpace(), ticket: { findMany } }, ticketBoardEnabled: true } as never,
+      { spaceId: "ws" },
+    );
+    expect(plain).not.toHaveProperty("statusLabels");
+  });
+
   it("leaves closed tickets out of an unfiltered list and shortens descriptions", async () => {
     const findMany = vi.fn(async () => [ticket({ number: 2, description: "x".repeat(500) })]);
     const prisma = { ...boardSpace(), ticket: { findMany } };
@@ -179,6 +197,7 @@ function mutationDeps(ticketBoardEnabled = true) {
   const prisma = {
     ...boardSpace(),
     bot: { findFirst: vi.fn(async () => ({ id: "bot-2" })) },
+    user: { findUnique: vi.fn(async () => ({ name: "Pat" })) },
     ticket: tx.ticket,
     ticketComment: { findMany: vi.fn(async () => []) },
     $transaction: vi.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
@@ -265,6 +284,85 @@ describe("ticket mutations", () => {
     expect(result).toHaveProperty("error", expect.not.stringContaining("invalid-marker"));
     expect(s.prisma.board.findUnique).not.toHaveBeenCalled();
     expect(s.prisma.$transaction).not.toHaveBeenCalled();
+    expect(s.changes).not.toHaveBeenCalled();
+  });
+
+  it("says what moved when the status changes, with the mover's name", async () => {
+    const s = mutationDeps();
+    s.prisma.bot.findFirst = vi.fn(async () => ({ id: "bot-1", name: "Planner" })) as never;
+    await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      botId: "bot-1",
+      id: "t1",
+      status: "review",
+    });
+    expect(s.changes).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        moved: {
+          ref: "RAK-1",
+          title: "Ticket",
+          status: "review",
+          previousStatus: "todo",
+          byBotId: "bot-1",
+          byName: "Planner",
+        },
+      }),
+    );
+  });
+
+  it("sends no move for a title change, a comment or the same status again", async () => {
+    const s = mutationDeps();
+    await updateTicket(s.deps, { spaceId: "ws", userId: "user-1", id: "t1", title: "New" });
+    await updateTicket(s.deps, { spaceId: "ws", userId: "user-1", id: "t1", status: "todo" });
+    for (const [change] of s.changes.mock.calls) expect(change).not.toHaveProperty("moved");
+  });
+
+  it("names a person who moves a ticket, with no bot id", async () => {
+    const s = mutationDeps();
+    await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      status: "done",
+    });
+    expect(s.changes).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        moved: expect.objectContaining({ status: "done", byBotId: null, byName: "Pat" }),
+      }),
+    );
+  });
+
+  it("keeps named fields on a ticket, merging them under the row lock", async () => {
+    const s = mutationDeps();
+    const first = await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      fields: { Contact: "ana@example.com" },
+    });
+    expect(first).toHaveProperty("ticket.fields", [{ name: "Contact", value: "ana@example.com" }]);
+    const second = await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      fields: { contact: "", Source: "Fair" },
+    });
+    expect(second).toHaveProperty("ticket.fields", [{ name: "Source", value: "Fair" }]);
+    expect(s.tx.$queryRaw).toHaveBeenCalledTimes(2);
+  });
+
+  it("refuses a 21st field and writes nothing", async () => {
+    const s = mutationDeps();
+    const many = Object.fromEntries(Array.from({ length: 21 }, (_, index) => [`f${index}`, "x"]));
+    const result = await updateTicket(s.deps, {
+      spaceId: "ws",
+      userId: "user-1",
+      id: "t1",
+      fields: many,
+    });
+    expect(result).toEqual({ error: "A ticket holds at most 20 fields." });
+    expect(s.tx.ticket.update).not.toHaveBeenCalled();
     expect(s.changes).not.toHaveBeenCalled();
   });
 
