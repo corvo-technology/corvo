@@ -72,14 +72,14 @@ function deps(overrides: Partial<EngineDeps> = {}): EngineDeps {
     dataDir: path.join(dir, "engine"),
     engineDir: "/app/engine",
     postgresBinDir: "/app/postgres/bin",
-    nodeExecutable: "/app/Corvo",
+    nodeExecutable: "/app/Rook",
     env: { HOME: "/Users/test", PATH: "/usr/bin", SECRET_TOKEN: "must-not-leak" },
     localWebUrl: "http://127.0.0.1:45173",
     spawn: (command, args, options) => {
       const child = new FakeChild(command, args, options.env);
       children.push(child);
       const name =
-        path.basename(command) === "Corvo"
+        path.basename(command) === "Rook"
           ? base(child)
           : path.basename(command).replace(/\.exe$/, "");
       queueMicrotask(() => {
@@ -123,9 +123,9 @@ describe("EmbeddedEngineController", () => {
       expect.stringContaining("initdb"),
       expect.stringContaining("postgres --single"),
       expect.stringContaining("postgres -D"),
-      "Corvo /app/engine/migrate.mjs",
-      "Corvo /app/engine/api.mjs",
-      "Corvo /app/engine/worker.mjs",
+      "Rook /app/engine/migrate.mjs",
+      "Rook /app/engine/api.mjs",
+      "Rook /app/engine/worker.mjs",
     ]);
     expect(children[1]?.stdinWritten).toBe("CREATE DATABASE corvo;\n");
     expect(children[2]?.args).toContain("unix_socket_directories=");

@@ -84,11 +84,11 @@ export async function openBrowserAuth(
             !code ||
             target.searchParams.has("error")
           ) {
-            response.writeHead(400).end("Sign-in callback rejected. Return to Corvo to retry.");
+            response.writeHead(400).end("Sign-in callback rejected. Return to Rook to retry.");
             return;
           }
           consumed = true;
-          response.end("You can close this tab and return to Corvo.", close);
+          response.end("You can close this tab and return to Rook.", close);
           options.onCallback({ code, state });
         });
         server.requestTimeout = 10_000;

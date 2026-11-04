@@ -3,7 +3,7 @@
   "productName": "Corvo",
   "version": "0.1.13",
   "author": {
-    "name": "Corvo"
+    "name": "Rook"
   },
   "license": "Apache-2.0",
   "type": "module",
@@ -73,7 +73,9 @@
       "entitlements": "assets/entitlements.mac.plist",
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "Corvo uses the microphone for dictation and voice calls with your bots."
+        "CFBundleName": "Rook",
+        "CFBundleDisplayName": "Rook",
+        "NSMicrophoneUsageDescription": "Rook uses the microphone for dictation and voice calls with your bots."
       },
       "target": [
         "dmg",
