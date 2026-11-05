@@ -28,6 +28,8 @@ import {
   redeemMessagingLinkCode,
 } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
+import type { AudioHold } from "./audio-hold.js";
+import { startRunOrAwaitAudio } from "./audio-hold.js";
 import type { MessagingReceipts } from "./messaging-receipts.js";
 import {
   MESSAGE_ROUTING_REARMED_REASON,
@@ -45,6 +47,8 @@ export interface MessagingInboundDeps {
   prisma: PrismaClient;
   events: Pick<ThreadEvents, "sendUserMessage" | "notify">;
   jobs: Pick<JobPublisher, "enqueue">;
+  /** Where voice notes can be transcribed; absent keeps them as files. */
+  audio?: AudioHold;
   provision: (
     request: MessagingIdentityRequest,
     env: SignupPolicyEnv,
@@ -207,7 +211,16 @@ async function handleDirectEvent(
       });
       return unsent === 0;
     });
-    await deps.jobs.enqueue(runContinueJob(sent.runId)).catch((error) => {
+    // Only a message from the linked owner holds for transcription; anyone else's audio stays a file.
+    await startRunOrAwaitAudio(
+      { jobs: deps.jobs, prisma: deps.prisma, audio: deps.audio },
+      {
+        runId: sent.runId,
+        actor: { spaceId: ids.spaceId, userId: ids.userId },
+        fromOwner: Boolean(existing),
+        attachments: stored.artifacts,
+      },
+    ).catch((error) => {
       getLogger().error("messaging inbound run enqueue error", error);
     });
   }

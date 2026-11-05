@@ -775,6 +775,8 @@ model Run {
   // stepOfRunId is unique, so a step runs at most once for each run before it.
   routineStepId        String?
   stepOfRunId          String?           @unique
+  /// Set while a voice note is being transcribed; the reconciler leaves the queued run alone.
+  awaitingAudioAt      DateTime?
   // Durable retry schedule; null means runnable immediately when queued.
   wakeAt               DateTime?
   // Server-side first visible output, preserved across attempts and resumes.

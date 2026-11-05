@@ -36,6 +36,7 @@ function setup(options: Setup = {}) {
     prompt.current = data.prompt;
     return {};
   });
+  const runUpdate = vi.fn(async (_args: unknown) => ({}));
   const enqueue = vi.fn(async (_job: unknown) => undefined);
   const announce = vi.fn(async () => undefined);
   const transcribe = vi.fn(
@@ -53,6 +54,8 @@ function setup(options: Setup = {}) {
   );
   const deps = {
     prisma: {
+      message: { findUnique: vi.fn(async () => ({ blocks })) },
+      task: { findUnique: vi.fn(async () => ({ prompt: prompt.current })), update },
       run: {
         findUnique: vi.fn(async () => ({
           id: runId,
@@ -65,15 +68,14 @@ function setup(options: Setup = {}) {
           trigger: "messaging",
           sourceMessageId: "msg-1",
         })),
+        update: runUpdate,
       },
-      message: { findUnique: vi.fn(async () => ({ blocks })) },
-      task: { findUnique: vi.fn(async () => ({ prompt: prompt.current })), update },
     } as unknown as PrismaClient,
     jobs: { enqueue },
     transcribe,
     announce,
   } as AudioTranscribeJobDeps;
-  return { deps, prompt, update, enqueue, announce, transcribe, runId };
+  return { deps, prompt, update, enqueue, announce, transcribe, runId, runUpdate };
 }
 
 describe("runAudioTranscribeJob", () => {
@@ -125,6 +127,18 @@ describe("runAudioTranscribeJob", () => {
     expect(prompt.current.indexOf('"a.ogg" (pt)')).toBeLessThan(
       prompt.current.indexOf(fileLine("b.ogg")),
     );
+  });
+
+  it("clears the hold on the run before starting it, and only for a run that was waiting", async () => {
+    const waiting = setup();
+    await runAudioTranscribeJob(waiting.deps, { runId: "run-1" });
+    expect(waiting.runUpdate).toHaveBeenCalledWith({
+      where: { id: "run-1" },
+      data: { awaitingAudioAt: null },
+    });
+    const cancelled = setup({ status: "cancelled" });
+    await runAudioTranscribeJob(cancelled.deps, { runId: "run-1" });
+    expect(cancelled.runUpdate).not.toHaveBeenCalled();
   });
 
   it("a run without audio is released untouched", async () => {

@@ -23,6 +23,12 @@ const CONTROL_LOOKAHEAD_MS = 60_000;
  * finishing a failed attempt holds it for seconds before Graphile unlocks it.
  */
 const ABANDONED_QUEUED_LOCK_MS = 5 * 60_000;
+/**
+ * A run held for its voice note is left alone this long. The transcription job keeps no job lock
+ * the reconciler could see, and a first download can take minutes; past this the run starts
+ * without the transcript rather than wait for a job that died.
+ */
+export const AUDIO_HOLD_MS = 30 * 60_000;
 // Two keys give Rook's lock a namespace without relying on a hash that might collide
 // with an application using the one-key advisory-lock API.
 const RECONCILIATION_LOCK_NAMESPACE = 1_380_019_075;
@@ -193,7 +199,13 @@ export function createJobReconciler(
             AND: [
               {
                 OR: [
-                  { status: "queued" },
+                  {
+                    status: "queued",
+                    OR: [
+                      { awaitingAudioAt: null },
+                      { awaitingAudioAt: { lt: new Date(now.getTime() - AUDIO_HOLD_MS) } },
+                    ],
+                  },
                   {
                     status: { in: ["leased", "running"] },
                     leaseExpiresAt: { lte: now },

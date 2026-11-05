@@ -75,7 +75,7 @@ export async function runAudioTranscribeJob(
       sourceMessageId: true,
     },
   });
-  if (!run || run.status !== "queued") return;
+  if (run?.status !== "queued") return;
   const actor = { spaceId: run.spaceId, userId: run.userId } as Actor;
   const message = run.sourceMessageId
     ? await deps.prisma.message.findUnique({
@@ -124,6 +124,13 @@ export async function runAudioTranscribeJob(
   } catch (error) {
     getLogger().error("audio transcript could not be added to the prompt", error);
   }
+  await deps.prisma.run
+    .update({ where: { id: run.id }, data: { awaitingAudioAt: null } })
+    .catch((error: unknown) => {
+      getLogger().warn("audio hold could not be cleared", {
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    });
   await deps.jobs.enqueue(runContinueJob(run.id));
 }
 

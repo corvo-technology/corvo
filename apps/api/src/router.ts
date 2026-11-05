@@ -29,6 +29,7 @@ import type {
 import type { Auth } from "@corvo/auth";
 import type { NavLink } from "@corvo/contracts";
 import type { BoardEvents, PrismaClient, ThreadEvents } from "@corvo/db";
+import type { AudioHold } from "./audio-hold.js";
 import type { BillingService } from "./billing.js";
 import { accountRoutes } from "./routes/account.js";
 import { boardsRoutes } from "./routes/boards.js";
@@ -57,6 +58,8 @@ export { callMarkerClientNonce } from "./routes/threads.js";
 export interface RouterDeps {
   /** Present only on the desktop app's own engine, where speech models can live. */
   localSpeech?: LocalSpeech;
+  /** Where voice notes can be transcribed; absent keeps them as files. */
+  audio?: AudioHold;
   pushTokens: PushTokenStore;
   analytics?: ProductAnalytics;
   cloudAgent?: CloudAgentConnection | null;

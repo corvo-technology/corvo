@@ -176,6 +176,26 @@ describe("createJobReconciler", () => {
     );
   });
 
+  it("leaves a queued run alone while it waits for its audio, until the hold is old", async () => {
+    const prisma = fakePrisma([]);
+    const { jobs } = publisher();
+    await createJobReconciler({ prisma, jobs }).reconcileOnce();
+    type Where = { AND?: Array<{ OR?: Array<Record<string, unknown>> }> };
+    const where = vi
+      .mocked(prisma.run.findMany)
+      .mock.calls.map(([args]) => args?.where as Where | undefined)
+      .find((candidate) => candidate?.AND?.[0]?.OR?.some((clause) => clause.status === "queued"));
+    const queued = where?.AND?.[0]?.OR?.find((clause) => clause.status === "queued") as {
+      OR: Array<{ awaitingAudioAt: null | { lt: Date } }>;
+    };
+    expect(queued.OR).toHaveLength(2);
+    expect(queued.OR[0]).toEqual({ awaitingAudioAt: null });
+    const cutoff = (queued.OR[1] as { awaitingAudioAt: { lt: Date } }).awaitingAudioAt.lt;
+    const heldFor = Date.now() - cutoff.getTime();
+    expect(heldFor).toBeGreaterThan(29 * 60_000);
+    expect(heldFor).toBeLessThan(31 * 60_000);
+  });
+
   it("replaces any lock for an expired lease but only an old lock for a queued run", async () => {
     const prisma = fakePrisma([
       { id: "run-queued", status: "queued", updatedAt: new Date() },

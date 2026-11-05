@@ -141,6 +141,7 @@ import { cors } from "hono/cors";
 import { deleteAccountContent } from "./account-deletion.js";
 import { mountAppAssociation, nativePasskeys } from "./app-association.js";
 import { storeInboundAttachment } from "./artifacts.js";
+import { createAudioHold } from "./audio-hold.js";
 import { createBillingService } from "./billing.js";
 import { mountBillingRoutes } from "./billing-webhook.js";
 import { clientBuildMiddleware, readDeployedWebBuild } from "./client-build.js";
@@ -297,6 +298,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
   const secrets = createSecretStore(env.encryptionKey, process.env, realtime);
   // Speech models live on the owner's own computer, so only the desktop engine gets them.
   const localSpeech = createLocalSpeech(env);
+  const audio = createAudioHold({ prisma, localSpeech });
   await secrets.start();
   if (secrets.describe().capabilities.degraded)
     logger.warn("Secret storage degraded; encrypted credentials remain available");
@@ -706,6 +708,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     home,
     secrets,
     localSpeech,
+    audio,
     oauthLogins,
     integrationSettings,
     mcpOAuth,
@@ -1022,6 +1025,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         signupAllowlist: env.signupAllowlist,
       },
       acknowledge: receipts?.acknowledge,
+      audio,
       storeAttachment: ({ spaceId, userId, ...input }) =>
         storeInboundAttachment(
           { prisma, artifacts, maxUploadSizeBytes: env.maxUploadSizeBytes },

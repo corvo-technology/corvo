@@ -127,6 +127,7 @@ function createDeps(
     bot: { findUnique: vi.fn(async () => ({ name: "Chief" })) },
     run: {
       findUnique: vi.fn(async ({ where }: { where: { id: string } }) => runs.get(where.id) ?? null),
+      update: vi.fn(async () => ({})),
     },
     message: {
       findMany: vi.fn(async ({ where }: { where: { runId: string } }) =>
@@ -1846,5 +1847,50 @@ describe("teamChatSenderCanWakeMessageRoutines", () => {
         senderIsBot: true,
       }),
     ).resolves.toBe(false);
+  });
+});
+
+describe("a voice note from a chat app", () => {
+  const voiceAttachment = {
+    name: "voice.oga",
+    mimeType: "audio/ogg",
+    size: 3000,
+    fetch: async () => new Uint8Array([1]),
+  };
+  const stored = async ({ attachment }: { attachment: { name: string; mimeType: string } }) => ({
+    id: "artifact-voice",
+    name: attachment.name,
+    mimeType: attachment.mimeType,
+    size: 3000,
+  });
+
+  it("holds the run for its transcription when the sender is the linked owner", async () => {
+    const deps = createDeps({ storeAttachment: stored });
+    const audio = { canTranscribe: vi.fn(async () => true) };
+    const handle = createMessagingInboundHandler({ ...deps, audio });
+    await handle({ ...dmEvent, content: "", attachments: [voiceAttachment] });
+    expect(deps.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "audio.transcribe", payload: { runId: "run-1" } }),
+    );
+    expect(deps.enqueue).not.toHaveBeenCalledWith(
+      expect.objectContaining({ name: "run.continue" }),
+    );
+  });
+
+  it("starts the run at once when audio is not wired, as before", async () => {
+    const deps = createDeps({ storeAttachment: stored });
+    await createMessagingInboundHandler(deps)({
+      ...dmEvent,
+      content: "",
+      attachments: [voiceAttachment],
+    });
+    expect(deps.enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
+  });
+
+  it("does not hold a message that has no audio", async () => {
+    const deps = createDeps();
+    const audio = { canTranscribe: vi.fn(async () => true) };
+    await createMessagingInboundHandler({ ...deps, audio })({ ...dmEvent, content: "hello" });
+    expect(deps.enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
   });
 });
