@@ -139,7 +139,25 @@ export class LocalModelStore {
     return promise;
   }
 
+  /**
+   * False once the owner removed a model or cancelled a download: the next audio must not fetch a
+   * model on its own again. Asking for a download clears it.
+   */
+  async automaticDownloadAllowed(): Promise<boolean> {
+    return !(await this.exists(this.optOutFile()));
+  }
+
+  async allowAutomaticDownload(): Promise<void> {
+    await rm(this.optOutFile(), { force: true });
+  }
+
+  private async stopAutomaticDownload(): Promise<void> {
+    await mkdir(path.dirname(this.optOutFile()), { recursive: true });
+    await writeFile(this.optOutFile(), "");
+  }
+
   cancel(id: string): void {
+    void this.stopAutomaticDownload().catch(() => undefined);
     this.active.get(id)?.controller.abort();
     // Another process may hold the download; it looks for this marker as it makes progress.
     void writeFile(this.cancelFile(id), "").catch(() => undefined);
@@ -155,6 +173,7 @@ export class LocalModelStore {
     }
     await rm(this.modelDir(id), { recursive: true, force: true });
     await this.clearDownload(id);
+    await this.stopAutomaticDownload();
   }
 
   private modelDir(id: string) {
@@ -165,6 +184,9 @@ export class LocalModelStore {
   }
   private lockFile(id: string) {
     return path.join(this.dir, ".state", `${id}.lock`);
+  }
+  private optOutFile() {
+    return path.join(this.dir, ".state", "no-automatic-download");
   }
   private cancelFile(id: string) {
     return path.join(this.dir, ".state", `${id}.cancel`);

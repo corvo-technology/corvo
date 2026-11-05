@@ -31,6 +31,7 @@ function fakeStore(models: LocalSpeechModel[]) {
     list: vi.fn(async () => models),
     ensure: vi.fn(async (id: string) => `/models/${id}`),
     cancel: vi.fn(),
+    allowAutomaticDownload: vi.fn(async () => undefined),
     remove: vi.fn(async (_id: string) => undefined),
   };
 }
@@ -143,6 +144,15 @@ describe("local speech models", () => {
     await expect(downloadLocalModel({} as VoiceDeps, "base")).rejects.toMatchObject({
       code: "BAD_REQUEST",
     });
+  });
+
+  it("lets automatic downloads resume when the owner asks for one", async () => {
+    const { deps, store } = withEngine([model("base", "absent")]);
+    await downloadLocalModel(deps, "base");
+    expect(store.allowAutomaticDownload).toHaveBeenCalledTimes(1);
+    const refused = withEngine([model("base", "absent")]);
+    await expect(downloadLocalModel(refused.deps, "huge")).rejects.toThrow();
+    expect(refused.store.allowAutomaticDownload).not.toHaveBeenCalled();
   });
 
   it("cancels a running download", async () => {

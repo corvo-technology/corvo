@@ -489,6 +489,8 @@ export async function downloadLocalModel(deps: Pick<VoiceDeps, "localSpeech">, i
   if (!(await local.store.list()).some((model) => model.id === id)) {
     throw new ORPCError("BAD_REQUEST", { message: "Pick a model from the list." });
   }
+  // The owner asked for this download, so automatic ones are welcome again.
+  await local.store.allowAutomaticDownload();
   void local.store.ensure(id).catch((error: unknown) => {
     getLogger().warn("local speech model download failed", {
       model: id,

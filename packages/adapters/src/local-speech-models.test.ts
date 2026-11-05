@@ -185,6 +185,20 @@ describe("LocalModelStore", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
+  it("allows automatic downloads until a model is removed or a download cancelled, and again once the owner asks", async () => {
+    const target = store(servingFetch());
+    expect(await target.automaticDownloadAllowed()).toBe(true);
+    await target.ensure(spec.id);
+    await target.remove(spec.id);
+    expect(await target.automaticDownloadAllowed()).toBe(false);
+    // A new process reads the same answer from disk.
+    expect(await store(servingFetch()).automaticDownloadAllowed()).toBe(false);
+    await target.allowAutomaticDownload();
+    expect(await target.automaticDownloadAllowed()).toBe(true);
+    target.cancel(spec.id);
+    await vi.waitFor(async () => expect(await target.automaticDownloadAllowed()).toBe(false));
+  });
+
   it("a model that is not in the catalog is never fetched", async () => {
     const fetchImpl = servingFetch();
     await expect(store(fetchImpl).ensure("https://evil.example.test/x")).rejects.toThrow(

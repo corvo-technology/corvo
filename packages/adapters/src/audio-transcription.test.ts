@@ -54,6 +54,8 @@ interface Setup {
   /** The state of the model the local store reports; "ready" by default. */
   modelState?: "ready" | "absent";
   ensure?: (id: string) => Promise<string>;
+  /** False once the owner removed a model or cancelled a download; true by default. */
+  automatic?: boolean;
   createProvider?: AudioTranscriptionDeps["createProvider"];
 }
 
@@ -87,7 +89,16 @@ function setup(options: Setup = {}) {
     artifacts: { get },
     ...(options.localEngine === false
       ? {}
-      : { localSpeech: { store: { ensure, list }, transcriber } }),
+      : {
+          localSpeech: {
+            store: {
+              ensure,
+              list,
+              automaticDownloadAllowed: vi.fn(async () => options.automatic ?? true),
+            },
+            transcriber,
+          },
+        }),
     loadVoiceCredential: vi.fn(async () => options.credential ?? null),
     hasConsent: vi.fn(async () => options.consent ?? true),
     ...(options.createProvider ? { createProvider: options.createProvider } : {}),
@@ -227,6 +238,22 @@ describe("transcribeAudioArtifact", () => {
     const { deps, get } = setup({ artifact: null });
     expect(await run(deps)).toEqual({ status: "failed", reason: "unavailable" });
     expect(get).not.toHaveBeenCalled();
+  });
+});
+
+describe("after the owner removed a model", () => {
+  it("does not download the default model on its own, and tells the agent why", async () => {
+    const { deps, ensure } = setup({ modelState: "absent", automatic: false });
+    expect(await run(deps)).toEqual({ status: "failed", reason: "model-removed" });
+    expect(ensure).not.toHaveBeenCalled();
+    expect(transcriptNote("memo.wav", { status: "failed", reason: "model-removed" })).toContain(
+      "removed",
+    );
+  });
+
+  it("still uses a model that is on this computer", async () => {
+    const { deps } = setup({ modelState: "ready", automatic: false });
+    expect((await run(deps)).status).toBe("transcribed");
   });
 });
 

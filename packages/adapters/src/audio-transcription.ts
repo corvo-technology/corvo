@@ -24,6 +24,7 @@ export type TranscriptionFailure =
   | "too-large"
   | "no-speech"
   | "download-failed"
+  | "model-removed"
   | "provider-failed"
   | "unavailable";
 
@@ -36,7 +37,7 @@ export interface AudioTranscriptionDeps {
   artifacts: Pick<ArtifactStore, "get">;
   /** Present only on the desktop app's own engine. */
   localSpeech?: {
-    store: Pick<LocalModelStore, "ensure" | "list">;
+    store: Pick<LocalModelStore, "ensure" | "list" | "automaticDownloadAllowed">;
     transcriber: SpeechTranscriber;
   };
   /** The account's default voice connection: its provider and its secret. */
@@ -120,6 +121,14 @@ async function chooseProvider(deps: AudioTranscriptionDeps, actor: Actor): Promi
       };
     }
     if (!deps.localSpeech) return { failure: "provider-failed" };
+    // The owner removed a model or cancelled a download: do not fetch one on their behalf again.
+    const { store } = deps.localSpeech;
+    if (!(await store.automaticDownloadAllowed())) {
+      const ready = (await store.list()).some(
+        (model) => model.id === DEFAULT_LOCAL_MODEL && model.state === "ready",
+      );
+      if (!ready) return { failure: "model-removed" };
+    }
     return {
       kind: "local",
       provider: create(LOCAL_VOICE_PROVIDER_ID, { local: deps.localSpeech }),
@@ -232,6 +241,7 @@ const REASON_TEXT: Record<TranscriptionFailure, string> = {
   "too-large": "the file is too large",
   "no-speech": "no speech was heard",
   "download-failed": "the speech model could not be downloaded",
+  "model-removed": "the speech model was removed",
   "provider-failed": "transcription is not available",
   unavailable: "the file is not available",
 };
