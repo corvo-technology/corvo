@@ -2,9 +2,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const script = readFileSync(new URL("../scripts/build-engine.mjs", import.meta.url), "utf8");
-const manifest = JSON.parse(
-  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
-) as { dependencies: Record<string, string> };
+const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+  dependencies: Record<string, string>;
+};
 
 /** The packages the engine bundle leaves out, to be loaded from the app's own node_modules. */
 const externals = (/const EXTERNAL_PACKAGES = \[([^\]]*)\]/.exec(script)?.[1] ?? "")
