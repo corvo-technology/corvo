@@ -30,16 +30,21 @@ import { firstModelConnectAnalytics } from "../model-connect-analytics.js";
 import type { RouterDeps } from "../router.js";
 import { withSerializableRetry } from "../serializable-retry.js";
 import {
+  cancelLocalModelDownload,
   disconnectVoiceCredential,
-  listVoiceCatalog,
+  downloadLocalModel,
   loadDefaultVoiceCredential,
   loadVoiceCredential,
+  localSpeechModels,
   persistVoiceCredential,
   prepareVoice,
+  removeLocalModel,
   toVoiceCredential,
   toVoiceStatus,
   updateVoiceSpeechModel,
+  voiceCatalogFor,
   voiceContext,
+  voiceCredentialLocal,
   voiceCredentialServer,
   voiceProviderFor,
 } from "../voice.js";
@@ -200,9 +205,7 @@ export function accountRoutes(ctx: RouterContext) {
       }),
     },
     voice: {
-      catalog: authed.voice.catalog.handler(async () =>
-        listVoiceCatalog({ allowPrivateEndpoint: deps.env?.mcpAllowPrivateEndpoint }),
-      ),
+      catalog: authed.voice.catalog.handler(async () => voiceCatalogFor(deps)),
       status: authed.voice.status.handler(async ({ context, input }) => {
         const cred = await findDefaultVoiceCredential(deps.prisma, context.actor, input?.scope);
         return toVoiceStatus(cred);
@@ -225,6 +228,7 @@ export function accountRoutes(ctx: RouterContext) {
               voiceId: preference?.voiceId ?? "",
               speechModel: preference?.speechModel ?? "",
               server: await voiceCredentialServer(deps, context.actor, row),
+              local: await voiceCredentialLocal(deps, context.actor, row),
             });
           }),
         );
@@ -238,9 +242,20 @@ export function accountRoutes(ctx: RouterContext) {
           baseUrl: input.baseUrl,
           ttsModel: input.ttsModel,
           sttModel: input.sttModel,
+          language: input.language,
           scope: input.scope,
           signal: context.signal,
         }),
+      ),
+      localModels: authed.voice.localModels.handler(async () => localSpeechModels(deps)),
+      downloadLocalModel: authed.voice.downloadLocalModel.handler(async ({ input }) =>
+        downloadLocalModel(deps, input.id),
+      ),
+      cancelLocalModelDownload: authed.voice.cancelLocalModelDownload.handler(async ({ input }) =>
+        cancelLocalModelDownload(deps, input.id),
+      ),
+      removeLocalModel: authed.voice.removeLocalModel.handler(async ({ context, input }) =>
+        removeLocalModel(deps, context.actor, input.id),
       ),
       disconnect: authed.voice.disconnect.handler(async ({ context, input }) =>
         disconnectVoiceCredential(deps, context.actor, { provider: input.provider }),

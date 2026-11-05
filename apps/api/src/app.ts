@@ -158,6 +158,7 @@ import { loadEnv } from "./env.js";
 import { healthRoutes } from "./health.js";
 import { mountLocalEntryRoute } from "./local-entry.js";
 import { mountLocalComputerHost } from "./local-settings.js";
+import { createLocalSpeech } from "./local-speech.js";
 import { assertMcpRemoteEndpoint } from "./mcp-servers.js";
 import {
   createMessagingInboundHandler,
@@ -294,6 +295,8 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         })
       : new InMemoryRealtimeFanout());
   const secrets = createSecretStore(env.encryptionKey, process.env, realtime);
+  // Speech models live on the owner's own computer, so only the desktop engine gets them.
+  const localSpeech = createLocalSpeech(env);
   await secrets.start();
   if (secrets.describe().capabilities.degraded)
     logger.warn("Secret storage degraded; encrypted credentials remain available");
@@ -700,6 +703,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     memoryProviders,
     home,
     secrets,
+    localSpeech,
     oauthLogins,
     integrationSettings,
     mcpOAuth,
@@ -895,7 +899,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     if (matched) return c.newResponse(response.body, response);
     await next();
   });
-  mountVoiceHttpRoutes(app, { prisma, secrets, env }, async (c) => {
+  mountVoiceHttpRoutes(app, { prisma, secrets, env, localSpeech }, async (c) => {
     const actor = await sessionActor(c.req.raw);
     if (actor) enrichLogContext({ "user.id": actor.userId, "space.id": actor.spaceId });
     return actor;

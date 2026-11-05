@@ -1,0 +1,23 @@
+import path from "node:path";
+import { LocalModelStore, SherpaWhisperTranscriber, type SpeechTranscriber } from "@corvo/adapters";
+
+/** What speech on the owner's own computer needs: where models live and the engine that reads them. */
+export interface LocalSpeech {
+  store: LocalModelStore;
+  transcriber: SpeechTranscriber;
+}
+
+/**
+ * Only the desktop app's own engine is the owner's computer, and it alone sets the stack token.
+ * A server or cloud deployment gets none, so it never offers or downloads a model.
+ */
+export function createLocalSpeech(env: {
+  dataDir: string;
+  desktopStackToken?: string | undefined;
+}): LocalSpeech | undefined {
+  if (!env.desktopStackToken) return undefined;
+  return {
+    store: new LocalModelStore({ dir: path.join(env.dataDir, "speech-models") }),
+    transcriber: new SherpaWhisperTranscriber(),
+  };
+}

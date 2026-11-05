@@ -29,6 +29,7 @@ import type { Auth } from "@corvo/auth";
 import type { NavLink } from "@corvo/contracts";
 import type { BoardEvents, PrismaClient, ThreadEvents } from "@corvo/db";
 import type { BillingService } from "./billing.js";
+import type { LocalSpeech } from "./local-speech.js";
 import { accountRoutes } from "./routes/account.js";
 import { boardsRoutes } from "./routes/boards.js";
 import { botsRoutes } from "./routes/bots.js";
@@ -54,6 +55,8 @@ export { HEARTBEAT_MS, SESSION_RECHECK_MS } from "./routes/shared.js";
 export { callMarkerClientNonce } from "./routes/threads.js";
 
 export interface RouterDeps {
+  /** Present only on the desktop app's own engine, where speech models can live. */
+  localSpeech?: LocalSpeech;
   pushTokens: PushTokenStore;
   analytics?: ProductAnalytics;
   cloudAgent?: CloudAgentConnection | null;

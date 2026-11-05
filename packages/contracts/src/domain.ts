@@ -1605,6 +1605,8 @@ export const VoiceCredentialSchema = z.object({
   endpoint: z.string().default(""),
   ttsModel: z.string().default(""),
   sttModel: z.string().default(""),
+  /** The local provider only: automatic, en or pt. Empty for every other provider. */
+  language: z.string().default(""),
 });
 export type VoiceCredential = z.infer<typeof VoiceCredentialSchema>;
 

@@ -75,6 +75,7 @@ import {
   GroupSchema,
   IntegrationCatalogResultSchema,
   LOCAL_VOICE_PROVIDER_ID,
+  LocalSpeechModelSchema,
   McpServerConfigInput,
   McpServerSchema,
   MemoryDocumentSchema,
@@ -1287,6 +1288,17 @@ export const appContract = {
       .output(VoiceCredentialSchema),
     disconnect: oc
       .input(z.object({ provider: z.string().min(1) }))
+      .output(z.object({ ok: z.literal(true) })),
+    /** The speech models "This computer" can use, and where each download stands. */
+    localModels: oc.output(z.array(LocalSpeechModelSchema)),
+    downloadLocalModel: oc
+      .input(z.object({ id: z.string().min(1).max(80) }))
+      .output(z.object({ ok: z.literal(true) })),
+    cancelLocalModelDownload: oc
+      .input(z.object({ id: z.string().min(1).max(80) }))
+      .output(z.object({ ok: z.literal(true) })),
+    removeLocalModel: oc
+      .input(z.object({ id: z.string().min(1).max(80) }))
       .output(z.object({ ok: z.literal(true) })),
     setVoice: oc
       .input(
