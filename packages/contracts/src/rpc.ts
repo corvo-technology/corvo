@@ -74,6 +74,7 @@ import {
   GroupDetailSchema,
   GroupSchema,
   IntegrationCatalogResultSchema,
+  LOCAL_VOICE_PROVIDER_ID,
   McpServerConfigInput,
   McpServerSchema,
   MemoryDocumentSchema,
@@ -1264,11 +1265,17 @@ export const appContract = {
             baseUrl: z.string().max(2048).optional(),
             ttsModel: z.string().max(200).optional(),
             sttModel: z.string().max(200).optional(),
+            /** The local provider only: the language of the recordings. */
+            language: z.enum(["auto", "en", "pt"]).optional(),
             /** Where the connection becomes the default voice. */
             scope: SettingsScopeSchema.optional(),
           })
           .superRefine((input, ctx) => {
-            if (input.provider === OPENAI_COMPATIBLE_PROVIDER_ID) {
+            if (input.provider === LOCAL_VOICE_PROVIDER_ID) {
+              if (!input.sttModel?.trim()) {
+                ctx.addIssue({ code: "custom", path: ["sttModel"], message: "Pick a model." });
+              }
+            } else if (input.provider === OPENAI_COMPATIBLE_PROVIDER_ID) {
               if (!input.baseUrl?.trim()) {
                 ctx.addIssue({ code: "custom", path: ["baseUrl"], message: "Enter a server URL." });
               }

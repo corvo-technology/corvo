@@ -721,6 +721,12 @@ export interface VoiceTranscribeRequest {
   signal?: AbortSignal;
 }
 
+export interface VoiceTranscribeResult {
+  text: string;
+  /** The language the provider heard, as an ISO 639-1 code, when it says. */
+  language?: string;
+}
+
 export interface BackgroundJobPayloads {
   "run.continue": { runId: string };
   "routine.wakeup": { routineId: string; scheduledFor: string };
