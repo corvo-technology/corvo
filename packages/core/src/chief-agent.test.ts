@@ -32,6 +32,18 @@ describe("the Chief", () => {
         );
       });
 
+      it("unblocks a teammate with connect_app and does not send the owner to the Store", () => {
+        expect(text).toMatch(/connect_app[\s\S]*agent/);
+        expect(text).not.toMatch(
+          locale === "en" ? /tell the owner which one to connect/ : /diga ao dono qual conectar/,
+        );
+        expect(text).toMatch(
+          locale === "en"
+            ? /Be proactive[\s\S]*the blocker is yours/
+            : /Seja proativo[\s\S]*o bloqueio é seu/,
+        );
+      });
+
       it("says which language to speak first and to follow the person afterwards", () => {
         expect(text).toMatch(
           locale === "en"
