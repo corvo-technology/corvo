@@ -3,6 +3,7 @@ import type { PrismaClient, ThreadEvents } from "@corvo/db";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FleetDeps, FleetPrepareDeps, FleetRun } from "./fleet-tools.js";
 import {
+  addRoutineStep,
   createChildRoutine,
   instructionsVersionOf,
   listFleet,
@@ -114,6 +115,7 @@ function fakeFleet(input: {
       delete: vi.fn(async () => ({})),
       update: vi.fn(),
     },
+    routineStep: { create: vi.fn(async () => ({})) },
     botSection: {
       findMany: vi.fn(async () => (input.sections ?? []).map((name) => ({ name }))),
     },
@@ -1767,4 +1769,186 @@ describe("space bot management", () => {
       expect(prisma.bot.update).not.toHaveBeenCalled();
     },
   );
+});
+
+describe("routines that already exist", () => {
+  const existing = {
+    id: "routine-1",
+    name: "Daily brief",
+    bot: { name: "Writer" },
+    steps: [] as Array<Record<string, unknown>>,
+  };
+  const step = (position: number, botId: string, instruction: string) => ({
+    botId,
+    instruction,
+    position,
+    bot: { name: botId === "bot-scout" ? "Scout" : "Writer" },
+  });
+
+  it("refuses a second routine with the name an agent already has", async () => {
+    const { deps } = fakeFleet({ ...fleet, routines: [existing] });
+    const prepared = await prepareFleetRequest(deps, run, "create_child_routine", {
+      bot_name: "Writer",
+      name: "daily brief",
+      prompt: "Summarize the news",
+      cron: "0 9 * * *",
+    });
+    expect(prepared).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("add_routine_step"),
+    });
+    expect(prepared).toMatchObject({ error: expect.stringContaining("routine-1") });
+  });
+
+  it("shows which agent runs a new step and which one it follows", async () => {
+    const { deps } = fakeFleet({ ...fleet, routines: [existing] });
+    const prepared = await prepareFleetRequest(deps, run, "add_routine_step", {
+      routine_id: "routine-1",
+      bot_name: "Scout",
+      instruction: "Check the facts",
+    });
+    expect(prepared).toEqual({
+      ok: true,
+      canonical: {
+        routineId: "routine-1",
+        botId: "bot-scout",
+        botName: "Scout",
+        instruction: "Check the facts",
+      },
+      summary: {
+        title: "Add a step to “Daily brief”?",
+        lines: ["After Writer finishes, Scout runs it", "Instruction: Check the facts"],
+      },
+    });
+  });
+
+  it("follows the last step when the routine already has some", async () => {
+    const { deps } = fakeFleet({
+      ...fleet,
+      routines: [{ ...existing, steps: [step(2, "bot-scout", "Check the facts")] }],
+    });
+    const prepared = await prepareFleetRequest(deps, run, "add_routine_step", {
+      routine_id: "routine-1",
+      bot_name: "Writer",
+      instruction: "Rewrite it",
+    });
+    expect(prepared).toMatchObject({
+      ok: true,
+      summary: { lines: ["After Scout finishes, Writer runs it", "Instruction: Rewrite it"] },
+    });
+  });
+
+  it("refuses a step for an unknown routine, a full routine, or text it cannot show", async () => {
+    const none = fakeFleet(fleet);
+    expect(
+      await prepareFleetRequest(none.deps, run, "add_routine_step", {
+        routine_id: "missing",
+        bot_name: "Scout",
+        instruction: "Go",
+      }),
+    ).toMatchObject({ ok: false, error: expect.stringContaining("list_routines") });
+
+    const full = fakeFleet({
+      ...fleet,
+      routines: [
+        {
+          ...existing,
+          steps: [2, 3, 4, 5, 6].map((position) => step(position, "bot-scout", `Step ${position}`)),
+        },
+      ],
+    });
+    expect(
+      await prepareFleetRequest(full.deps, run, "add_routine_step", {
+        routine_id: "routine-1",
+        bot_name: "Scout",
+        instruction: "One more",
+      }),
+    ).toMatchObject({ ok: false, error: expect.stringContaining("up to 5 steps") });
+
+    const some = fakeFleet({ ...fleet, routines: [existing] });
+    expect(
+      await prepareFleetRequest(
+        some.deps,
+        run,
+        "add_routine_step",
+        { routine_id: "routine-1", bot_name: "Scout", instruction: "Use sk-fake-1" },
+        ["sk-fake-1"],
+      ),
+    ).toMatchObject({ ok: false, error: "instruction cannot contain credentials." });
+    expect(
+      await prepareFleetRequest(some.deps, run, "add_routine_step", {
+        routine_id: "routine-1",
+        bot_name: "Scout",
+        instruction: "Hide\u200Bthis",
+      }),
+    ).toMatchObject({ ok: false, error: "instruction contains invisible characters." });
+  });
+
+  it("appends the approved step after the last one", async () => {
+    const { prisma } = fakeFleet({
+      ...fleet,
+      routines: [{ ...existing, steps: [step(2, "bot-scout", "Check the facts")] }],
+    });
+    const result = await addRoutineStep(writeDeps(prisma), run, {
+      routineId: "routine-1",
+      botId: "bot-writer",
+      instruction: "Rewrite it",
+    });
+    expect(result).toEqual({
+      ok: true,
+      routineId: "routine-1",
+      name: "Daily brief",
+      position: 3,
+      botId: "bot-writer",
+      botName: "Writer",
+    });
+    expect(prisma.routineStep.create).toHaveBeenCalledWith({
+      data: {
+        routineId: "routine-1",
+        botId: "bot-writer",
+        instruction: "Rewrite it",
+        position: 3,
+      },
+    });
+  });
+
+  it("returns the identical step on a retry instead of adding it twice", async () => {
+    const { prisma } = fakeFleet({
+      ...fleet,
+      routines: [{ ...existing, steps: [step(2, "bot-scout", "Check the facts")] }],
+    });
+    const result = await addRoutineStep(writeDeps(prisma), run, {
+      routineId: "routine-1",
+      botId: "bot-scout",
+      instruction: "Check the facts",
+    });
+    expect(result).toMatchObject({ ok: true, position: 2 });
+    expect(prisma.routineStep.create).not.toHaveBeenCalled();
+  });
+
+  it("starts the steps at position 2, after the routine's own agent", async () => {
+    const { prisma } = fakeFleet({ ...fleet, routines: [existing] });
+    await addRoutineStep(writeDeps(prisma), run, {
+      routineId: "routine-1",
+      botId: "bot-scout",
+      instruction: "Check the facts",
+    });
+    expect(prisma.routineStep.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ position: 2 }),
+    });
+  });
+
+  it("asks to try again when another step took the position first", async () => {
+    const { prisma } = fakeFleet({ ...fleet, routines: [existing] });
+    prisma.routineStep.create.mockRejectedValueOnce(
+      Object.assign(new Error("duplicate"), { code: "P2002" }),
+    );
+    expect(
+      await addRoutineStep(writeDeps(prisma), run, {
+        routineId: "routine-1",
+        botId: "bot-scout",
+        instruction: "Check the facts",
+      }),
+    ).toEqual({ error: expect.stringContaining("try again") });
+  });
 });

@@ -15,6 +15,8 @@ function routine(over: Record<string, unknown> = {}) {
   return {
     id: "r1",
     name: "Morning summary",
+    prompt: "Summarize\nyesterday",
+    steps: [],
     crons: ["0 9 * * *"],
     timezone: "America/Sao_Paulo",
     active: true,
@@ -57,6 +59,22 @@ describe("listRoutines", () => {
     expect(listing.routines[0]!.schedule).toMatch(/9/);
     expect(listing.routines[1]).toMatchObject({ active: false, next_run: null, last_result: null });
     expect(listing.truncated).toBe(false);
+  });
+
+  it("shows the start of the prompt and the steps that follow, so a duplicate can be told apart", async () => {
+    const { prisma } = db([
+      routine({
+        prompt: `Check errors ${"x".repeat(400)}`,
+        steps: [{ position: 2, instruction: "Post  it\nto sales", bot: { name: "Writer" } }],
+      }),
+    ]);
+    const [first] = (await listRoutines({ prisma }, run)).routines;
+    expect(first?.prompt.startsWith("Check errors xxx")).toBe(true);
+    expect(first?.prompt.endsWith("…")).toBe(true);
+    expect(first?.prompt.length).toBeLessThanOrEqual(241);
+    expect(first?.steps).toEqual([
+      { position: 2, agent: "Writer", instruction: "Post it to sales" },
+    ]);
   });
 
   it("describes routines that have no times", async () => {

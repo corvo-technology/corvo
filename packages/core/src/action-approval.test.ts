@@ -66,6 +66,7 @@ describe("toolRequiresApproval", () => {
       "set_child_instructions",
       "set_child_bot_model",
       "create_child_routine",
+      "add_routine_step",
     ]) {
       expect(toolRequiresApproval(name, false)).toBe(true);
       expect(toolRequiresExplicitApproval(name)).toBe(true);

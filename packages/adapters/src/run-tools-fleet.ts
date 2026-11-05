@@ -12,6 +12,7 @@ import { uncertainEffectResult } from "./approval-effect.js";
 import { archiveSpawnedBot, spawnBot } from "./child-bots.js";
 import { listRoutines } from "./fleet-routines.js";
 import {
+  addRoutineStep,
   createChildRoutine,
   createFleetGroup,
   listFleet,
@@ -269,6 +270,11 @@ export const fleetTools: ToolHandlers = {
     const { deps } = ctx;
     const { args } = call;
     return call.finish(await createChildRoutine(deps, ctx.fleetRun, args));
+  },
+  async add_routine_step(ctx, call) {
+    const { deps } = ctx;
+    const { args } = call;
+    return call.finish(await addRoutineStep(deps, ctx.fleetRun, args));
   },
   async update_bot(ctx, call) {
     const { deps, run, bot, thread, context } = ctx;

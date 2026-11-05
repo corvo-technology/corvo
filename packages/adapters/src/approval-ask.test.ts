@@ -121,6 +121,7 @@ describe("bot management approval cards", () => {
     "set_child_instructions",
     "set_child_bot_model",
     "create_child_routine",
+    "add_routine_step",
   ])("builds the %s card from the resolved summary with allow and deny only", (toolName) => {
     const block = buildApprovalAskBlock(
       "effect-1",

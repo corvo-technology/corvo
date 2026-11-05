@@ -418,7 +418,9 @@ export function uncertainEffectResult(
   args?: Record<string, unknown>,
 ): UncertainEffectResult {
   const verify =
-    toolName === "set_child_bot_model" || toolName === "create_child_routine"
+    toolName === "set_child_bot_model" ||
+    toolName === "create_child_routine" ||
+    toolName === "add_routine_step"
       ? "Ask the owner to verify the outcome before proposing another change; do not retry automatically."
       : changesTheFleet(toolName, args)
         ? "Call list_fleet to check whether it happened before retrying."

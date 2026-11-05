@@ -50,6 +50,7 @@ const EXPLICIT_APPROVAL_BUILTIN_TOOLS = new Set([
   "set_child_instructions",
   "set_child_bot_model",
   "create_child_routine",
+  "add_routine_step",
 ]);
 
 const UNATTENDED_SAFE_BUILTIN_TOOLS = new Set([

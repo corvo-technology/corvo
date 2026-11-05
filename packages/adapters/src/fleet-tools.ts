@@ -11,6 +11,8 @@ import {
   GROUP_MEMBER_MAX,
   GROUP_MEMBER_MIN,
   isAttachmentImageMimeType,
+  ROUTINE_MAX_STEPS,
+  RoutineStepInputSchema,
   ThinkingLevelSchema,
   TimeZoneSchema,
   UpdateGroupInput,
@@ -39,6 +41,7 @@ import type { ExecutorDeps } from "./executor-deps.js";
 import type { BotModelChangeDeps } from "./model-selection.js";
 import { validateBotModelChange } from "./model-selection.js";
 import { listPiCatalog, scriptedCatalogEntry } from "./pi-models.js";
+import { isUniqueViolation } from "./run-messages.js";
 import type { ScheduleToolDeps } from "./schedule-tools.js";
 import {
   compactScheduleInput,
@@ -139,6 +142,8 @@ function prepareByTool(
       return prepareChildModel(deps, run, args);
     case "create_child_routine":
       return prepareChildRoutine(deps, run, args, secrets);
+    case "add_routine_step":
+      return prepareRoutineStep(deps, run, args, secrets);
   }
 }
 
@@ -374,6 +379,23 @@ async function prepareChildRoutine(
   const child = await resolveBot(deps.prisma, run, args);
   if ("error" in child) return child;
   if (!child.thread) return refuse("That bot has no thread.");
+  // A second routine with the same name is the duplicate the owner does not want: point at the
+  // one that exists so the model extends it or asks, instead of putting up a second card.
+  const sameName = await deps.prisma.routine.findFirst({
+    where: {
+      spaceId: run.spaceId,
+      userId: run.userId,
+      botId: child.id,
+      active: true,
+      name: { equals: name, mode: "insensitive" },
+    },
+    select: { id: true },
+  });
+  if (sameName) {
+    return refuse(
+      `${singleLine(child.name)} already has a routine named "${name}" (routine_id ${sameName.id}). Use add_routine_step to add work after it, or ask the owner what to change.`,
+    );
+  }
 
   const when = formatTime(resolved.nextRunAt, timezone);
   return {
@@ -406,6 +428,111 @@ async function prepareChildRoutine(
       ],
     },
   };
+}
+
+async function prepareRoutineStep(
+  deps: FleetPrepareDeps,
+  run: FleetRun,
+  args: Record<string, unknown>,
+  secrets: readonly string[],
+): Promise<FleetPrepared> {
+  const routineId = text(args.routine_id);
+  const instruction = text(args.instruction);
+  if (!routineId) return refuse("routine_id is required. Call list_routines for it.");
+  if (!instruction) return refuse("instruction is required.");
+  const parsed = RoutineStepInputSchema.shape.instruction.safeParse(instruction);
+  if (!parsed.success) return refuse(`instruction: ${issueMessage(parsed.error)}`);
+  const credential = credentialField({ instruction }, secrets);
+  if (credential) return refuse(credential);
+  const hidden = invisibleField({ instruction });
+  if (hidden) return refuse(hidden);
+
+  const routine = await findStepRoutine(deps.prisma, run, routineId);
+  if (!routine) return refuse("No routine with that id. Call list_routines for the ids.");
+  if (routine.steps.length >= ROUTINE_MAX_STEPS) {
+    return refuse(`A routine takes up to ${ROUTINE_MAX_STEPS} steps after its first.`);
+  }
+  const agent = await resolveBot(deps.prisma, run, args);
+  if ("error" in agent) return agent;
+
+  const lastAgent = routine.steps.at(-1)?.bot.name ?? routine.bot.name;
+  return {
+    ok: true,
+    canonical: { routineId: routine.id, botId: agent.id, botName: agent.name, instruction },
+    summary: {
+      title: `Add a step to “${cardName(routine.name)}”?`,
+      lines: [
+        `After ${singleLine(lastAgent)} finishes, ${singleLine(agent.name)} runs it`,
+        `Instruction: ${instruction}`,
+      ],
+    },
+  };
+}
+
+async function findStepRoutine(prisma: PrismaClient, run: FleetRun, routineId: string) {
+  return prisma.routine.findFirst({
+    where: { id: routineId, spaceId: run.spaceId, userId: run.userId, bot: { archivedAt: null } },
+    select: {
+      id: true,
+      name: true,
+      bot: { select: { name: true } },
+      steps: {
+        orderBy: { position: "asc" },
+        select: {
+          botId: true,
+          instruction: true,
+          position: true,
+          bot: { select: { name: true } },
+        },
+      },
+    },
+  });
+}
+
+/** Append the approved step to the routine, or return the identical one it already has. */
+export async function addRoutineStep(
+  deps: { prisma: PrismaClient },
+  run: FleetRun,
+  canonical: Record<string, unknown>,
+) {
+  const routineId = text(canonical.routineId);
+  const botId = text(canonical.botId);
+  const instruction = text(canonical.instruction);
+  if (!routineId || !botId || !instruction) return { error: "The approved step is incomplete." };
+  const routine = await findStepRoutine(deps.prisma, run, routineId);
+  if (!routine) return { error: NOT_FOUND };
+  const agent = await resolveBot(deps.prisma, run, { bot_id: botId });
+  if ("error" in agent) return { error: agent.error };
+  const existing = routine.steps.find(
+    (step) => step.botId === agent.id && step.instruction === instruction,
+  );
+  const result = (position: number) => ({
+    ok: true as const,
+    routineId: routine.id,
+    name: singleLine(routine.name),
+    position,
+    botId: agent.id,
+    botName: singleLine(agent.name),
+  });
+  if (existing) return result(existing.position);
+  if (routine.steps.length >= ROUTINE_MAX_STEPS) {
+    return { error: `A routine takes up to ${ROUTINE_MAX_STEPS} steps after its first.` };
+  }
+  const position = (routine.steps.at(-1)?.position ?? 1) + 1;
+  try {
+    await deps.prisma.routineStep.create({
+      data: { routineId: routine.id, botId: agent.id, instruction, position },
+    });
+  } catch (error) {
+    // The unique position means another step landed first; the owner can ask again.
+    if (isUniqueViolation(error)) {
+      return {
+        error: "The routine changed while the card waited. Call list_routines and try again.",
+      };
+    }
+    throw error;
+  }
+  return result(position);
 }
 
 async function prepareChildInstructions(

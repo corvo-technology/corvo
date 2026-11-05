@@ -40,12 +40,14 @@ message it answers came from you in the app.
 - `set_child_instructions`: replaces a child bot's instructions. The bot passes the version it read
   with `list_fleet`.
 - `set_child_bot_model`: sets or clears a child bot's model and thinking level.
-- `create_child_routine`: schedules a prompt for a child bot.
+- `list_routines`: lists the routines of the bots it manages, with the start of each prompt and its steps.
+- `create_child_routine`: schedules a prompt for a child bot. It is refused when that bot already has an active routine of the same name.
+- `add_routine_step`: adds a step to an existing routine: when the last step finishes, the named bot gets the instruction and that step's answer. A routine takes up to 5 steps after its first.
 
 ## Approval
 
-`create_group`, `update_group`, `set_child_instructions`, `set_child_bot_model` and
-`create_child_routine` always show an approval card. Auto-review and "Always allow" do not skip it,
+`create_group`, `update_group`, `set_child_instructions`, `set_child_bot_model`,
+`create_child_routine` and `add_routine_step` always show an approval card. Auto-review and "Always allow" do not skip it,
 and the card offers allow or deny only. The card lists what will actually run, resolved before the
 pause:
 
@@ -55,6 +57,7 @@ pause:
 - Model change: the current and the new model (From and To), and a Thinking line when the thinking
   level is set or reset.
 - Routine: the prompt and the resolved time.
+- Routine step: the bot that runs it, the bot it follows and the instruction.
 
 If the request cannot be shown whole on the card, it is refused instead of cut off. If the child's
 instructions, model or thinking level change while the card waits, approving does not overwrite them;
@@ -89,4 +92,4 @@ appends a `group.updated` event to the group's thread. Changes to a bot append `
 bot's thread.
 
 Routines a bot creates for a child are managed by you in the child's **Routines** screen. A bot
-cannot list or cancel them.
+can list them with `list_routines` but cannot cancel them.
