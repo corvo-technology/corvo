@@ -14,6 +14,7 @@ import type {
   ConnectorRegistry,
   FaviconResolver,
   IntegrationProviderSettings,
+  LocalSpeech,
   McpConnector,
   McpOAuthBroker,
   MemoryProviderResolver,
@@ -29,7 +30,6 @@ import type { Auth } from "@corvo/auth";
 import type { NavLink } from "@corvo/contracts";
 import type { BoardEvents, PrismaClient, ThreadEvents } from "@corvo/db";
 import type { BillingService } from "./billing.js";
-import type { LocalSpeech } from "./local-speech.js";
 import { accountRoutes } from "./routes/account.js";
 import { boardsRoutes } from "./routes/boards.js";
 import { botsRoutes } from "./routes/bots.js";

@@ -1,5 +1,6 @@
 import type { AdapterContext, SecretStore } from "@corvo/adapter-kit";
 import { VoiceAccountError } from "@corvo/adapter-kit";
+import type { LocalSpeech } from "@corvo/adapters";
 import {
   createVoiceProvider,
   isFishSpeechModelId,
@@ -45,7 +46,6 @@ import { getLogger } from "@corvo/logging";
 import { ORPCError } from "@orpc/server";
 import type { Context, Hono } from "hono";
 import { readBoundedBody } from "./http-body.js";
-import type { LocalSpeech } from "./local-speech.js";
 import { withSerializableRetry } from "./serializable-retry.js";
 import type { SpeechSummarizer } from "./speech-summary.js";
 

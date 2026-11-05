@@ -20,6 +20,7 @@ import {
   createDeadJobPruner,
   createIdleComputerSweeper,
   createJobReconciler,
+  createLocalSpeech,
   createMessagingContextLoader,
   createModelCreditReconciler,
   createPostgresReconciliationLeadership,
@@ -314,6 +315,12 @@ async function main() {
     messaging,
     cloudAgent,
     notifications,
+    // The desktop app's own engine sets the stack token for the worker as it does for the API.
+    localSpeech: createLocalSpeech({
+      dataDir,
+      desktopStackToken: process.env.CORVO_DESKTOP_STACK_TOKEN,
+    }),
+    allowPrivateEndpoint,
   });
   const reconciler = createJobReconciler({
     prisma,

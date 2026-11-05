@@ -1,5 +1,7 @@
 import path from "node:path";
-import { LocalModelStore, SherpaWhisperTranscriber, type SpeechTranscriber } from "@corvo/adapters";
+import { LocalModelStore } from "./local-speech-models.js";
+import { SherpaWhisperTranscriber } from "./sherpa-whisper-transcriber.js";
+import type { SpeechTranscriber } from "./speech-transcriber.js";
 
 /** What speech on the owner's own computer needs: where models live and the engine that reads them. */
 export interface LocalSpeech {

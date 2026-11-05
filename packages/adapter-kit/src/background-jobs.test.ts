@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  audioTranscribeJob,
   dispatchBackgroundJob,
   HISTORY_COMPACT_MAX_ATTEMPTS,
   historyCompactJob,
@@ -30,6 +31,7 @@ function handlers(): BackgroundJobHandlers {
     "messaging.credential-cleanup": vi.fn(async () => undefined),
     "cloud_agent.poll": vi.fn(async () => undefined),
     "push.receipt": vi.fn(async () => undefined),
+    "audio.transcribe": vi.fn(async () => undefined),
   };
 }
 
@@ -152,5 +154,23 @@ describe("wikiCurateJob", () => {
       messageId: "m",
     });
     expect(() => parseBackgroundJob("wiki.curate", {})).toThrow();
+  });
+});
+
+describe("audio.transcribe", () => {
+  it("parses a job that names a run, and rejects one that does not", () => {
+    expect(parseBackgroundJob("audio.transcribe", { runId: "run-1" })).toEqual({
+      name: "audio.transcribe",
+      payload: { runId: "run-1" },
+    });
+    expect(() => parseBackgroundJob("audio.transcribe", { runId: "" })).toThrow();
+    expect(() => parseBackgroundJob("audio.transcribe", {})).toThrow();
+  });
+
+  it("is keyed by run, so a repeated enqueue is one job", () => {
+    const first = audioTranscribeJob("run-1");
+    expect(first).toMatchObject({ name: "audio.transcribe", payload: { runId: "run-1" } });
+    expect(first.replaceKey).toBe(audioTranscribeJob("run-1").replaceKey);
+    expect(first.replaceKey).not.toBe(audioTranscribeJob("run-2").replaceKey);
   });
 });

@@ -36,6 +36,7 @@ import {
   createConnectorStack,
   createIdleComputerSweeper,
   createJobReconciler,
+  createLocalSpeech,
   createMessagingContextLoader,
   createMessagingTeamChatHistory,
   createMessagingTeamChatSender,
@@ -158,7 +159,6 @@ import { loadEnv } from "./env.js";
 import { healthRoutes } from "./health.js";
 import { mountLocalEntryRoute } from "./local-entry.js";
 import { mountLocalComputerHost } from "./local-settings.js";
-import { createLocalSpeech } from "./local-speech.js";
 import { assertMcpRemoteEndpoint } from "./mcp-servers.js";
 import {
   createMessagingInboundHandler,
@@ -651,6 +651,8 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     deploymentModelConfigured: env.deploymentModelConfigured,
     messaging,
     cloudAgent,
+    localSpeech,
+    allowPrivateEndpoint: env.mcpAllowPrivateEndpoint,
   });
   if (inMemoryJobs) {
     await inMemoryJobs.start(jobHandlers);

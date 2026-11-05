@@ -51,6 +51,8 @@ interface Setup {
   bytes?: Uint8Array;
   respond?: ConstructorParameters<typeof ScriptedTranscriber>[0];
   localEngine?: boolean;
+  /** The state of the model the local store reports; "ready" by default. */
+  modelState?: "ready" | "absent";
   ensure?: (id: string) => Promise<string>;
   createProvider?: AudioTranscriptionDeps["createProvider"];
 }
@@ -59,6 +61,16 @@ function setup(options: Setup = {}) {
   const upsert = vi.fn(async () => ({}));
   const get = vi.fn(async () => options.bytes ?? wav());
   const ensure = vi.fn(options.ensure ?? (async (id: string) => `/models/${id}`));
+  const list = vi.fn(async () =>
+    ["base", "small"].map((id) => ({
+      id,
+      label: id,
+      sizeBytes: 5_000_000,
+      languages: ["en", "pt"],
+      state: options.modelState ?? "ready",
+      bytesDone: 0,
+    })),
+  );
   const transcriber = new ScriptedTranscriber(options.respond);
   const deps: AudioTranscriptionDeps = {
     prisma: {
@@ -73,7 +85,9 @@ function setup(options: Setup = {}) {
       },
     } as unknown as PrismaClient,
     artifacts: { get },
-    ...(options.localEngine === false ? {} : { localSpeech: { store: { ensure }, transcriber } }),
+    ...(options.localEngine === false
+      ? {}
+      : { localSpeech: { store: { ensure, list }, transcriber } }),
     loadVoiceCredential: vi.fn(async () => options.credential ?? null),
     hasConsent: vi.fn(async () => options.consent ?? true),
     ...(options.createProvider ? { createProvider: options.createProvider } : {}),
@@ -195,7 +209,7 @@ describe("transcribeAudioArtifact", () => {
     const mp3 = setup({ bytes: new Uint8Array([0x49, 0x44, 0x33, 4, 0, 0, 0, 0]) });
     expect(await run(mp3.deps)).toEqual({ status: "failed", reason: "unsupported-format" });
     const broken = setup({
-      bytes: new Uint8Array(Buffer.from("OggS" + "\0".repeat(80), "latin1")),
+      bytes: new Uint8Array(Buffer.from(`OggS${"\0".repeat(80)}`, "latin1")),
     });
     expect(await run(broken.deps)).toEqual({ status: "failed", reason: "unreadable" });
     expect(mp3.ensure).not.toHaveBeenCalled();
@@ -213,6 +227,54 @@ describe("transcribeAudioArtifact", () => {
     const { deps, get } = setup({ artifact: null });
     expect(await run(deps)).toEqual({ status: "failed", reason: "unavailable" });
     expect(get).not.toHaveBeenCalled();
+  });
+});
+
+describe("announcing a model download", () => {
+  it("tells the caller once, with the size, when the model is not on this computer yet", async () => {
+    const onPreparingModel = vi.fn(async () => undefined);
+    const { deps } = setup({ modelState: "absent" });
+    await transcribeAudioArtifact(deps, { artifactId: "art-1", actor, onPreparingModel });
+    expect(onPreparingModel).toHaveBeenCalledTimes(1);
+    expect(onPreparingModel).toHaveBeenCalledWith({ id: "base", sizeBytes: 5_000_000 });
+  });
+
+  it("stays quiet when the model is ready, or the transcript is already stored", async () => {
+    const ready = vi.fn(async () => undefined);
+    await transcribeAudioArtifact(setup().deps, {
+      artifactId: "art-1",
+      actor,
+      onPreparingModel: ready,
+    });
+    const stored = vi.fn(async () => undefined);
+    await transcribeAudioArtifact(
+      setup({ modelState: "absent", stored: { text: "olá", language: "pt" } }).deps,
+      { artifactId: "art-1", actor, onPreparingModel: stored },
+    );
+    expect(ready).not.toHaveBeenCalled();
+    expect(stored).not.toHaveBeenCalled();
+  });
+
+  it("stays quiet for a hosted provider, and a failing announcement does not stop the transcription", async () => {
+    const hosted = vi.fn(async () => undefined);
+    await transcribeAudioArtifact(
+      setup({
+        modelState: "absent",
+        credential: { provider: "openai", secret: "sk-test-12345" },
+        createProvider: () => ({ transcribe: async () => ({ text: "hi" }) }) as never,
+      }).deps,
+      { artifactId: "art-1", actor, onPreparingModel: hosted },
+    );
+    expect(hosted).not.toHaveBeenCalled();
+    const failing = vi.fn().mockRejectedValue(new Error("chat is down"));
+    const { deps } = setup({ modelState: "absent" });
+    expect(
+      await transcribeAudioArtifact(deps, {
+        artifactId: "art-1",
+        actor,
+        onPreparingModel: failing,
+      }),
+    ).toMatchObject({ status: "transcribed" });
   });
 });
 

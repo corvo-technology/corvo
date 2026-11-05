@@ -126,6 +126,32 @@ export function promptTextForAttachments(
   return [caption, ...notes].filter(Boolean).join("\n\n") || "See attached files.";
 }
 
+/**
+ * Puts each attachment's note right after its file line in a prompt that was already built, so a
+ * connectors line or anything else the prompt carries stays where it is. A note already in the
+ * prompt is not added again; one whose file line is missing goes at the end.
+ */
+export function insertAttachmentNotes(
+  prompt: string,
+  artifacts: Array<{ name: string; mimeType: string; size: number; note?: string | undefined }>,
+): string {
+  let out = prompt;
+  const unplaced: string[] = [];
+  for (const artifact of artifacts) {
+    const { note } = artifact;
+    if (!note || out.includes(note)) continue;
+    const line = `User attached file ${JSON.stringify(artifact.name)} (${artifact.mimeType}, ${artifact.size} bytes).`;
+    const at = out.indexOf(line);
+    if (at === -1) {
+      unplaced.push(note);
+      continue;
+    }
+    const end = at + line.length;
+    out = `${out.slice(0, end)}\n\n${note}${out.slice(end)}`;
+  }
+  return unplaced.length > 0 ? [out, ...unplaced].join("\n\n") : out;
+}
+
 export function blocksToAgentHistoryText(blocks: MessageBlock[]): string {
   return blocks
     .map((block) => {

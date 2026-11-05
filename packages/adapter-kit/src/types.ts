@@ -749,6 +749,8 @@ export interface BackgroundJobPayloads {
   "cloud_agent.poll": { agentId: string };
   /** Read an Expo push receipt; the token is identified by its digest, never stored. */
   "push.receipt": { userId: string; ticketId: string; tokenDigest: string };
+  /** Transcribe the audio of a queued run's message, then start the run. */
+  "audio.transcribe": { runId: string };
 }
 
 export type BackgroundJobName = keyof BackgroundJobPayloads;

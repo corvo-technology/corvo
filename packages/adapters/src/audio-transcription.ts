@@ -6,6 +6,7 @@ import { findDefaultVoiceCredential } from "@corvo/db";
 import { aiRecipient } from "./ai-consent.js";
 import { AudioDecodeError, UnsupportedAudioFormatError } from "./audio-decode.js";
 import type { LocalModelStore } from "./local-speech-models.js";
+import { parseLocalVoiceSecret } from "./local-voice.js";
 import {
   OPENAI_COMPATIBLE_VOICE_PROVIDER_ID,
   openAiCompatibleVoiceServer,
@@ -34,7 +35,10 @@ export interface AudioTranscriptionDeps {
   prisma: PrismaClient;
   artifacts: Pick<ArtifactStore, "get">;
   /** Present only on the desktop app's own engine. */
-  localSpeech?: { store: Pick<LocalModelStore, "ensure">; transcriber: SpeechTranscriber };
+  localSpeech?: {
+    store: Pick<LocalModelStore, "ensure" | "list">;
+    transcriber: SpeechTranscriber;
+  };
   /** The account's default voice connection: its provider and its secret. */
   loadVoiceCredential(actor: Actor): Promise<{ provider: string; secret: string } | null>;
   /** Whether the owner allowed this recipient to receive audio. */
@@ -75,7 +79,8 @@ export function prismaConsent(prisma: PrismaClient) {
 
 type Chosen =
   | { failure: TranscriptionFailure }
-  | { kind: "local" | "hosted"; provider: VoiceProvider; secret: string };
+  | { kind: "local"; provider: VoiceProvider; secret: string; modelId: string }
+  | { kind: "hosted"; provider: VoiceProvider; secret: string };
 
 /**
  * A selected provider that transcribes is used, and nothing else: a hosted one that fails is not
@@ -93,6 +98,7 @@ async function chooseProvider(deps: AudioTranscriptionDeps, actor: Actor): Promi
           kind: "local",
           provider: create(LOCAL_VOICE_PROVIDER_ID, { local: deps.localSpeech }),
           secret: credential.secret,
+          modelId: parseLocalVoiceSecret(credential.secret).model,
         };
       }
       const endpoint =
@@ -118,6 +124,7 @@ async function chooseProvider(deps: AudioTranscriptionDeps, actor: Actor): Promi
       kind: "local",
       provider: create(LOCAL_VOICE_PROVIDER_ID, { local: deps.localSpeech }),
       secret: JSON.stringify({ model: DEFAULT_LOCAL_MODEL, language: "auto" }),
+      modelId: DEFAULT_LOCAL_MODEL,
     };
   } catch {
     return { failure: "provider-failed" };
@@ -141,7 +148,13 @@ const failed = (reason: TranscriptionFailure): TranscriptionOutcome => ({
 /** Transcribes one audio artifact of the actor's, once: a stored transcript is returned as is. */
 export async function transcribeAudioArtifact(
   deps: AudioTranscriptionDeps,
-  input: { artifactId: string; actor: Actor; signal?: AbortSignal },
+  input: {
+    artifactId: string;
+    actor: Actor;
+    signal?: AbortSignal;
+    /** Called once, before a model that is not on this computer yet starts downloading. */
+    onPreparingModel?: (model: { id: string; sizeBytes: number }) => Promise<void>;
+  },
 ): Promise<TranscriptionOutcome> {
   const { artifactId, actor } = input;
   const artifact = await deps.prisma.artifact.findFirst({
@@ -181,6 +194,18 @@ export async function transcribeAudioArtifact(
     audio = await deps.artifacts.get(artifact.storageKey, context);
   } catch {
     return failed("unavailable");
+  }
+  if (chosen.kind === "local" && input.onPreparingModel && deps.localSpeech) {
+    try {
+      const model = (await deps.localSpeech.store.list()).find(
+        (entry) => entry.id === chosen.modelId,
+      );
+      if (model && model.state !== "ready") {
+        await input.onPreparingModel({ id: model.id, sizeBytes: model.sizeBytes });
+      }
+    } catch {
+      // An announcement that cannot be made must not stop the transcription.
+    }
   }
   try {
     const result = await chosen.provider.transcribe?.(
