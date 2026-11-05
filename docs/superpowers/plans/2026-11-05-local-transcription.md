@@ -51,7 +51,9 @@ The most likely inputs and conditions the spec leaves implicit. Each has a test 
 
 ---
 
-### Task 1: Engine spike
+### Task 1: Engine spike (done, see the record)
+
+Result: `docs/superpowers/specs/2026-11-05-local-transcription-engine-spike.md`. Verdict go, on macOS Apple Silicon under Electron 45 and in a worker thread; Windows and Linux are not run and are proven by the desktop release build in Task 11. The steps below are kept as the record of what was done.
 
 Settles the engine and fills every model constant the later tasks need. If it fails, stop and return to the owner; do not continue on a guess.
 
@@ -62,12 +64,12 @@ Settles the engine and fills every model constant the later tasks need. If it fa
 **Interfaces:**
 - Produces: the chosen engine and package version; for each offered model its `id`, label, size in bytes, SHA-256, download URL (fixed origin) and the files the engine needs; whether the Ogg/Opus decoder works under the desktop engine's Node runtime; which audio formats decode.
 
-- [ ] **Step 1: Generate test audio with no real voices.** Use the operating system's text to speech to produce a short English clip and a short Portuguese clip, then convert to 16 kHz mono WAV and to Ogg/Opus. Keep them out of the repo.
-- [ ] **Step 2: Run the engine under plain Node.** Install the engine's Node package and a multilingual Whisper model. Transcribe both clips with language unset, then with each language set. Record the text, the detected language, the time and the peak memory.
-- [ ] **Step 3: Run it under the desktop engine's runtime.** Start the same script with the desktop app's Electron binary and `ELECTRON_RUN_AS_NODE=1`, as the embedded engine does (`apps/desktop/src/embedded-engine.ts`). Record whether the native addon loads. Find how the packaged app must unpack it (`git grep -l asarUnpack apps/desktop`).
-- [ ] **Step 4: Check the other systems.** Confirm the package publishes binaries for macOS (arm64, x64), Windows (x64, arm64) and Linux (x64, arm64). Run the script on Windows and Linux through a throwaway CI job or a machine you have; record the result honestly, including what was not run.
-- [ ] **Step 5: Decode check.** Decode the Ogg/Opus clip with the WebAssembly decoder under the same runtime. Record which of wav, ogg/opus, mp3, m4a and webm decode.
-- [ ] **Step 6: Write the record and commit.** Include the model table with real digests, the fallback decision (whisper.cpp) if the engine fails, and a one-line verdict.
+- [x] **Step 1: Generate test audio with no real voices.** Use the operating system's text to speech to produce a short English clip and a short Portuguese clip, then convert to 16 kHz mono WAV and to Ogg/Opus. Keep them out of the repo.
+- [x] **Step 2: Run the engine under plain Node.** Install the engine's Node package and a multilingual Whisper model. Transcribe both clips with language unset, then with each language set. Record the text, the detected language, the time and the peak memory.
+- [x] **Step 3: Run it under the desktop engine's runtime.** Start the same script with the desktop app's Electron binary and `ELECTRON_RUN_AS_NODE=1`, as the embedded engine does (`apps/desktop/src/embedded-engine.ts`). Record whether the native addon loads. Find how the packaged app must unpack it (`git grep -l asarUnpack apps/desktop`).
+- [x] **Step 4: Check the other systems.** Confirm the package publishes binaries for macOS (arm64, x64), Windows (x64, arm64) and Linux (x64, arm64). Run the script on Windows and Linux through a throwaway CI job or a machine you have; record the result honestly, including what was not run.
+- [x] **Step 5: Decode check.** Decode the Ogg/Opus clip with the WebAssembly decoder under the same runtime. Record which of wav, ogg/opus, mp3, m4a and webm decode.
+- [x] **Step 6: Write the record and commit.** Include the model table with real digests, the fallback decision (whisper.cpp) if the engine fails, and a one-line verdict.
 
 ```bash
 git add docs/superpowers/specs/2026-11-05-local-transcription-engine-spike.md
@@ -112,8 +114,8 @@ git commit -m "feat(contracts): add the audio transcription job and local speech
 **Interfaces:**
 - Consumes: the model table from Task 1.
 - Produces:
-  - `export interface LocalSpeechModelSpec { id: string; label: string; sizeBytes: number; sha256: string; url: string; languages: readonly string[] }` and `export const LOCAL_SPEECH_MODELS: readonly LocalSpeechModelSpec[]` (values from the spike).
-  - `export class LocalModelStore { constructor(options: { dir: string; fetch?: typeof fetch; stallMs?: number; models?: readonly LocalSpeechModelSpec[] }); list(): Promise<LocalSpeechModelInfo[]>; ensure(id: string, options?: { signal?: AbortSignal }): Promise<string>; cancel(id: string): void; remove(id: string): Promise<void> }`. `ensure` resolves to the model directory. `LocalSpeechModelInfo` is the Task 2 contract shape.
+  - `export interface LocalSpeechModelSpec { id: string; label: string; sizeBytes: number; sha256: string; url: string; languages: readonly string[] }` and `export const LOCAL_SPEECH_MODELS: readonly LocalSpeechModelSpec[]` (values from the spike record; the digests there come from one download each and must be checked against a second download before they are pinned). Default model: base; better model: small.
+  - `export class LocalModelStore { constructor(options: { dir: string; fetch?: typeof fetch; stallMs?: number; models?: readonly LocalSpeechModelSpec[] }); list(): Promise<LocalSpeechModelInfo[]>; ensure(id: string, options?: { signal?: AbortSignal }): Promise<string>; cancel(id: string): void; remove(id: string): Promise<void> }`. `ensure` resolves to the model directory. After extraction it keeps only the int8 encoder, the int8 decoder and the tokens file (the archives also hold fp32 copies the engine does not need). `LocalSpeechModelInfo` is the Task 2 contract shape.
 
 - [ ] **Step 1: Write the failing tests** against a local HTTP server that serves a fake archive:
   - `ensure downloads, verifies the digest and returns the directory`.
@@ -143,7 +145,7 @@ git commit -m "feat(contracts): add the audio transcription job and local speech
 
 - [ ] **Step 1: Write the failing tests.** `decodes Ogg/Opus to 16 kHz mono with the expected duration`; `decodes wav`; `a format the spike did not confirm throws UnsupportedAudioFormatError`; `a corrupt file throws and does not hang` (Review Focus 1); `an empty buffer throws`.
 - [ ] **Step 2: Run to verify failure.**
-- [ ] **Step 3: Implement** with the WebAssembly Ogg/Opus decoder and a resampler to 16 kHz mono. Supported formats are exactly those the spike confirmed.
+- [ ] **Step 3: Implement** with the WebAssembly Ogg/Opus decoder and a resampler to 16 kHz mono. Supported formats are exactly those the spike confirmed: WAV and Ogg/Opus. mp3, m4a and webm throw `UnsupportedAudioFormatError`, and the pipeline reports them as not transcribed.
 - [ ] **Step 4: Run to verify pass,** typecheck, lint.
 - [ ] **Step 5: Commit** `feat(adapters): decode voice notes to speech-ready audio`.
 
@@ -166,7 +168,7 @@ git commit -m "feat(contracts): add the audio transcription job and local speech
 
 - [ ] **Step 1: Write the failing tests.** `the catalog lists local only on a local engine`; `createVoiceProvider("local") builds a provider that transcribes through the scripted transcriber and returns the detected language`; `local never reaches the network` (no fetch is called); `the language override is passed through`; `synthesize throws`.
 - [ ] **Step 2: Run to verify failure.**
-- [ ] **Step 3: Implement.** `LocalVoiceProvider.transcribe` calls `decodeAudio`, then `store.ensure(modelId)`, then the transcriber. The model id and language come from the credential plaintext (Task 6).
+- [ ] **Step 3: Implement.** The adapter never calls engine functions that return native buffers (for example `readWave`), because Electron forbids them; it passes the decoded samples to `acceptWaveform` and reads the detected language from the result's `lang`. `LocalVoiceProvider.transcribe` calls `decodeAudio`, then `store.ensure(modelId)`, then the transcriber. The model id and language come from the credential plaintext (Task 6).
 - [ ] **Step 4: Run to verify pass,** plus a real-engine smoke test marked to run only when `RUN_LOCAL_SPEECH_ENGINE=1`, using the spike's model; typecheck, lint.
 - [ ] **Step 5: Commit** `feat(adapters): add the local voice provider for transcription`.
 
