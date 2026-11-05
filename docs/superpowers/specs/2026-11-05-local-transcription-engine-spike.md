@@ -48,7 +48,7 @@ Confirmed: WAV (parsed in JavaScript) and Ogg/Opus. Not tried: mp3, m4a, webm. T
 
 ## Not verified
 
-- Windows and Linux. The package publishes binaries for macOS (arm64, x64), Windows (x64, arm64, ia32) and Linux (x64, arm64), and that is all that was checked. The desktop release build runs on each system and is where this must be proven.
-- The packaged app. The engine was run from a plain folder, not from the packaged archive. How the native files must be unpacked is still to be found in Task 11.
+- Windows and Linux (also not run in Task 11). The package publishes binaries for macOS (arm64, x64), Windows (x64, arm64, ia32) and Linux (x64, arm64), and that is all that was checked. The desktop release build runs on each system and is where this must be proven.
+- The packaged app, on Windows and Linux. On macOS (Apple Silicon) it was checked in Task 11: the engine resolves from inside `app.asar`, loads its unpacked native files, and transcribes a Portuguese clip through the adapter's worker, using the packaged app's own runtime.
 - Accuracy on real, noisy voice notes, and on audio longer than a few seconds.
 - The `turbo` model, and any model other than `base` and `small`.

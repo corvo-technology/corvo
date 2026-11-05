@@ -111,6 +111,9 @@ importers:
       koffi:
         specifier: 3.3.4
         version: 3.3.4
+      sherpa-onnx-node:
+        specifier: 2.0.1
+        version: 2.0.1
     optionalDependencies:
       '@embedded-postgres/darwin-arm64':
         specifier: 18.4.0-beta.17

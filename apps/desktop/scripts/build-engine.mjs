@@ -1,7 +1,8 @@
 // Bundles the local engine the desktop app runs on this computer: the API, the worker and the
 // database migrations, so an installed app needs neither Docker nor a checkout. The output goes
 // into dist/, which is packed into the app. Packages with native code or data files stay external
-// and resolve from the app's own dependencies (`koffi` and `jsdom` are declared in its package.json).
+// and resolve from the app's own dependencies (`koffi`, `jsdom` and `sherpa-onnx-node` are declared in
+// its package.json).
 import { cpSync, mkdirSync, rmSync } from "node:fs";
 import { builtinModules } from "node:module";
 import path from "node:path";
@@ -12,8 +13,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..", "..", "..");
 const out = path.resolve(here, "..", "dist", "engine");
 
-/** koffi loads a native module and jsdom reads data files next to itself; neither survives bundling. */
-const EXTERNAL_PACKAGES = ["koffi", "jsdom"];
+/**
+ * koffi and sherpa-onnx-node (the speech engine) load native modules and jsdom reads data files next to
+ * itself; none survives bundling.
+ */
+const EXTERNAL_PACKAGES = ["koffi", "jsdom", "sherpa-onnx-node"];
 
 // `punycode/` (with the slash) is the npm package, not the deprecated builtin.
 const builtins = builtinModules.filter((name) => name !== "punycode");
