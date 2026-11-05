@@ -20,6 +20,16 @@ import {
   HOST_COMPUTER_MAX_FILE_BYTES,
   hostComputerDeadlineMs,
 } from "./host-computer-protocol.js";
+import { explainFetchFailure } from "./transport-failure.js";
+
+/** `fetch failed` alone does not say which service or why; name the host and the network's reason. */
+async function computerFetch(input: URL | string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch (error) {
+    throw explainFetchFailure(error, input);
+  }
+}
 
 /** Authenticated native host transport. Commands are never retried after a lost response. */
 export class HostComputerSandbox implements SandboxProvider {
@@ -41,7 +51,7 @@ export class HostComputerSandbox implements SandboxProvider {
       context.signal,
       AbortSignal.timeout(hostComputerDeadlineMs(input)),
     ]);
-    const response = await fetch(new URL("/computer", this.url), {
+    const response = await computerFetch(new URL("/computer", this.url), {
       method: "POST",
       headers: { authorization: `Bearer ${this.token}`, "content-type": "application/json" },
       body,

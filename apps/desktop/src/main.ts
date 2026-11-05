@@ -42,6 +42,7 @@ import {
   readEngineToken,
   readEngineWebUrl,
 } from "./embedded-engine.js";
+import { createEngineLog } from "./engine-log.js";
 import { prepareHostComputer } from "./host-computer.js";
 import { enterLocalOwner } from "./local-entry.js";
 import { saveLocalComputerHost } from "./local-settings.js";
@@ -1239,6 +1240,7 @@ app.whenReady().then(async () => {
       }),
     probe: (url, signal) => probeEngineHealth(url, signal),
     randomHex: (bytes) => randomBytes(bytes).toString("hex"),
+    onOutput: createEngineLog(app.getPath("logs")),
     onState: (state) => {
       if (setupWindow !== null && !setupWindow.isDestroyed()) {
         setupWindow.webContents.send("desktop.setup.stack.changed", state);
