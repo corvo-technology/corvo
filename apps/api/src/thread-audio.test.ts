@@ -9,7 +9,16 @@ function setup() {
   const enqueue = vi.fn(async (_job: unknown) => undefined);
   const audio = { canTranscribe: vi.fn(async () => true) };
   return {
-    deps: { jobs: { enqueue }, prisma: { run: { update } } as unknown as PrismaClient, audio },
+    deps: {
+      jobs: { enqueue },
+      prisma: {
+        run: {
+          update,
+          findUnique: vi.fn(async () => ({ sourceMessageId: "msg-1", status: "queued" })),
+        },
+      } as unknown as PrismaClient,
+      audio,
+    },
     enqueue,
     update,
   };
@@ -24,7 +33,7 @@ describe("enqueueRunsNeedingContinue", () => {
         { id: "run-1", status: "queued" },
         { id: "run-2", status: "queued" },
       ],
-      { actor, attachments: [{ mimeType: "audio/ogg" }] },
+      { actor, messageId: "msg-1", attachments: [{ mimeType: "audio/ogg" }] },
     );
     const names = enqueue.mock.calls.map(([job]) => (job as { name: string }).name);
     expect(names).toEqual(["audio.transcribe", "audio.transcribe"]);
@@ -38,7 +47,7 @@ describe("enqueueRunsNeedingContinue", () => {
         { id: "run-1", status: "queued" },
         { id: "run-2", status: "completed" },
       ],
-      { actor, attachments: [{ mimeType: "image/png" }] },
+      { actor, messageId: "msg-1", attachments: [{ mimeType: "image/png" }] },
     );
     expect(enqueue).toHaveBeenCalledTimes(1);
     expect(enqueue).toHaveBeenCalledWith(

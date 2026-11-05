@@ -216,6 +216,7 @@ async function handleDirectEvent(
       { jobs: deps.jobs, prisma: deps.prisma, audio: deps.audio },
       {
         runId: sent.runId,
+        messageId: sent.messageId,
         actor: { spaceId: ids.spaceId, userId: ids.userId },
         fromOwner: Boolean(existing),
         attachments: stored.artifacts,

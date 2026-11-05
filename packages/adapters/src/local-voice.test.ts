@@ -32,6 +32,25 @@ function wav() {
   return new Uint8Array(Buffer.concat([header, data]));
 }
 
+/** A PCM16 mono WAV at 16 kHz, `seconds` long. */
+function wavOf(seconds: number) {
+  const data = Buffer.alloc(seconds * 16000 * 2, 1);
+  const header = Buffer.alloc(44);
+  header.write("RIFF", 0, "ascii");
+  header.writeUInt32LE(36 + data.length, 4);
+  header.write("WAVEfmt ", 8, "ascii");
+  header.writeUInt32LE(16, 16);
+  header.writeUInt16LE(1, 20);
+  header.writeUInt16LE(1, 22);
+  header.writeUInt32LE(16000, 24);
+  header.writeUInt32LE(32000, 28);
+  header.writeUInt16LE(2, 32);
+  header.writeUInt16LE(16, 34);
+  header.write("data", 36, "ascii");
+  header.writeUInt32LE(data.length, 40);
+  return new Uint8Array(Buffer.concat([header, data]));
+}
+
 function provider(respond?: ConstructorParameters<typeof ScriptedTranscriber>[0]) {
   const store = { ensure: vi.fn(async (_id: string) => "/models/base") };
   const transcriber = new ScriptedTranscriber(respond);
@@ -114,6 +133,34 @@ describe("LocalVoiceProvider", () => {
     const { provider: local, transcriber } = provider();
     await local.transcribe({ audio: tone, mimeType: "audio/ogg", apiKey: secret() }, ctx);
     expect(transcriber.calls[0]?.pcm.length).toBeGreaterThan(15000);
+  });
+
+  it("transcribes a long recording in windows the engine reads whole, and joins them in order", async () => {
+    // The engine reads only the first 30 seconds of what it is given.
+    const longWav = wavOf(75);
+    let call = 0;
+    const { provider: local, transcriber } = provider(() => {
+      call += 1;
+      return { text: `part ${call}`, language: "pt" };
+    });
+    const result = await local.transcribe(
+      { audio: longWav, mimeType: "audio/wav", apiKey: secret() },
+      ctx,
+    );
+    expect(transcriber.calls.length).toBeGreaterThanOrEqual(3);
+    for (const piece of transcriber.calls) expect(piece.pcm.length / 16000).toBeLessThanOrEqual(30);
+    expect(result.text).toBe(transcriber.calls.map((_, index) => `part ${index + 1}`).join(" "));
+    expect(result.language).toBe("pt");
+  });
+
+  it("settles the language on the first window, so one note is not read in two languages", async () => {
+    const { provider: local, transcriber } = provider((input) => ({
+      text: "x",
+      language: input.language ? input.language : "pt",
+    }));
+    await local.transcribe({ audio: wavOf(70), mimeType: "audio/wav", apiKey: secret() }, ctx);
+    expect(transcriber.calls[0]?.language).toBeUndefined();
+    for (const piece of transcriber.calls.slice(1)) expect(piece.language).toBe("pt");
   });
 
   it("describes a transcription-only provider with no voices", async () => {

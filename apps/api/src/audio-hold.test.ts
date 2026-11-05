@@ -7,13 +7,22 @@ const actor = { spaceId: "space-1", userId: "user-1" };
 const voice = { mimeType: "audio/ogg" };
 const photo = { mimeType: "image/png" };
 
-function setup(over: { canTranscribe?: boolean; failAudioEnqueue?: boolean } = {}) {
+function setup(
+  over: {
+    canTranscribe?: boolean;
+    failAudioEnqueue?: boolean;
+    run?: { sourceMessageId: string | null; status: string } | null;
+  } = {},
+) {
   const update = vi.fn(async (_args: unknown) => ({}));
+  const findUnique = vi.fn(async () =>
+    over.run === undefined ? { sourceMessageId: "msg-1", status: "queued" } : over.run,
+  );
   const enqueue = vi.fn(async (job: { name: string }) => {
     if (over.failAudioEnqueue && job.name === "audio.transcribe") throw new Error("queue down");
   });
   const deps = {
-    prisma: { run: { update } } as unknown as PrismaClient,
+    prisma: { run: { update, findUnique } } as unknown as PrismaClient,
     jobs: { enqueue },
     audio: { canTranscribe: vi.fn(async () => over.canTranscribe ?? true) },
   };
@@ -26,6 +35,7 @@ const start = (
 ) =>
   startRunOrAwaitAudio(deps, {
     runId: "run-1",
+    messageId: "msg-1",
     actor,
     fromOwner: input.fromOwner ?? true,
     attachments: input.attachments ?? [voice],
@@ -91,6 +101,30 @@ describe("startRunOrAwaitAudio", () => {
       data: { awaitingAudioAt: null },
     });
     expect(enqueue).toHaveBeenLastCalledWith(expect.objectContaining({ name: "run.continue" }));
+  });
+});
+
+describe("startRunOrAwaitAudio for a message that steers a run that is already going", () => {
+  it("does not hold that run: it belongs to an earlier message and may be running", async () => {
+    const { deps, update, enqueue } = setup({
+      run: { sourceMessageId: "msg-0", status: "running" },
+    });
+    expect(await start(deps)).toBe("started");
+    expect(update).not.toHaveBeenCalled();
+    expect(enqueue).toHaveBeenCalledTimes(1);
+    expect(enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
+  });
+
+  it("does not hold a run that is no longer waiting, even for its own message", async () => {
+    const { deps, update } = setup({ run: { sourceMessageId: "msg-1", status: "running" } });
+    expect(await start(deps)).toBe("started");
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("does not hold a run that cannot be found", async () => {
+    const { deps, update } = setup({ run: null });
+    expect(await start(deps)).toBe("started");
+    expect(update).not.toHaveBeenCalled();
   });
 });
 

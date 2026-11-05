@@ -13,6 +13,7 @@ import type {
 import { LOCAL_VOICE_PROVIDER_ID } from "@corvo/contracts";
 import { decodeAudio } from "./audio-decode.js";
 import type { LocalModelStore } from "./local-speech-models.js";
+import { splitForSpeech } from "./speech-chunks.js";
 import type { SpeechTranscriber } from "./speech-transcriber.js";
 
 export { LOCAL_VOICE_PROVIDER_ID };
@@ -88,12 +89,23 @@ export class LocalVoiceProvider implements VoiceProvider {
     const audio = await decodeAudio(request.audio, request.mimeType);
     const signal = request.signal ?? context.signal;
     const modelDir = await this.deps.store.ensure(model, { signal });
-    return this.deps.transcriber.transcribe({
-      pcm: audio.pcm,
-      sampleRate: audio.sampleRate,
-      language: primaryLanguage(request.language) ?? (language === "auto" ? undefined : language),
-      modelDir,
-      signal,
-    });
+    // The engine reads only the first 30 seconds, so a long note goes through in windows. The
+    // first window settles the language, so one note is never read as two.
+    let spoken = primaryLanguage(request.language) ?? (language === "auto" ? undefined : language);
+    const texts: string[] = [];
+    let heard: string | undefined;
+    for (const pcm of splitForSpeech(audio.pcm, audio.sampleRate)) {
+      const part = await this.deps.transcriber.transcribe({
+        pcm,
+        sampleRate: audio.sampleRate,
+        language: spoken,
+        modelDir,
+        signal,
+      });
+      if (part.text.trim()) texts.push(part.text.trim());
+      heard ??= part.language;
+      spoken ??= part.language;
+    }
+    return { text: texts.join(" "), ...(heard ? { language: heard } : {}) };
   }
 }

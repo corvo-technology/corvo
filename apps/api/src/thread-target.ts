@@ -169,6 +169,7 @@ export async function enqueueRunsNeedingContinue(
   runs: Array<{ id: string; status: string }>,
   audio?: {
     actor: { spaceId: string; userId: string };
+    messageId: string;
     attachments: ReadonlyArray<{ mimeType: string }>;
   },
 ) {
@@ -182,6 +183,7 @@ export async function enqueueRunsNeedingContinue(
               { jobs: deps.jobs, prisma, audio: deps.audio },
               {
                 runId: run.id,
+                messageId: audio.messageId,
                 actor: audio.actor,
                 fromOwner: true,
                 attachments: audio.attachments,
@@ -253,6 +255,7 @@ async function replayExistingSend(
     replayed
       ? {
           actor: { spaceId: replayed.spaceId, userId: replayed.userId },
+          messageId: message.id,
           attachments: fileMimeTypes(message.blocks),
         }
       : undefined,
@@ -1238,6 +1241,7 @@ export async function sendThreadMessage(
   }
   await enqueueRunsNeedingContinue(deps, committed.runs, {
     actor,
+    messageId: committed.message.id,
     attachments: fileMimeTypes(committed.message.blocks),
   });
   return sendResult(committed.message, committed.runs);

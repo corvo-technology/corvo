@@ -46,9 +46,10 @@ function createDeps(
   const notify = vi.fn(async () => undefined);
   const enqueue = vi.fn(async () => undefined);
   const acknowledge = vi.fn<MessagingReceipts["acknowledge"]>();
-  const runs = new Map<string, { status: string; messagingMirroredAt: Date | null }>([
-    ["run-1", { status: "running", messagingMirroredAt: null }],
-  ]);
+  const runs = new Map<
+    string,
+    { status: string; messagingMirroredAt: Date | null; sourceMessageId?: string }
+  >([["run-1", { status: "running", messagingMirroredAt: null, sourceMessageId: "msg-1" }]]);
   const botReplies: Array<{ id: string; runId: string }> = [];
   const provision = vi.fn(async (request: { provider: string; address: string }) => ({
     provider: request.provider,
@@ -1866,6 +1867,11 @@ describe("a voice note from a chat app", () => {
 
   it("holds the run for its transcription when the sender is the linked owner", async () => {
     const deps = createDeps({ storeAttachment: stored });
+    deps.runs.set("run-1", {
+      status: "queued",
+      messagingMirroredAt: null,
+      sourceMessageId: "msg-1",
+    });
     const audio = { canTranscribe: vi.fn(async () => true) };
     const handle = createMessagingInboundHandler({ ...deps, audio });
     await handle({ ...dmEvent, content: "", attachments: [voiceAttachment] });

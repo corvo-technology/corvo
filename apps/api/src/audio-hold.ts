@@ -45,6 +45,8 @@ export async function startRunOrAwaitAudio(
   },
   input: {
     runId: string;
+    /** The message that carries the audio. A run is held only for the message it was made for. */
+    messageId: string;
     actor: Owner;
     /** Only the owner's own audio uses the engine; anyone else's stays a file. */
     fromOwner: boolean;
@@ -54,7 +56,17 @@ export async function startRunOrAwaitAudio(
   const hasAudio = input.attachments.some((file) => isAttachmentAudioMimeType(file.mimeType));
   if (deps.audio && input.fromOwner && hasAudio) {
     const possible = await deps.audio.canTranscribe(input.actor).catch(() => false);
-    if (possible) {
+    // A message sent while the agent is already working steers that run instead of starting one:
+    // the run belongs to an earlier message, and may be running, so it is not held again.
+    const run = possible
+      ? await deps.prisma.run
+          .findUnique({
+            where: { id: input.runId },
+            select: { sourceMessageId: true, status: true },
+          })
+          .catch(() => null)
+      : null;
+    if (run?.status === "queued" && run.sourceMessageId === input.messageId) {
       try {
         await deps.prisma.run.update({
           where: { id: input.runId },
