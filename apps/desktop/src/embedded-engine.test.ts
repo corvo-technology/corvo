@@ -132,6 +132,16 @@ describe("EmbeddedEngineController", () => {
     expect(await engine.matchesDesiredStack()).toBe(true);
   });
 
+  it("hands every line the programs print to the log, not only the last few", async () => {
+    const printed: string[] = [];
+    const engine = new EmbeddedEngineController(
+      deps({ onOutput: (lines) => printed.push(...lines) }),
+    );
+    await engine.start();
+    children.find((child) => base(child) === "api.mjs")?.stdout.emit("data", "one\ntwo\r\n\n");
+    expect(printed).toEqual(expect.arrayContaining(["api.mjs started", "one", "two"]));
+  });
+
   it("offers the local model server to the API and notices when its address changes", async () => {
     const localModels = {
       url: "http://127.0.0.1:45900/secret/v1",

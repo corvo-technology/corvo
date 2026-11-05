@@ -24,6 +24,22 @@ describe("Docker sandbox", () => {
     vi.unstubAllGlobals();
   });
 
+  it("names the computer service and the network's reason when its request fails", async () => {
+    const refused = Object.assign(new Error("connect ECONNREFUSED 127.0.0.1:50635"), {
+      code: "ECONNREFUSED",
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("fetch failed", { cause: refused });
+      }),
+    );
+    const provider = new DockerSandboxProvider("http://127.0.0.1:50635", "test-token");
+    await expect(
+      provider.provision({ botId: "bot", homePath: "/tmp/bot" }, context),
+    ).rejects.toThrow("fetch failed (127.0.0.1:50635): connect ECONNREFUSED 127.0.0.1:50635");
+  });
+
   it("rejects a failed interactive screen instead of returning a viewer fallback", async () => {
     vi.stubGlobal(
       "fetch",

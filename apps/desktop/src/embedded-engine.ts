@@ -117,6 +117,8 @@ export interface EngineDeps {
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
   healthTimeoutMs?: number;
   onState?: (state: DesktopLocalStackState) => void;
+  /** Every line the engine's programs print, kept for the terminal and a log file. */
+  onOutput?: (lines: readonly string[]) => void;
 }
 
 interface EngineSecrets {
@@ -443,6 +445,7 @@ export class EmbeddedEngineController {
       .map((line) => line.trimEnd())
       .filter(Boolean);
     if (lines.length === 0) return;
+    this.deps.onOutput?.(lines);
     const output = [...this.current.output, ...lines].slice(-ENGINE_OUTPUT_LINES);
     this.setState({ ...this.current, output });
   }

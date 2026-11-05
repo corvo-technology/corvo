@@ -804,6 +804,8 @@ export async function failRun(
       "run.outcome": "failed",
       "run.failure": error.name,
       reason: message,
+      // `reason` is what the user reads; this is what the provider or the network actually said.
+      detail: redactSecrets(error.message, ctx.secrets),
       ...model.active,
     });
   } else {
