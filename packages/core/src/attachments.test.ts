@@ -216,3 +216,28 @@ describe("ask history", () => {
     ).toBe("API key");
   });
 });
+
+describe("promptTextForAttachments notes", () => {
+  const voice = { name: "memo.ogg", mimeType: "audio/ogg", size: 4000 };
+
+  it("puts an attachment's note right after its file line", () => {
+    const prompt = promptTextForAttachments("see this", [
+      { ...voice, note: 'Machine transcript of "memo.ogg" (pt), may contain errors:\nolá' },
+      { name: "a.pdf", mimeType: "application/pdf", size: 9 },
+    ]);
+    expect(prompt).toBe(
+      [
+        "see this",
+        'User attached file "memo.ogg" (audio/ogg, 4000 bytes).',
+        'Machine transcript of "memo.ogg" (pt), may contain errors:\nolá',
+        'User attached file "a.pdf" (application/pdf, 9 bytes).',
+      ].join("\n\n"),
+    );
+  });
+
+  it("is unchanged for attachments without a note", () => {
+    expect(promptTextForAttachments("", [voice])).toBe(
+      'User attached file "memo.ogg" (audio/ogg, 4000 bytes).',
+    );
+  });
+});

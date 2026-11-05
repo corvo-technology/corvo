@@ -48,3 +48,13 @@ describe("mobile AI recipient disclosure", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+describe("aiRecipient for local transcription", () => {
+  it("names no recipient when voice stays on this computer", () => {
+    expect(aiRecipient({ provider: "local", use: "voice" })).toBeNull();
+  });
+
+  it("still names the local model server for model use", () => {
+    expect(aiRecipient({ provider: "local", use: "model" })).not.toBeNull();
+  });
+});

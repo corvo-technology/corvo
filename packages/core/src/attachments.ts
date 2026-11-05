@@ -114,15 +114,15 @@ export function messageBlockForArtifact(artifact: {
 
 export function promptTextForAttachments(
   text: string | undefined,
-  artifacts: Array<{ name: string; mimeType: string; size: number }>,
+  artifacts: Array<{ name: string; mimeType: string; size: number; note?: string | undefined }>,
 ): string {
   const caption = text?.trim() ?? "";
   const notes = artifacts
     .filter((artifact) => !isAttachmentImageMimeType(artifact.mimeType))
-    .map(
-      (artifact) =>
-        `User attached file ${JSON.stringify(artifact.name)} (${artifact.mimeType}, ${artifact.size} bytes).`,
-    );
+    .flatMap((artifact) => [
+      `User attached file ${JSON.stringify(artifact.name)} (${artifact.mimeType}, ${artifact.size} bytes).`,
+      ...(artifact.note ? [artifact.note] : []),
+    ]);
   return [caption, ...notes].filter(Boolean).join("\n\n") || "See attached files.";
 }
 
