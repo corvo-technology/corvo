@@ -498,8 +498,12 @@ export async function downloadLocalModel(deps: Pick<VoiceDeps, "localSpeech">, i
   return { ok: true as const };
 }
 
-export function cancelLocalModelDownload(deps: Pick<VoiceDeps, "localSpeech">, id: string) {
-  requireLocalSpeech(deps).store.cancel(id);
+export async function cancelLocalModelDownload(deps: Pick<VoiceDeps, "localSpeech">, id: string) {
+  const { store } = requireLocalSpeech(deps);
+  if (!(await store.list()).some((model) => model.id === id)) {
+    throw new ORPCError("BAD_REQUEST", { message: "Pick a model from the list." });
+  }
+  store.cancel(id);
   return { ok: true as const };
 }
 

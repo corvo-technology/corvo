@@ -145,10 +145,18 @@ describe("local speech models", () => {
     });
   });
 
-  it("cancels a running download", () => {
+  it("cancels a running download", async () => {
     const { deps, store } = withEngine([model("base", "downloading")]);
-    expect(cancelLocalModelDownload(deps, "base")).toEqual({ ok: true });
+    expect(await cancelLocalModelDownload(deps, "base")).toEqual({ ok: true });
     expect(store.cancel).toHaveBeenCalledWith("base");
+  });
+
+  it("refuses to cancel an id that is not a listed model, so no marker file is written for it", async () => {
+    const { deps, store } = withEngine([model("base", "downloading")]);
+    await expect(cancelLocalModelDownload(deps, "../../../tmp/x")).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+    expect(store.cancel).not.toHaveBeenCalled();
   });
 });
 
