@@ -762,6 +762,7 @@ msgid "Agents:"
 msgstr "エージェント:"
 
 #: src/pages/AppCatalogGrid.tsx
+#: src/pages/Board.tsx
 #: src/pages/StoreCategoryChips.tsx
 msgid "All"
 msgstr "すべて"
@@ -1058,6 +1059,10 @@ msgstr "自動送信者"
 msgid "Automated senders will appear after they post here."
 msgstr "自動送信者は、ここに投稿すると表示されます。"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Automatic"
+msgstr "自動"
+
 #: src/pages/AppCatalogGrid.tsx
 msgid "Automation"
 msgstr "自動化"
@@ -1130,6 +1135,7 @@ msgstr "ブロック"
 msgid "Blocked"
 msgstr "ブロック中"
 
+#: src/components/AppRail.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/Board.tsx
 msgid "Board"
@@ -1282,6 +1288,7 @@ msgstr "画像を読み取れません"
 #: src/pages/AddStepDialog.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/model-settings/space-bots-model.tsx
@@ -2404,6 +2411,10 @@ msgstr "リアクションを更新できませんでした"
 msgid "Could not update the default memory scope"
 msgstr "デフォルトのメモリ範囲を更新できませんでした"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Could not update the speech model"
+msgstr "音声モデルを更新できませんでした"
+
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Could not verify computer setup ({failureMessage}). Fix the connection, then check again."
 msgstr "コンピューターのセットアップを確認できませんでした（{failureMessage}）。接続を修正してから、もう一度確認してください。"
@@ -2819,6 +2830,7 @@ msgstr "更新時にダウングレード"
 
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Download"
 msgstr "ダウンロード"
 
@@ -2834,6 +2846,10 @@ msgstr "{name}をダウンロード"
 #: src/components/markdown-copy.tsx
 msgid "Download CSV"
 msgstr "CSV をダウンロード"
+
+#: src/pages/LocalSpeechSection.tsx
+msgid "Download progress"
+msgstr "ダウンロードの進行状況"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Downloading…"
@@ -3410,6 +3426,10 @@ msgstr "進行中"
 msgid "In review"
 msgstr "レビュー中"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "In use"
+msgstr "使用中"
+
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "無効"
@@ -3583,6 +3603,7 @@ msgid "Key not recognized. Choose a provider."
 msgstr "キーを認識できません。プロバイダーを選択してください。"
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Language"
 msgstr "言語"
 
@@ -5044,6 +5065,7 @@ msgstr "再読み込み"
 
 #: src/components/ApprovalRulesSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PartnerTemplateEditor.tsx
@@ -6578,6 +6600,7 @@ msgstr "緊急"
 msgid "Usage"
 msgstr "使用量"
 
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/Onboarding.tsx
 msgid "Use"
 msgstr "使用"

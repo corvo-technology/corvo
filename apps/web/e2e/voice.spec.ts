@@ -193,3 +193,54 @@ test("voice settings take a self-hosted speech server by URL", async ({ page }, 
   const credentials = await rpc<unknown[]>(page, "voice/credentials");
   expect(credentials).toEqual([]);
 });
+
+test("voice settings list the speech models that can be downloaded to this computer", async ({
+  page,
+}, testInfo) => {
+  const stamp = Date.now();
+  await signup(page, `voice-local-${stamp}@corvo.test`, "password12", `Voice Local ${stamp}`);
+  await completeOnboarding(page);
+  // The E2E server is not the desktop app's own engine, so model that engine for this screen.
+  await page.route("**/rpc/voice/catalog", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { json: Array<Record<string, unknown>> };
+    body.json = [
+      ...body.json,
+      { id: "local", name: "This computer", description: "", transcribe: true },
+    ];
+    await route.fulfill({ response, json: body });
+  });
+  await page.route("**/rpc/voice/localModels", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { json: unknown };
+    body.json = [
+      {
+        id: "base",
+        label: "Base",
+        sizeBytes: 207_557_382,
+        languages: ["en", "pt"],
+        state: "ready",
+        bytesDone: 207_557_382,
+      },
+      {
+        id: "small",
+        label: "Small",
+        sizeBytes: 639_387_718,
+        languages: ["en", "pt"],
+        state: "downloading",
+        bytesDone: 191_816_315,
+      },
+    ];
+    await route.fulfill({ response, json: body });
+  });
+  await openUserSettings(page, "voice");
+  const settings = page.getByTestId("voice-settings");
+  await settings.getByLabel("Provider", { exact: true }).selectOption("local");
+  await expect(settings.getByTestId("local-model-base")).toContainText("208 MB");
+  await expect(
+    settings.getByTestId("local-model-base").getByRole("button", { name: "Use" }),
+  ).toBeVisible();
+  await expect(settings.getByTestId("local-model-small").getByRole("progressbar")).toBeVisible();
+  await expect(settings.getByLabel("API key", { exact: true })).toHaveCount(0);
+  await captureScreenshot(page, testInfo, "voice-settings-this-computer");
+});

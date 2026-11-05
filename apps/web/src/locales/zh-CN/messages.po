@@ -762,6 +762,7 @@ msgid "Agents:"
 msgstr "Agent："
 
 #: src/pages/AppCatalogGrid.tsx
+#: src/pages/Board.tsx
 #: src/pages/StoreCategoryChips.tsx
 msgid "All"
 msgstr "全部"
@@ -1058,6 +1059,10 @@ msgstr "自动发送者"
 msgid "Automated senders will appear after they post here."
 msgstr "自动发送者在此发帖后会显示在这里。"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Automatic"
+msgstr "自动"
+
 #: src/pages/AppCatalogGrid.tsx
 msgid "Automation"
 msgstr "自动化"
@@ -1130,6 +1135,7 @@ msgstr "阻止"
 msgid "Blocked"
 msgstr "已屏蔽"
 
+#: src/components/AppRail.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/Board.tsx
 msgid "Board"
@@ -1282,6 +1288,7 @@ msgstr "无法读取图像"
 #: src/pages/AddStepDialog.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/model-settings/space-bots-model.tsx
@@ -2404,6 +2411,10 @@ msgstr "无法更新反应"
 msgid "Could not update the default memory scope"
 msgstr "无法更新默认记忆范围"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Could not update the speech model"
+msgstr "无法更新语音模型"
+
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Could not verify computer setup ({failureMessage}). Fix the connection, then check again."
 msgstr "无法验证电脑设置（{failureMessage}）。请修复连接后重新检查。"
@@ -2819,6 +2830,7 @@ msgstr "续订时降级"
 
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Download"
 msgstr "下载"
 
@@ -2834,6 +2846,10 @@ msgstr "下载 {name}"
 #: src/components/markdown-copy.tsx
 msgid "Download CSV"
 msgstr "下载 CSV"
+
+#: src/pages/LocalSpeechSection.tsx
+msgid "Download progress"
+msgstr "下载进度"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Downloading…"
@@ -3410,6 +3426,10 @@ msgstr "进行中"
 msgid "In review"
 msgstr "审核中"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "In use"
+msgstr "使用中"
+
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "未启用"
@@ -3583,6 +3603,7 @@ msgid "Key not recognized. Choose a provider."
 msgstr "无法识别该密钥。请选择服务商。"
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Language"
 msgstr "语言"
 
@@ -5044,6 +5065,7 @@ msgstr "重新加载"
 
 #: src/components/ApprovalRulesSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PartnerTemplateEditor.tsx
@@ -6578,6 +6600,7 @@ msgstr "紧急"
 msgid "Usage"
 msgstr "用量"
 
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/Onboarding.tsx
 msgid "Use"
 msgstr "使用"

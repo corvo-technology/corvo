@@ -762,6 +762,7 @@ msgid "Agents:"
 msgstr "Agents :"
 
 #: src/pages/AppCatalogGrid.tsx
+#: src/pages/Board.tsx
 #: src/pages/StoreCategoryChips.tsx
 msgid "All"
 msgstr "Tous"
@@ -1058,6 +1059,10 @@ msgstr "Expéditeurs automatisés"
 msgid "Automated senders will appear after they post here."
 msgstr "Les expéditeurs automatisés apparaîtront après avoir publié ici."
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Automatic"
+msgstr "Automatique"
+
 #: src/pages/AppCatalogGrid.tsx
 msgid "Automation"
 msgstr "Automatisation"
@@ -1130,6 +1135,7 @@ msgstr "Bloquer"
 msgid "Blocked"
 msgstr "Bloqué"
 
+#: src/components/AppRail.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/Board.tsx
 msgid "Board"
@@ -1282,6 +1288,7 @@ msgstr "Ne peut pas lire les images"
 #: src/pages/AddStepDialog.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/model-settings/space-bots-model.tsx
@@ -2404,6 +2411,10 @@ msgstr "Impossible de mettre à jour la réaction"
 msgid "Could not update the default memory scope"
 msgstr "Impossible de mettre à jour la portée de mémoire par défaut"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Could not update the speech model"
+msgstr "Impossible de mettre à jour le modèle vocal"
+
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Could not verify computer setup ({failureMessage}). Fix the connection, then check again."
 msgstr "Impossible de vérifier la configuration de l’ordinateur ({failureMessage}). Corrigez la connexion, puis vérifiez à nouveau."
@@ -2819,6 +2830,7 @@ msgstr "Rétrograder au renouvellement"
 
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Download"
 msgstr "Télécharger"
 
@@ -2834,6 +2846,10 @@ msgstr "Télécharger {name}"
 #: src/components/markdown-copy.tsx
 msgid "Download CSV"
 msgstr "Télécharger le CSV"
+
+#: src/pages/LocalSpeechSection.tsx
+msgid "Download progress"
+msgstr "Progression du téléchargement"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Downloading…"
@@ -3410,6 +3426,10 @@ msgstr "En cours"
 msgid "In review"
 msgstr "En revue"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "In use"
+msgstr "En cours d’utilisation"
+
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Inactif"
@@ -3583,6 +3603,7 @@ msgid "Key not recognized. Choose a provider."
 msgstr "Clé non reconnue. Choisissez un fournisseur."
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Language"
 msgstr "Langue"
 
@@ -5044,6 +5065,7 @@ msgstr "Recharger"
 
 #: src/components/ApprovalRulesSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PartnerTemplateEditor.tsx
@@ -6578,6 +6600,7 @@ msgstr "Urgente"
 msgid "Usage"
 msgstr "Utilisation"
 
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/Onboarding.tsx
 msgid "Use"
 msgstr "Utiliser"

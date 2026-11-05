@@ -762,6 +762,7 @@ msgid "Agents:"
 msgstr "Agents:"
 
 #: src/pages/AppCatalogGrid.tsx
+#: src/pages/Board.tsx
 #: src/pages/StoreCategoryChips.tsx
 msgid "All"
 msgstr "All"
@@ -1058,6 +1059,10 @@ msgstr "Automated senders"
 msgid "Automated senders will appear after they post here."
 msgstr "Automated senders will appear after they post here."
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Automatic"
+msgstr "Automatic"
+
 #: src/pages/AppCatalogGrid.tsx
 msgid "Automation"
 msgstr "Automation"
@@ -1130,6 +1135,7 @@ msgstr "Block"
 msgid "Blocked"
 msgstr "Blocked"
 
+#: src/components/AppRail.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/Board.tsx
 msgid "Board"
@@ -1282,6 +1288,7 @@ msgstr "Can't read images"
 #: src/pages/AddStepDialog.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/model-settings/space-bots-model.tsx
@@ -2404,6 +2411,10 @@ msgstr "Could not update reaction"
 msgid "Could not update the default memory scope"
 msgstr "Could not update the default memory scope"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "Could not update the speech model"
+msgstr "Could not update the speech model"
+
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Could not verify computer setup ({failureMessage}). Fix the connection, then check again."
 msgstr "Could not verify computer setup ({failureMessage}). Fix the connection, then check again."
@@ -2819,6 +2830,7 @@ msgstr "Downgrade at renewal"
 
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Download"
 msgstr "Download"
 
@@ -2834,6 +2846,10 @@ msgstr "Download {name}"
 #: src/components/markdown-copy.tsx
 msgid "Download CSV"
 msgstr "Download CSV"
+
+#: src/pages/LocalSpeechSection.tsx
+msgid "Download progress"
+msgstr "Download progress"
 
 #: src/components/DesktopUpdates.tsx
 msgid "Downloading…"
@@ -3410,6 +3426,10 @@ msgstr "In progress"
 msgid "In review"
 msgstr "In review"
 
+#: src/pages/LocalSpeechSection.tsx
+msgid "In use"
+msgstr "In use"
+
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Inactive"
@@ -3583,6 +3603,7 @@ msgid "Key not recognized. Choose a provider."
 msgstr "Key not recognized. Choose a provider."
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/LocalSpeechSection.tsx
 msgid "Language"
 msgstr "Language"
 
@@ -5044,6 +5065,7 @@ msgstr "Reload"
 
 #: src/components/ApprovalRulesSettings.tsx
 #: src/pages/ConnectionsSettingsPanel.tsx
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PartnerTemplateEditor.tsx
@@ -6578,6 +6600,7 @@ msgstr "Urgent"
 msgid "Usage"
 msgstr "Usage"
 
+#: src/pages/LocalSpeechSection.tsx
 #: src/pages/Onboarding.tsx
 msgid "Use"
 msgstr "Use"

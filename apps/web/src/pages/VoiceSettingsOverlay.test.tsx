@@ -15,6 +15,10 @@ const voice = vi.hoisted(() => ({
   disconnect: vi.fn(),
   setVoice: vi.fn(),
   setSpeechModel: vi.fn(),
+  localModels: vi.fn(),
+  downloadLocalModel: vi.fn(),
+  cancelLocalModelDownload: vi.fn(),
+  removeLocalModel: vi.fn(),
 }));
 
 const { speak } = vi.hoisted(() => ({ speak: vi.fn(async () => undefined) }));
@@ -696,5 +700,71 @@ it("picks a Space's own voice from the account's connections without managing th
     await act(async () => root.unmount());
     container.remove();
     vi.unstubAllGlobals();
+  }
+});
+
+it("offers 'This computer' as a provider with models to download and no key to paste", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  voice.catalog.mockResolvedValue([
+    { id: "elevenlabs", name: "ElevenLabs", description: "", transcribe: true },
+    { id: "local", name: "This computer", description: "", transcribe: true },
+  ]);
+  voice.credentials.mockResolvedValue([]);
+  voice.status.mockResolvedValue({ configured: false, ready: false, provider: null, voiceId: "" });
+  voice.voices.mockResolvedValue([]);
+  voice.localModels.mockResolvedValue([
+    {
+      id: "base",
+      label: "Base",
+      sizeBytes: 207_557_382,
+      languages: ["en", "pt"],
+      state: "absent",
+      bytesDone: 0,
+    },
+  ]);
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => {
+      root.render(
+        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
+      );
+    });
+    const select = container.querySelector("select") as HTMLSelectElement;
+    expect([...select.options].map((option) => option.textContent)).toContain("This computer");
+    await act(async () => {
+      select.value = "local";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(container.querySelector('[data-testid="local-model-base"]')).not.toBeNull();
+    expect(container.querySelector('input[placeholder="Paste your API key"]')).toBeNull();
+    expect(container.textContent).not.toContain("Hear a sample");
+  } finally {
+    act(() => root.unmount());
+    container.remove();
+  }
+});
+
+it("does not offer 'This computer' where the catalog leaves it out", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  voice.catalog.mockResolvedValue([
+    { id: "elevenlabs", name: "ElevenLabs", description: "", transcribe: true },
+  ]);
+  voice.credentials.mockResolvedValue([]);
+  voice.status.mockResolvedValue({ configured: false, ready: false, provider: null, voiceId: "" });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => {
+      root.render(
+        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
+      );
+    });
+    expect(container.textContent).not.toContain("This computer");
+  } finally {
+    act(() => root.unmount());
+    container.remove();
   }
 });
