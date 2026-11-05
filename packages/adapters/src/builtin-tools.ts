@@ -1520,7 +1520,7 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "list_routines",
     description:
-      "List every routine of the agents you manage: which agent, its name, when it runs, whether it is active, the next and last run and how the last one ended. Use it to tell the owner what is scheduled or what failed. To change one, use create_child_routine or ask the agent.",
+      "List every routine of the agents you manage: which agent, its name, when it runs, whether it is active, the next and last run and how the last one ended. Each routine carries the start of its prompt and its steps. Call it before proposing or creating any routine, to see whether one already does the job. Use it to tell the owner what is scheduled or what failed. To add work after an existing routine, use add_routine_step; do not create a second routine for it.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -1636,6 +1636,25 @@ export const builtinAgentTools: ConnectorTool[] = [
     description:
       "Schedule a routine that wakes a bot in this space in its own thread. Identify it by bot_id or bot_name (exact). Repeats: cron or every/unit (min 1 minute). One-shot: runAt, delayMinutes, or delaySeconds. Needs the owner's approval.",
     inputSchema: createChildRoutineInputSchema,
+  },
+  {
+    name: "add_routine_step",
+    description:
+      "Add a step to a routine that already exists, from list_routines. When the routine's last step finishes, the bot you name receives your instruction together with that step's answer and runs it. Identify the bot by bot_id or bot_name (exact). A routine takes up to 5 steps after its first. Needs the owner's approval.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        routine_id: { type: "string", description: "The routine_id from list_routines." },
+        ...fleetBotTargetProperties,
+        instruction: {
+          type: "string",
+          description:
+            "What the bot should do with the answer of the step before it. It receives that answer after this text.",
+        },
+      },
+      required: ["routine_id", "instruction"],
+      additionalProperties: false,
+    },
   },
   {
     name: "archive_bot",

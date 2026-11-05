@@ -295,6 +295,8 @@ const FLEET_STRING_ARGS = [
   "thinking_level",
   "section",
   "instructions",
+  "instruction",
+  "routine_id",
   "expected_version",
   "slug",
   "language",

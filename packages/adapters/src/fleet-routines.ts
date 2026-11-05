@@ -4,6 +4,12 @@ import { managedBotsWhere } from "./child-bots.js";
 import type { FleetRun } from "./fleet-tools.js";
 
 const ROUTINE_LIMIT = 50;
+const EXCERPT_LENGTH = 240;
+
+function excerpt(value: string): string {
+  const line = value.replace(/\s+/g, " ").trim();
+  return line.length > EXCERPT_LENGTH ? `${line.slice(0, EXCERPT_LENGTH)}…` : line;
+}
 
 export interface RoutineListing {
   routines: Array<{
@@ -11,6 +17,10 @@ export interface RoutineListing {
     agent: string;
     agent_id: string;
     name: string;
+    /** The start of what the routine asks its agent, enough to tell two routines apart. */
+    prompt: string;
+    /** The steps after the first, in the order they run. */
+    steps: Array<{ position: number; agent: string; instruction: string }>;
     schedule: string;
     timezone: string;
     active: boolean;
@@ -37,6 +47,11 @@ export async function listRoutines(
     select: {
       id: true,
       name: true,
+      prompt: true,
+      steps: {
+        orderBy: { position: "asc" },
+        select: { position: true, instruction: true, bot: { select: { name: true } } },
+      },
       crons: true,
       timezone: true,
       active: true,
@@ -66,6 +81,12 @@ export async function listRoutines(
       agent: row.bot.name,
       agent_id: row.bot.id,
       name: row.name,
+      prompt: excerpt(row.prompt),
+      steps: row.steps.map((step) => ({
+        position: step.position,
+        agent: step.bot.name,
+        instruction: excerpt(step.instruction),
+      })),
       schedule: row.watch
         ? "when something changes"
         : row.crons.length > 0
