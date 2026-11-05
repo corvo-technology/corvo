@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { CartesiaVoiceProvider } from "./cartesia-voice.js";
 import { ElevenLabsVoiceProvider } from "./elevenlabs-voice.js";
 import { FishAudioVoiceProvider } from "./fish-audio-voice.js";
+import { LocalVoiceProvider } from "./local-voice.js";
 import { OpenAIVoiceProvider } from "./openai-voice.js";
 import {
   SCRIPTED_MPEG,
@@ -11,6 +12,7 @@ import {
   SCRIPTED_VOICE_ID,
   ScriptedVoiceProvider,
 } from "./scripted-voice.js";
+import { ScriptedTranscriber } from "./speech-transcriber.js";
 import {
   createVoiceProvider,
   isVoiceProviderId,
@@ -47,6 +49,7 @@ describe("createVoiceProvider", () => {
       "cartesia",
       "fish-audio",
       "openai-compatible",
+      "local",
     ]);
     expect(listVoiceCatalog().map((entry) => entry.id)).toEqual([
       "elevenlabs",
@@ -64,6 +67,23 @@ describe("createVoiceProvider", () => {
     expect(isVoiceProviderId("piper")).toBe(false);
     expect(() => createVoiceProvider("piper")).toThrow(/unknown voice provider/i);
     expect(() => createVoiceProvider("scripted")).toThrow(/unknown voice provider/i);
+  });
+
+  it("lists 'This computer' only where the engine is the owner's own", () => {
+    process.env.AGENT_RUNTIME = "pi";
+    expect(listVoiceCatalog().some((entry) => entry.id === "local")).toBe(false);
+    const local = listVoiceCatalog({ localEngine: true }).find((entry) => entry.id === "local");
+    expect(local).toMatchObject({ name: "This computer", transcribe: true });
+    expect(isVoiceProviderId("local")).toBe(true);
+  });
+
+  it("builds the local provider from a store and a transcriber, and not without them", () => {
+    const store = { ensure: vi.fn(async () => "/models/base") };
+    const transcriber = new ScriptedTranscriber();
+    const local = createVoiceProvider("local", { local: { store, transcriber } });
+    expect(local).toBeInstanceOf(LocalVoiceProvider);
+    expect(local.describe().capabilities).toMatchObject({ transcribe: true, synthesize: false });
+    expect(() => createVoiceProvider("local")).toThrow(/not available/i);
   });
 
   it("shows self-hosted speech only when the operator allows custom endpoints", () => {
