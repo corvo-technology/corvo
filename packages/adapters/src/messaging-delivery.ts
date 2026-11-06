@@ -37,6 +37,12 @@ export interface MessagingDeliveryDeps {
   events: Pick<ThreadEvents, "sendUserMessage" | "notify">;
   jobs: Pick<JobPublisher, "enqueue">;
   artifacts: Pick<ArtifactStore, "get">;
+  /**
+   * Which outbox rows this process sends, by the provider thread they address. A linked WhatsApp
+   * number's socket lives in one process, so the others leave its rows alone (`skipThreadPrefix`)
+   * and that one sends only those (`onlyThreadPrefix`).
+   */
+  outboxScope?: { skipThreadPrefix?: string; onlyThreadPrefix?: string };
 }
 
 type IdentityRow = {
@@ -96,6 +102,14 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
       await mirrorChannelRun(deps, run, channelBlock);
       return;
     }
+    const visitorBlock = sourceBlocks.find(
+      (block): block is Extract<MessageBlock, { kind: "visitor_message" }> =>
+        block.kind === "visitor_message",
+    );
+    if (visitorBlock) {
+      await mirrorVisitorRun(deps, run, visitorBlock);
+      return;
+    }
   } else if (run.trigger !== "bot_message") {
     // Mirror inbound messaging runs and delegated bot_message replies only.
     // Do not push in-app user/routine runs out to the linked chat.
@@ -146,6 +160,41 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
   if (rows.length === 0) return;
   // Atomic dedupe: a concurrent messaging.deliver for the same run loses on
   // the idempotencyKey unique key instead of throwing P2002.
+  await deps.prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
+}
+
+/**
+ * A visitor's run answers in the visitor's own chat: each reply is queued for the provider thread
+ * of their conversation, as plain text, and nothing else is posted or fanned out.
+ */
+async function mirrorVisitorRun(
+  deps: MessagingDeliveryDeps,
+  run: { id: string },
+  visitorBlock: Extract<MessageBlock, { kind: "visitor_message" }>,
+): Promise<void> {
+  const conversation = await deps.prisma.externalConversation.findUnique({
+    where: { id: visitorBlock.conversationId },
+    select: { provider: true, conversationId: true },
+  });
+  if (!conversation) return;
+  const replies = await deps.prisma.message.findMany({
+    select: { id: true, blocks: true },
+    where: { runId: run.id, role: "bot" },
+    orderBy: { seq: "asc" },
+  });
+  const createdAt = Date.now();
+  const rows = replies
+    .map((message) => ({ message, text: extractText(message.blocks) }))
+    .filter((entry) => entry.text)
+    .map(({ message, text }, index) => ({
+      idempotencyKey: `msg:${message.id}`,
+      kind: "group",
+      threadId: conversation.conversationId,
+      body: text,
+      sourceMessageId: message.id,
+      createdAt: new Date(createdAt + index),
+    }));
+  if (rows.length === 0) return;
   await deps.prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
 }
 
@@ -406,9 +455,16 @@ async function sendConnectInvite(
 
 async function drain(deps: MessagingDeliveryDeps, context: AdapterContext): Promise<void> {
   const now = Date.now();
-  const pending = await deps.prisma.messagingOutbound.findMany({
-    where: { status: "pending" },
-    orderBy: { createdAt: "asc" },
+  const scope = deps.outboxScope;
+  const pending = (
+    await deps.prisma.messagingOutbound.findMany({
+      where: { status: "pending" },
+      orderBy: { createdAt: "asc" },
+    })
+  ).filter((row) => {
+    if (scope?.onlyThreadPrefix) return row.threadId?.startsWith(scope.onlyThreadPrefix) ?? false;
+    if (scope?.skipThreadPrefix) return !row.threadId?.startsWith(scope.skipThreadPrefix);
+    return true;
   });
   // Keep each conversation in order: a row waiting out a backoff, held at
   // the cap, or failing now holds back the later rows to the same place.
