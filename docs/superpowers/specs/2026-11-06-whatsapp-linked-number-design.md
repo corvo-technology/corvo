@@ -64,13 +64,32 @@ linked.
   or tells the person it passed the matter on through its own instructions, and the owner can tell
   it to call them through the Chief.
 
+## What a stranger's conversation can touch (decided by the owner: as safe as possible, still a normal attendant)
+
+- **Each person who writes gets their own conversation.** Messages from one person never mix with
+  another's, and the agent carries nothing from one person to the next. The owner sees all of them
+  in the app and can step into any one. Changing a number's agent leaves existing conversations
+  with the agent that had them.
+- **A stranger's run can only talk, plus the tools the owner ticked for that number.** The owner
+  picks, per number, the few connected apps the agent may use with visitors (a ticket app, a
+  lookup). Everything else is off for strangers: the owner's other apps, the owner's memory, the
+  browser, the host computer and the team routing tools.
+- **What the agent knows about the business** is its own instructions and the history of that one
+  person's conversation. The agent being a good attendant is the job of its instructions and of
+  the tools the owner ticked, not of wider access.
+- **The line is new work.** Today a run uses the owner's access in every chat, and there is no
+  gate for a non-owner in a 1:1 chat, so this boundary is built as part of this feature and is
+  tested as the security boundary it is: a stranger's run is offered the ticked tools and no
+  others.
+
 ## The screens
 
 1. In the store, a **WhatsApp** card. **Add** opens the link flow.
 2. A single line of warning, then the **QR code**. The person scans it in WhatsApp on their phone
    under Linked devices.
 3. A picker for the **agent responsible** for this number.
-4. The number appears under installed apps with the agent's name. A number can be paused,
+4. The number appears under installed apps with the agent's name and the apps it may use with
+   visitors. A number can be paused,
    disconnected (which logs it out of WhatsApp and deletes its session), and its agent changed.
 
 The number is shown masked, as in OpenBot's screens.
