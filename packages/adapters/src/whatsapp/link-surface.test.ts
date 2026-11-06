@@ -3,6 +3,7 @@ import type { PrismaClient } from "@corvo/db";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WhatsAppIncoming } from "./client.js";
 import { WhatsAppLinkSurface } from "./link-surface.js";
+import { createPacer, type Pacer } from "./pacing.js";
 import { MemoryWhatsAppAuthStore, ScriptedWhatsAppClient } from "./scripted-client.js";
 
 type Row = {
@@ -23,7 +24,9 @@ type Row = {
 
 const NOW = new Date("2026-01-01T12:00:00Z");
 
-function setup(options: { lock?: () => Promise<(() => Promise<void>) | undefined> } = {}) {
+function setup(
+  options: { lock?: () => Promise<(() => Promise<void>) | undefined>; pacer?: Pacer } = {},
+) {
   const rows: Row[] = [];
   const stores = new Map<string, MemoryWhatsAppAuthStore>();
   const clients: Array<{ client: ScriptedWhatsAppClient; auth: MemoryWhatsAppAuthStore }> = [];
@@ -91,6 +94,7 @@ function setup(options: { lock?: () => Promise<(() => Promise<void>) | undefined
       return () => `id${++n}`;
     })(),
     retryMs: 30_000,
+    pacer: options.pacer ?? { beforeSend: async () => undefined, allowIncoming: () => true },
   });
   const inbound: MessagingInboundMessage[] = [];
   surface.onInbound(async (event) => {
@@ -246,6 +250,36 @@ describe("WhatsAppLinkSurface messages", () => {
       ["before-resume", "record"],
       ["after-resume", "visitor"],
     ]);
+  });
+
+  it("shows typing before a reply and clears it, all before the text is sent", async () => {
+    const log: string[] = [];
+    const pacer = createPacer({
+      now: () => 0,
+      sleep: async () => void log.push("wait"),
+      random: () => 0,
+    });
+    const ctx = setup({ pacer });
+    const { persistent } = await link(ctx);
+    const send = persistent.sendText.bind(persistent);
+    const typing = persistent.setTyping.bind(persistent);
+    persistent.sendText = async (chat, text) => (log.push("send"), send(chat, text));
+    persistent.setTyping = async (chat, on) => (
+      log.push(on ? "typing-on" : "typing-off"), typing(chat, on)
+    );
+    await ctx.surface.sendToThread(
+      { threadId: `whatsapp-web:${ctx.rows[0]?.id}:15550200@s.whatsapp.net`, body: "hello" },
+      {} as never,
+    );
+    expect(log).toEqual(["typing-on", "wait", "typing-off", "send"]);
+  });
+
+  it("answers the incoming limit from its pacer", async () => {
+    const ctx = setup({
+      pacer: { beforeSend: async () => undefined, allowIncoming: (_n, sender) => sender === "ana" },
+    });
+    expect(ctx.surface.allowIncoming("n1", "ana")).toBe(true);
+    expect(ctx.surface.allowIncoming("n1", "bruno")).toBe(false);
   });
 
   it("sends a reply to the right number's chat, and marks a message read", async () => {

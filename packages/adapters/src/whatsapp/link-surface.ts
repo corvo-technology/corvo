@@ -19,6 +19,7 @@ import type {
   WhatsAppLinkClient,
 } from "./client.js";
 import type { AcquireNumberLock } from "./number-lock.js";
+import { createPacer, type Pacer } from "./pacing.js";
 import { MemoryWhatsAppAuthStore } from "./scripted-client.js";
 
 export const WHATSAPP_LINK_PROVIDER = "whatsapp-web";
@@ -34,6 +35,8 @@ export interface WhatsAppLinkSurfaceDeps {
   newId?: () => string;
   /** How often a number another process holds is tried again. */
   retryMs?: number;
+  /** Paces replies and limits incoming work; a default one is used when absent. */
+  pacer?: Pacer;
 }
 
 export type LinkStatus =
@@ -100,7 +103,16 @@ export class WhatsAppLinkSurface implements MessagingSurface {
   private retryTimer: ReturnType<typeof setInterval> | undefined;
   private stopped = false;
 
-  constructor(private readonly deps: WhatsAppLinkSurfaceDeps) {}
+  private readonly pacer: Pacer;
+
+  constructor(private readonly deps: WhatsAppLinkSurfaceDeps) {
+    this.pacer = deps.pacer ?? createPacer();
+  }
+
+  /** False once a sender or a number has started too much work: the message is dropped. */
+  allowIncoming(installationId: string, senderId: string): boolean {
+    return this.pacer.allowIncoming(installationId, senderId);
+  }
 
   private now() {
     return this.deps.now?.() ?? new Date();
@@ -393,7 +405,11 @@ export class WhatsAppLinkSurface implements MessagingSurface {
 
   // ---- MessagingSurface ----
 
-  private target(threadId: string): { client: WhatsAppLinkClient; chatId: string } {
+  private target(threadId: string): {
+    installationId: string;
+    client: WhatsAppLinkClient;
+    chatId: string;
+  } {
     const prefix = `${WHATSAPP_LINK_PROVIDER}:`;
     if (!threadId.startsWith(prefix)) throw new Error("Not a WhatsApp thread");
     const rest = threadId.slice(prefix.length);
@@ -401,14 +417,15 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     const installationId = rest.slice(0, split);
     const running = this.running.get(installationId);
     if (split < 0 || !running) throw new Error("That WhatsApp number is not connected here");
-    return { client: running.client, chatId: rest.slice(split + 1) };
+    return { installationId, client: running.client, chatId: rest.slice(split + 1) };
   }
 
   async sendToThread(
     request: MessagingSendRequest,
     _context: AdapterContext,
   ): Promise<MessagingSendResult> {
-    const { client, chatId } = this.target(request.threadId);
+    const { installationId, client, chatId } = this.target(request.threadId);
+    await this.pacer.beforeSend(installationId, client, chatId, request.body);
     const sent = await client.sendText(chatId, request.body);
     return { handle: sent.id };
   }
