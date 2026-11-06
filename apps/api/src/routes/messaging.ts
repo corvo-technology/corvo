@@ -9,6 +9,13 @@ import {
 } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
 import { ORPCError } from "@orpc/server";
+import {
+  disconnectWhatsAppNumber,
+  listWhatsAppNumbers,
+  startWhatsAppLink,
+  updateWhatsAppNumber,
+  whatsAppLinkStatus,
+} from "../whatsapp-numbers.js";
 import type { RouterContext } from "./context.js";
 import { isUniqueViolation } from "./shared.js";
 
@@ -53,6 +60,27 @@ export function messagingRoutes(ctx: RouterContext) {
           ),
         };
       }),
+      whatsapp: {
+        link: {
+          start: authed.messaging.whatsapp.link.start.handler(({ context, input }) =>
+            startWhatsAppLink(deps, context.actor, input),
+          ),
+          status: authed.messaging.whatsapp.link.status.handler(({ context, input }) =>
+            whatsAppLinkStatus(deps, context.actor, input.linkId),
+          ),
+        },
+        numbers: {
+          list: authed.messaging.whatsapp.numbers.list.handler(({ context }) =>
+            listWhatsAppNumbers(deps, context.actor),
+          ),
+          update: authed.messaging.whatsapp.numbers.update.handler(({ context, input }) =>
+            updateWhatsAppNumber(deps, context.actor, input),
+          ),
+          disconnect: authed.messaging.whatsapp.numbers.disconnect.handler(({ context, input }) =>
+            disconnectWhatsAppNumber(deps, context.actor, input.id),
+          ),
+        },
+      },
       link: {
         start: authed.messaging.link.start.handler(async ({ context, input }) => {
           // Any of the user's bots, so a workspace's DMs link from whichever space is open.

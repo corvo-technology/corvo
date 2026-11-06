@@ -54,6 +54,8 @@ type Installation = {
 
 type Running = { client: WhatsAppLinkClient; release: () => Promise<void> };
 type PendingLink = {
+  /** Only the person who started a link may read its QR code. */
+  userId: string;
   status: LinkStatus;
   client: WhatsAppLinkClient;
   memory: MemoryWhatsAppAuthStore;
@@ -168,6 +170,7 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     const memory = new MemoryWhatsAppAuthStore();
     const client = this.deps.createClient(memory);
     const link: PendingLink = {
+      userId: input.userId,
       status: { state: "qr" },
       client,
       memory,
@@ -183,8 +186,9 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     return { linkId };
   }
 
-  linkStatus(linkId: string): LinkStatus {
-    return this.links.get(linkId)?.status ?? { state: "failed" };
+  linkStatus(linkId: string, userId: string): LinkStatus {
+    const link = this.links.get(linkId);
+    return link && link.userId === userId ? link.status : { state: "failed" };
   }
 
   private async finishLink(

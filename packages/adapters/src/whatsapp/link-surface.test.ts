@@ -120,7 +120,7 @@ async function link(ctx: ReturnType<typeof setup>) {
   });
   const temporary = ctx.clients[0]?.client as ScriptedWhatsAppClient;
   temporary.emitConnection({ state: "qr", qr: "qr-1" });
-  const qr = ctx.surface.linkStatus(linkId);
+  const qr = ctx.surface.linkStatus(linkId, "user-1");
   await ctx.clients[0]?.auth.set("creds", "session-secret");
   temporary.emitConnection({ state: "open", number: "+15550100" });
   await vi.waitFor(() => expect(ctx.clients.length).toBe(2));
@@ -137,7 +137,10 @@ describe("WhatsAppLinkSurface linking", () => {
     const ctx = setup();
     const { linkId, qr, persistent } = await link(ctx);
     expect(qr).toEqual({ state: "qr", qr: "qr-1" });
-    expect(ctx.surface.linkStatus(linkId)).toEqual({ state: "linked", number: "+•••••••0100" });
+    expect(ctx.surface.linkStatus(linkId, "user-1")).toEqual({
+      state: "linked",
+      number: "+•••••••0100",
+    });
     expect(ctx.rows).toHaveLength(1);
     expect(ctx.rows[0]).toMatchObject({
       provider: "whatsapp-web",
@@ -153,6 +156,13 @@ describe("WhatsAppLinkSurface linking", () => {
     expect(persistent.connected).toBe(true);
   });
 
+  it("shows the QR only to the person who started the link", async () => {
+    const ctx = setup();
+    const { linkId, qr } = await link(ctx);
+    expect(qr).toEqual({ state: "qr", qr: "qr-1" });
+    expect(ctx.surface.linkStatus(linkId, "someone-else")).toEqual({ state: "failed" });
+  });
+
   it("refuses a number already linked to someone else", async () => {
     const ctx = setup();
     await link(ctx);
@@ -164,7 +174,7 @@ describe("WhatsAppLinkSurface linking", () => {
     });
     const second = ctx.clients[2]?.client as ScriptedWhatsAppClient;
     second.emitConnection({ state: "open", number: "+15550100" });
-    await vi.waitFor(() => expect(ctx.surface.linkStatus(linkId).state).toBe("failed"));
+    await vi.waitFor(() => expect(ctx.surface.linkStatus(linkId, "user-1").state).toBe("failed"));
     expect(ctx.rows).toHaveLength(1);
   });
 });

@@ -186,3 +186,7 @@ export * from "./web-limits.js";
 export * from "./web-provider-factory.js";
 export * from "./web-ssrf.js";
 export * from "./web-tools.js";
+export * from "./whatsapp/baileys-client.js";
+export * from "./whatsapp/db-auth-store.js";
+export * from "./whatsapp/link-surface.js";
+export * from "./whatsapp/number-lock.js";

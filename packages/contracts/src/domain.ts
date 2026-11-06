@@ -1169,6 +1169,26 @@ export const MessagingInstallationSummarySchema = z.object({
   botName: z.string().optional(),
 });
 export type MessagingInstallationSummary = z.infer<typeof MessagingInstallationSummarySchema>;
+export const WhatsAppLinkStatusSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("qr"), qr: z.string().optional() }),
+  z.object({ state: z.literal("linked"), number: z.string() }),
+  z.object({ state: z.literal("failed") }),
+]);
+export type WhatsAppLinkStatus = z.infer<typeof WhatsAppLinkStatusSchema>;
+
+/** A linked WhatsApp number as its owner sees it. The number is always masked. */
+export const WhatsAppNumberSchema = z.object({
+  id: Id,
+  number: z.string(),
+  botId: Id,
+  botName: z.string().optional(),
+  status: z.enum(["active", "disconnected"]),
+  paused: z.boolean(),
+  /** Connected apps the agent may use when a visitor writes to this number. */
+  visitorConnectors: z.array(z.string()),
+});
+export type WhatsAppNumber = z.infer<typeof WhatsAppNumberSchema>;
+
 export const MessagingInstallationsStatusSchema = z.object({
   available: z.boolean(),
   /** A teammate's workspace in this space accepts the user's personal DM link. */
