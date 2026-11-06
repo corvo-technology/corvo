@@ -390,6 +390,9 @@ importers:
       react-router-dom:
         specifier: 7.18.4
         version: 7.18.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      uqr:
+        specifier: 0.1.3
+        version: 0.1.3
     devDependencies:
       '@babel/core':
         specifier: 7.29.7
@@ -11359,6 +11362,9 @@ packages:
 
   win-guid@0.2.1:
     resolution: {integrity: sha512-gEIQU4mkgl2OPeoNrWflcJFJ3Ae2BPd4eCsHHA/XikslkIVms/nHhvnvzIZV7VLmBvtFlDOzLt9rrZT+n6D67A==}
+
+  uqr@0.1.3:
+    resolution: {integrity: sha512-0rjE8iEJe4YmT9TOhwsZtqCMRLc5DXZUI2UEYUUg63ikBkqqE5EYWaI0etFe/5KUcmcYwLih2RND1kq+hrUJXA==}
 
 snapshots:
 
@@ -23517,3 +23523,5 @@ snapshots:
       ieee754: 1.2.1
 
   win-guid@0.2.1: {}
+
+  uqr@0.1.3: {}

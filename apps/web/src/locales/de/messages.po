@@ -546,6 +546,7 @@ msgstr "Aktivität"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/ScratchpadSection.tsx
 #: src/pages/shell/agent-import.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Add"
 msgstr "Hinzufügen"
 
@@ -961,6 +962,10 @@ msgstr "Genehmige diesen Server, damit dein Agent seine Tools verwenden kann."
 msgid "Apps"
 msgstr "Apps"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Apps visitors can use"
+msgstr "Apps, die Besucher nutzen dürfen"
+
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "Archivieren"
@@ -1301,6 +1306,7 @@ msgstr "Kann keine Bilder lesen"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WhatsAppNumbers.tsx
 #: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -1979,6 +1985,7 @@ msgstr "Das Update konnte nicht abgeschlossen werden. Versuchen Sie es erneut."
 #: src/pages/AppCatalogGrid.tsx
 #: src/pages/ChatAppsRow.tsx
 #: src/pages/PluginsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not connect"
 msgstr "Verbindung fehlgeschlagen"
 
@@ -2062,6 +2069,10 @@ msgstr "Der Space konnte nicht gelöscht werden"
 #: src/pages/Artifacts.tsx
 msgid "Could not delete this artifact."
 msgstr "Dieses Artefakt konnte nicht gelöscht werden."
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Could not disconnect"
+msgstr "Trennen fehlgeschlagen"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Could not disconnect memory provider"
@@ -2383,6 +2394,7 @@ msgid "Could not undo the import"
 msgstr "Der Import konnte nicht rückgängig gemacht werden"
 
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not update"
 msgstr "Aktualisierung fehlgeschlagen"
 
@@ -2740,6 +2752,7 @@ msgstr "Aufnahme verwerfen"
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Disconnect"
 msgstr "Trennen"
 
@@ -2750,6 +2763,10 @@ msgstr "{disconnectName} trennen?"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Disconnect Self-hosted"
 msgstr "Self-hosted trennen"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Disconnected"
+msgstr "Getrennt"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Disconnected {disconnectName}."
@@ -4748,6 +4765,7 @@ msgid "Paste your API key, then test again."
 msgstr "Füge deinen API-Schlüssel ein und teste erneut."
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Pause"
 msgstr "Pausieren"
 
@@ -4897,6 +4915,10 @@ msgstr "Pull Request"
 #: src/pages/GroupPanel.tsx
 msgid "Purpose"
 msgstr "Zweck"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "QR code"
+msgstr "QR-Code"
 
 #: src/pages/ActivityList.tsx
 msgid "Queued"
@@ -5281,6 +5303,7 @@ msgid "Restoring your workspace"
 msgstr "Ihr Workspace wird wiederhergestellt"
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Resume"
 msgstr "Fortsetzen"
 
@@ -6334,6 +6357,10 @@ msgstr "Dieser Server ist bereits verbunden. Trenne zuerst die Verbindung, um ih
 #: src/pages/model-settings/connection-controls.tsx
 msgid "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider."
 msgstr "Diese Abonnementanmeldung ist in Rook noch nicht verfügbar. Verwende Zugangsdaten der Bereitstellung oder wähle einen anderen Anbieter."
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "This uses WhatsApp without the official API. WhatsApp can ban the number."
+msgstr "Das nutzt WhatsApp ohne die offizielle API. WhatsApp kann die Nummer sperren."
 
 #: src/pages/Artifacts.tsx
 msgid "This week"
