@@ -657,8 +657,26 @@ it.each([false, true])(
   },
 );
 
-it("hides call dictation until the server enables it", () => {
+it("hides the microphone until calls are enabled or a connected voice can transcribe", () => {
   renderComposer(vi.fn().mockResolvedValue(true));
+  expect(container?.querySelector('button[aria-label="Hold to talk"]')).toBeNull();
+});
+
+it("shows the microphone for a connected voice that transcribes, even with calls off", () => {
+  renderComposer(vi.fn().mockResolvedValue(true), {
+    phoneCallsEnabled: false,
+    dictationTranscribe: true,
+  });
+  const mic = container?.querySelector<HTMLButtonElement>('button[aria-label="Hold to talk"]');
+  expect(mic).not.toBeNull();
+  expect(mic?.disabled).toBe(false);
+});
+
+it("keeps the microphone hidden when the connected voice cannot transcribe and calls are off", () => {
+  renderComposer(vi.fn().mockResolvedValue(true), {
+    phoneCallsEnabled: false,
+    dictationTranscribe: false,
+  });
   expect(container?.querySelector('button[aria-label="Hold to talk"]')).toBeNull();
 });
 
