@@ -17,7 +17,7 @@ const out = path.resolve(here, "..", "dist", "engine");
  * koffi and sherpa-onnx-node (the speech engine) load native modules and jsdom reads data files next to
  * itself; none survives bundling.
  */
-const EXTERNAL_PACKAGES = ["koffi", "jsdom", "sherpa-onnx-node"];
+const EXTERNAL_PACKAGES = ["koffi", "jsdom", "sherpa-onnx-node", "@whiskeysockets/baileys"];
 
 // `punycode/` (with the slash) is the npm package, not the deprecated builtin.
 const builtins = builtinModules.filter((name) => name !== "punycode");

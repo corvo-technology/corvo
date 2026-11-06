@@ -28,6 +28,11 @@ describe("the engine bundle's external packages", () => {
     }
   });
 
+  it("keeps the WhatsApp library out of the bundle and pins the version the spike validated", () => {
+    expect(externals).toContain("@whiskeysockets/baileys");
+    expect(manifest.dependencies["@whiskeysockets/baileys"]).toBe("6.7.24");
+  });
+
   it("pins the speech engine to the version the engine spike validated", () => {
     expect(manifest.dependencies["sherpa-onnx-node"]).toBe("2.0.1");
   });
