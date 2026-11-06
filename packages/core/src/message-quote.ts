@@ -183,6 +183,9 @@ function replyBlockText(block: MessageBlock): string {
     case "image":
     case "file":
       return block.name || blocksToAgentHistoryText([block]);
+    case "visitor_message":
+      // A marker only: the visitor's words are in the message's text block.
+      return "";
   }
 }
 
