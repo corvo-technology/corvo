@@ -93,8 +93,8 @@ The number is shown masked, as in OpenBot's screens.
   (`docs/local-transcription.md`) before the agent runs, and the agent reads the text inside the
   same labeled machine-transcript block. That feature is owner-only today, on purpose, so this
   work relaxes the rule for chats that arrive through a linked number, and only there:
-  - The local engine is used, so no stranger's audio leaves the computer. A hosted voice provider
-    is used for a stranger only if the owner selected one, with the consent they already gave.
+  - It uses the voice provider the owner chose in Settings: a free local model or a hosted one.
+    The choice is the owner's. With no choice made, the free local model is used.
   - A stranger can make the computer do work, so the builder must bound it: the existing 8 MiB
     limit, one transcription at a time per number, and a short queue that drops the excess with
     a note to the agent instead of piling up.
