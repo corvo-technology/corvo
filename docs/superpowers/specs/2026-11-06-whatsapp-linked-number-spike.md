@@ -35,4 +35,4 @@ Memory: the process was about 40 to 60 MB resident before loading the library an
 - A real scan and real messages. The JID shapes of the self-chat, a one-to-one chat and a group, the `fromMe` flag on each, and how a voice note or image downloads were not observed. WhatsApp now also addresses people by a LID (`@lid`) in addition to a phone JID, so the self-chat test in `mapIncoming` must accept both forms of the account's own id. The sample payloads in Task 4's tests are built from the library's types, and the first live link must check them.
 - Memory of one connected number and of a dozen.
 - Whether the pairing code works for the account type in use.
-- Windows and Linux, and the packaged app: the library is plain JavaScript, so it loads wherever Node does, but the desktop release build is where it must be proven.
+- The packaged app on macOS (Apple Silicon) was checked in Task 14: the library resolves from inside `app.asar`, loads with the packaged app's own runtime, and receives a pairing QR. Windows and Linux were not run: the library is plain JavaScript, so it loads wherever Node does, but the desktop release build is where that must be proven.
