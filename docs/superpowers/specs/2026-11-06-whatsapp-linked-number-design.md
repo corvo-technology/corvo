@@ -125,6 +125,21 @@ The number is shown masked, as in OpenBot's screens.
 - **Memory.** Each connected number holds a socket and its session state. There is no limit, so
   the builder should measure one number and say what a dozen cost.
 
+## Calls made while writing (the owner can change these)
+
+- **The owner's messages in other chats are ignored.** Only the "Message yourself" chat is the
+  owner talking to the agent. What the owner types to a friend is not agent input, and the agent
+  does not answer a chat the owner already answered. A "pause when the owner steps in" mode comes
+  later.
+- **Only new messages are answered.** Old history from linking, messages that arrive while a
+  number is paused, and messages delivered late after a reconnect are recorded and never
+  answered. Answering a backlog is the bulk sending this design calls a bug. The builder picks the
+  cutoff for "late".
+- **Incoming load is limited.** Each sender and each number has a run limit, and the excess is
+  dropped without a reply. There is no money budget in the first version.
+- **The self-chat reaches the number's agent in the agent's main thread**, so the conversation
+  continues from the phone. An agent may have several numbers; their self-chats share that thread.
+
 ## Left to the builder
 
 - The provider id for this transport next to `whatsapp` (the Cloud API), and how both mount.
