@@ -138,9 +138,12 @@ export const Composer = memo(function Composer({
     return slashMatch ? (slashMatch[1] ?? "") : null;
   });
   const onCall = useCallSession() !== null;
+  // Dictation needs either calls enabled (browser speech) or a connected voice that transcribes
+  // (for example "This computer"): a voice that cannot speak still turns speech into text.
+  const dictationAvailable = phoneCallsEnabled === true || dictationTranscribe === true;
   const talk = useHoldToTalk({
     transcribe: dictationTranscribe,
-    disabled: disabled || onCall || !phoneCallsEnabled,
+    disabled: disabled || onCall || !dictationAvailable,
     onText: (text) => {
       // A refused send keeps the words: they land in the field to edit or retry.
       void onSend(text, [], newClientId())
@@ -875,7 +878,7 @@ export const Composer = memo(function Composer({
             <HoldToTalkControls talk={talk} />
           ) : running ? (
             <>
-              {phoneCallsEnabled && draft.trim().length === 0 ? (
+              {dictationAvailable && draft.trim().length === 0 ? (
                 <HoldToTalkControls talk={talk} disabled={disabled || onCall} />
               ) : null}
               <Button
@@ -900,7 +903,7 @@ export const Composer = memo(function Composer({
             </>
           ) : (
             <>
-              {phoneCallsEnabled && draft.trim().length === 0 ? (
+              {dictationAvailable && draft.trim().length === 0 ? (
                 <HoldToTalkControls talk={talk} disabled={disabled || onCall} />
               ) : null}
               <Button
