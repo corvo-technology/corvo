@@ -25,6 +25,8 @@ export type TranscriptionFailure =
   | "no-speech"
   | "download-failed"
   | "model-removed"
+  | "model-missing"
+  | "busy"
   | "provider-failed"
   | "unavailable";
 
@@ -161,6 +163,8 @@ export async function transcribeAudioArtifact(
     artifactId: string;
     actor: Actor;
     signal?: AbortSignal;
+    /** Audio from someone other than the owner must not cause a model to be downloaded. */
+    noDownload?: boolean;
     /** Called once, before a model that is not on this computer yet starts downloading. */
     onPreparingModel?: (model: { id: string; sizeBytes: number }) => Promise<void>;
   },
@@ -204,6 +208,13 @@ export async function transcribeAudioArtifact(
   } catch {
     return failed("unavailable");
   }
+  if (chosen.kind === "local" && input.noDownload && deps.localSpeech) {
+    // Someone other than the owner may not cause a model to be fetched.
+    const ready = (await deps.localSpeech.store.list()).some(
+      (entry) => entry.id === chosen.modelId && entry.state === "ready",
+    );
+    if (!ready) return failed("model-missing");
+  }
   if (chosen.kind === "local" && input.onPreparingModel && deps.localSpeech) {
     try {
       const model = (await deps.localSpeech.store.list()).find(
@@ -242,6 +253,8 @@ const REASON_TEXT: Record<TranscriptionFailure, string> = {
   "no-speech": "no speech was heard",
   "download-failed": "the speech model could not be downloaded",
   "model-removed": "the speech model was removed",
+  "model-missing": "the speech model is not on this computer",
+  busy: "too many audio messages were sent at once",
   "provider-failed": "transcription is not available",
   unavailable: "the file is not available",
 };

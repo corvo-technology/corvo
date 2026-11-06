@@ -546,6 +546,7 @@ msgstr "动态"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/ScratchpadSection.tsx
 #: src/pages/shell/agent-import.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Add"
 msgstr "添加"
 
@@ -961,6 +962,10 @@ msgstr "批准此服务器后，Agent 才能使用它的工具。"
 msgid "Apps"
 msgstr "应用"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Apps visitors can use"
+msgstr "访客可使用的应用"
+
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "归档"
@@ -1301,6 +1306,7 @@ msgstr "无法读取图像"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WhatsAppNumbers.tsx
 #: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -1979,6 +1985,7 @@ msgstr "无法完成更新。请重试。"
 #: src/pages/AppCatalogGrid.tsx
 #: src/pages/ChatAppsRow.tsx
 #: src/pages/PluginsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not connect"
 msgstr "无法连接"
 
@@ -2062,6 +2069,10 @@ msgstr "无法删除空间"
 #: src/pages/Artifacts.tsx
 msgid "Could not delete this artifact."
 msgstr "无法删除此产物。"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Could not disconnect"
+msgstr "无法断开连接"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Could not disconnect memory provider"
@@ -2383,6 +2394,7 @@ msgid "Could not undo the import"
 msgstr "无法撤销导入"
 
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not update"
 msgstr "无法更新"
 
@@ -2740,6 +2752,7 @@ msgstr "放弃录制"
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Disconnect"
 msgstr "断开"
 
@@ -2750,6 +2763,10 @@ msgstr "断开 {disconnectName}？"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Disconnect Self-hosted"
 msgstr "断开 Self-hosted"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Disconnected"
+msgstr "已断开连接"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Disconnected {disconnectName}."
@@ -4748,6 +4765,7 @@ msgid "Paste your API key, then test again."
 msgstr "请粘贴你的 API 密钥，然后重新测试。"
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Pause"
 msgstr "暂停"
 
@@ -4897,6 +4915,10 @@ msgstr "拉取请求"
 #: src/pages/GroupPanel.tsx
 msgid "Purpose"
 msgstr "用途"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "QR code"
+msgstr "二维码"
 
 #: src/pages/ActivityList.tsx
 msgid "Queued"
@@ -5281,6 +5303,7 @@ msgid "Restoring your workspace"
 msgstr "正在恢复你的工作区"
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Resume"
 msgstr "继续"
 
@@ -6334,6 +6357,10 @@ msgstr "此服务器已连接。请先断开再重新授权。"
 #: src/pages/model-settings/connection-controls.tsx
 msgid "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider."
 msgstr "此订阅登录在 Rook 中尚不可用。请使用部署凭据或选择其他提供方。"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "This uses WhatsApp without the official API. WhatsApp can ban the number."
+msgstr "这会在不使用官方 API 的情况下使用 WhatsApp。该号码可能被 WhatsApp 封禁。"
 
 #: src/pages/Artifacts.tsx
 msgid "This week"

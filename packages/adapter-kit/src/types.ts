@@ -912,6 +912,11 @@ export interface MessagingInboundMessage {
   senderIsBot?: boolean;
   /** Display names for room participants when the platform reports them. */
   participantNames?: string[];
+  /**
+   * Who the number's owner would call this sender, for a linked WhatsApp number: "owner" for the
+   * number's own chat, "visitor" for anyone else, "record" for a message to store and not answer.
+   */
+  audience?: "owner" | "visitor" | "record";
 }
 
 /** An inbound file whose bytes are fetched with the platform's own credentials. */

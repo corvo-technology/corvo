@@ -25,6 +25,7 @@ import type {
   RemoteConnectorDependencies,
   TicketChangeNotifier,
   verifyModelServesAgents,
+  WhatsAppLinkSurface,
 } from "@corvo/adapters";
 import type { Auth } from "@corvo/auth";
 import type { NavLink } from "@corvo/contracts";
@@ -110,6 +111,8 @@ export interface RouterDeps {
   dataDir: string;
   /** Present when the external messaging surface is enabled. */
   messagingInstallations?: MessagingInstallations;
+  /** Present where linked WhatsApp numbers are enabled (the desktop app, or an operator opt-in). */
+  whatsapp?: WhatsAppLinkSurface;
   /** Public https origin an inbox service can call; unset where it cannot (loopback, plain http). */
   emailAgentPublicUrl?: string;
   messaging?: {

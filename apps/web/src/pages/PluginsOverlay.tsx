@@ -52,6 +52,7 @@ import { AppCatalogGrid } from "./AppCatalogGrid";
 import { ChatAppsRow } from "./ChatAppsRow";
 import { SkillsStore } from "./SkillsStore";
 import { StoreInstalledApps } from "./StoreInstalledApps";
+import { WhatsAppNumbers } from "./WhatsAppNumbers";
 
 function ConnectorIcon({ name, logo }: { name: string; logo?: string | null }) {
   return logo ? (
@@ -924,6 +925,9 @@ export function PluginsOverlay({
             ) : (
               <>
                 <ChatAppsRow botId={activeBotId ?? undefined} query={query} connectedInSidebar />
+                {!query.trim() || "whatsapp".includes(query.trim().toLowerCase()) ? (
+                  <WhatsAppNumbers botId={activeBotId ?? undefined} />
+                ) : null}
                 <AppCatalogGrid
                   query={query}
                   servers={mcpServers}

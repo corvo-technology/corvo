@@ -14,6 +14,8 @@ export function messagingProviderName(provider: string): string {
   // Extra named Telegram bots mount as "telegram-<name>".
   const telegramBot = /^telegram-(.+)$/.exec(provider)?.[1];
   if (telegramBot) return `Telegram (${telegramBot})`;
+  // A number linked by QR is still WhatsApp to the person who uses it.
+  if (provider === "whatsapp-web") return "WhatsApp";
   return PROVIDER_NAMES[provider] ?? provider;
 }
 

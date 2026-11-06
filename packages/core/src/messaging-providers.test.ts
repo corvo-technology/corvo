@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  MESSAGING_PROVIDER_IDS,
   messagingConnectOptions,
   messagingLinkUrl,
   messagingProviderLabel,
@@ -49,5 +50,12 @@ describe("messagingLinkUrl", () => {
     expect(messagingLinkUrl("sendblue", "+15555550100", "ABCD-2345")).toBeUndefined();
     expect(messagingLinkUrl("telegram", undefined, "ABCD-2345")).toBeUndefined();
     expect(messagingLinkUrl("telegram", "not a username", "ABCD-2345")).toBeUndefined();
+  });
+});
+
+describe("the linked WhatsApp provider", () => {
+  it("is named WhatsApp, like the official one, and is not offered as a deployment connect option", () => {
+    expect(messagingProviderName("whatsapp-web")).toBe("WhatsApp");
+    expect(MESSAGING_PROVIDER_IDS).not.toContain("whatsapp-web");
   });
 });

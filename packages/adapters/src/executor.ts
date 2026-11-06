@@ -15,6 +15,7 @@ import {
   isMessagingChannelRun,
   isOwnerStartedRun,
   isTerminal,
+  isVisitorRun,
   MISSING_MODEL_RUN_ERROR,
   MODEL_ACCESS_REQUIRED_RUN_ERROR,
   messagingChannelId,
@@ -28,6 +29,7 @@ import {
   renderBotGroupDirectory,
   userRunError,
   userTurnMessageForRun,
+  visitorInstallationId,
 } from "@corvo/core";
 import {
   effectiveMemoryScope,
@@ -164,6 +166,7 @@ import {
   BUILTIN_AGENT_TOOL_NAMES,
   offeredFleetTools,
   selectBuiltinToolsForRun,
+  visitorConnectorTools,
 } from "./run-tool-selection.js";
 import { applyTool } from "./run-tools.js";
 import { mayRouteWithoutOwner } from "./run-tools-messaging.js";
@@ -413,6 +416,21 @@ export function createRunExecutor(deps: ExecutorDeps) {
             : undefined;
         const channelId = messagingChannelId(sourceBlocks);
         const messagingChannelRun = isMessagingChannelRun(run.trigger, sourceBlocks);
+        // An outside person on a linked WhatsApp number: the owner's tools, memory and
+        // context stay out of this run, and only what the owner ticked for the number is in.
+        const visitorRun = isVisitorRun(run.trigger, sourceBlocks);
+        const withholdOwnerContext = messagingChannelRun || visitorRun;
+        const visitorTicked = new Set<string>(
+          visitorRun
+            ? await deps.prisma.messagingInstallation
+                .findUnique({
+                  where: { id: visitorInstallationId(sourceBlocks) ?? "" },
+                  select: { visitorConnectors: true },
+                })
+                .then((row) => row?.visitorConnectors ?? [])
+                .catch(() => [])
+            : [],
+        );
         const [
           bot,
           thread,
@@ -455,21 +473,31 @@ export function createRunExecutor(deps: ExecutorDeps) {
             where: { id: "default" },
           }),
           deps.memoryProviders.resolve(run.spaceId),
-          deps.prisma.taughtSkill.findMany({
-            where: { botId: run.botId, spaceId: run.spaceId, status: "saved" },
-          }),
-          listAgentSkillRecords(deps.prisma, {
-            spaceId: run.spaceId,
-            userId: run.userId,
-          }),
-          deps.prisma.agentSecret.findMany({
-            where: { spaceId: run.spaceId },
-            select: {
-              name: true,
-              secret: { select: { id: true, ciphertext: true } },
-            },
-          }),
-          loadBotCommandEnvironment(deps.prisma, deps.secretStore, run),
+          // A visitor's run is not told the owner's skills, credentials or command environment:
+          // not their names, not their contents, and a skill cannot be expanded by naming it.
+          visitorRun
+            ? Promise.resolve([])
+            : deps.prisma.taughtSkill.findMany({
+                where: { botId: run.botId, spaceId: run.spaceId, status: "saved" },
+              }),
+          visitorRun
+            ? Promise.resolve([])
+            : listAgentSkillRecords(deps.prisma, {
+                spaceId: run.spaceId,
+                userId: run.userId,
+              }),
+          visitorRun
+            ? Promise.resolve([])
+            : deps.prisma.agentSecret.findMany({
+                where: { spaceId: run.spaceId },
+                select: {
+                  name: true,
+                  secret: { select: { id: true, ciphertext: true } },
+                },
+              }),
+          visitorRun
+            ? Promise.resolve({} as Awaited<ReturnType<typeof loadBotCommandEnvironment>>)
+            : loadBotCommandEnvironment(deps.prisma, deps.secretStore, run),
           loadLoginPasswordRedactions(deps.prisma, deps.secretStore, run),
         ]);
         const historySearchBeforeSeq =
@@ -527,10 +555,17 @@ export function createRunExecutor(deps: ExecutorDeps) {
           }
         }
         const connectedComposio = mergeConnectedPlugins(composioRows, liveSlugs);
-        const connectedPlugins = selectRunConnections(
+        const allConnectedPlugins = selectRunConnections(
           storedConnections,
           connectedComposio.map((connection) => connection.provider),
         );
+        // A visitor's run knows only the apps the owner ticked for the number.
+        const connectedPlugins = visitorRun
+          ? allConnectedPlugins.filter((row) => {
+              const keys = new Set([...visitorTicked].map((key) => key.toLowerCase()));
+              return keys.has(row.provider.toLowerCase());
+            })
+          : allConnectedPlugins;
         const context = {
           operationId: runId,
           traceId: runId,
@@ -669,19 +704,19 @@ export function createRunExecutor(deps: ExecutorDeps) {
         ] = await Promise.all([
           discoveredPromise,
           loadCurrentTurnImages(deps, turnBlocks, context),
-          messagingChannelRun
+          withholdOwnerContext
             ? Promise.resolve("")
             : loadAgentMemoryContext(deps.memory, bot.id, context),
-          messagingChannelRun
+          withholdOwnerContext
             ? Promise.resolve(undefined)
             : loadWikiIndexContext(deps.prisma, { spaceId: run.spaceId, userId: run.userId }),
-          messagingChannelRun
+          withholdOwnerContext
             ? Promise.resolve("")
             : loadAgentScratchpadContext(deps, {
                 spaceId: run.spaceId,
                 botId: bot.id,
               }),
-          messagingChannelRun || !deps.ticketBoardEnabled
+          withholdOwnerContext || !deps.ticketBoardEnabled
             ? Promise.resolve(undefined)
             : loadAgentTicketContext(deps, {
                 spaceId: run.spaceId,
@@ -692,7 +727,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
         // What the team wrote down travels with the durable memory, so both are redacted and kept
         // out of a messaging channel's run the same way.
         const memoryContext = [durableMemoryContext, wikiContext].filter(Boolean).join("\n\n");
-        const semanticMemoryEnabled = Boolean(semanticMemory) && !messagingChannelRun;
+        const semanticMemoryEnabled = Boolean(semanticMemory) && !withholdOwnerContext;
         let recalledMemory = "";
         let recallSucceeded = false;
         if (recalled) {
@@ -964,6 +999,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
         // Calls carry no schema flag: the sending client encodes them in the clientNonce.
         const sourceClientNonce = sourceMessage?.clientNonce ?? null;
         // A follow-up can be queued by a bot (group handoffs); only the user's own counts.
+        // A visitor's message is a user-role message on a messaging run, but never the owner's.
         const ownerStartedRun = isOwnerStartedRun(run.trigger, sourceMessage?.role === "user");
         // A hang-up run has no source message: its own nonce carries the call it closes.
         const callEndRun = run.trigger === "call_end";
@@ -988,6 +1024,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
             mediaVideoEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.video),
             cloudAgentEnabled: cloudAgentsEnabled(cloudAgent, run.spaceId),
             messagingChannelRun,
+            visitorRun,
             voiceCall,
             disabledBuiltinTools: bot.disabledBuiltinTools,
             fleetManagement: bot.fleetManagement,
@@ -999,15 +1036,19 @@ export function createRunExecutor(deps: ExecutorDeps) {
           }),
           // Cross-owner agent connections only exist for chat-linked bots.
           ...(hasMessagingIdentity &&
+          !visitorRun &&
           bot.crossSpaceCommunication === true &&
           !isBackgroundRunTrigger(run.trigger) &&
           run.trigger !== "created"
             ? agentConnectionTools.filter((tool) => !disabledBuiltinTools.has(tool.name))
             : []),
         ];
-        const exposedConnectorTools = discovered.filter(
+        const notBuiltin = discovered.filter(
           (tool) => !builtinAgentTools.some((builtin) => builtin.name === tool.name),
         );
+        const exposedConnectorTools = visitorRun
+          ? visitorConnectorTools(notBuiltin, visitorTicked)
+          : notBuiltin;
         const connectorTools = new Map(
           exposedConnectorTools.map((tool) => [tool.name, tool] as const),
         );
@@ -1058,8 +1099,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
           computerKind,
           disabledBuiltinTools,
         );
+        // The owner's operating system, home folder and shell are not for a visitor.
         const hostEnvironment =
-          computerKind === "desktop"
+          computerKind === "desktop" && !visitorRun
             ? await deps.sandbox
                 .environment?.(
                   {
@@ -1302,7 +1344,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
         const runtimeHistory = [...historicalContext, ...historyWithImages];
         // Without a roster a bot only knows the bots it spawned itself.
         const [teammates, groups] = await Promise.all([
-          thread.groupId
+          thread.groupId || visitorRun
             ? []
             : deps.prisma.bot.findMany({
                 where: {
@@ -1316,7 +1358,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 orderBy: { createdAt: "asc" },
                 take: BOT_DIRECTORY_LIMIT,
               }),
-          !thread.groupId
+          !thread.groupId && !visitorRun
             ? loadBotGroups(deps.prisma, run, {
                 allGroups:
                   bot.squadRouting &&

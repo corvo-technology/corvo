@@ -78,6 +78,77 @@ function setup(options: Setup = {}) {
   return { deps, prompt, update, enqueue, announce, transcribe, runId, runUpdate };
 }
 
+describe("a visitor's voice note", () => {
+  const visitorBlocks = [
+    { kind: "text", text: "hi" },
+    voice("art-1"),
+    { kind: "visitor_message", installationId: "inst-1", conversationId: "conv-1" },
+  ];
+
+  it("is transcribed without being allowed to cause a download", async () => {
+    const { deps, transcribe } = setup({ blocks: visitorBlocks });
+    await runAudioTranscribeJob(deps, { runId: "run-1" });
+    expect(transcribe).toHaveBeenCalledWith(expect.objectContaining({ noDownload: true }));
+  });
+
+  it("leaves the owner's own audio free to download", async () => {
+    const { deps, transcribe } = setup();
+    await runAudioTranscribeJob(deps, { runId: "run-1" });
+    expect(transcribe).toHaveBeenCalledWith(expect.not.objectContaining({ noDownload: true }));
+  });
+
+  it("is attached with a note when too many are waiting on the same number, and the run still starts", async () => {
+    const gate = { run: async () => "full" as const };
+    const { deps, prompt, enqueue, transcribe } = setup({ blocks: visitorBlocks });
+    await runAudioTranscribeJob({ ...deps, visitorGate: gate }, { runId: "run-1" });
+    expect(transcribe).not.toHaveBeenCalled();
+    expect(prompt.current).toContain("too many audio messages were sent at once");
+    expect(enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
+  });
+
+  it("never parks a second job of the same number waiting for the first, which would hold a worker slot", async () => {
+    let finishFirst!: () => void;
+    const firstDone = new Promise<void>((resolve) => {
+      finishFirst = resolve;
+    });
+    const slow = setup({
+      blocks: visitorBlocks,
+      outcome: async () => {
+        await firstDone;
+        return { status: "transcribed", text: "olá", language: "pt" };
+      },
+    });
+    const second = setup({ blocks: visitorBlocks, runId: "run-2" });
+    const first = runAudioTranscribeJob(slow.deps, { runId: "run-1" });
+    await Promise.resolve();
+    // The second returns at once, with a note, while the first is still working.
+    await runAudioTranscribeJob(second.deps, { runId: "run-2" });
+    expect(second.transcribe).not.toHaveBeenCalled();
+    expect(second.prompt.current).toContain("too many audio messages were sent at once");
+    finishFirst();
+    await first;
+  });
+
+  it("goes through the gate keyed by the number, never the person", async () => {
+    const keys: string[] = [];
+    const gate = {
+      run: async <T>(key: string, task: () => Promise<T>) => (keys.push(key), task()),
+    };
+    const { deps } = setup({ blocks: visitorBlocks });
+    await runAudioTranscribeJob({ ...deps, visitorGate: gate }, { runId: "run-1" });
+    expect(keys).toEqual(["inst-1"]);
+  });
+
+  it("keeps the transcript inside the frame the visitor's words sit in", async () => {
+    const prompt = '<<<\nhi\n\nUser attached file "memo.ogg" (audio/ogg, 4000 bytes).\n>>>';
+    const { deps, prompt: current } = setup({ blocks: visitorBlocks, prompt });
+    await runAudioTranscribeJob(deps, { runId: "run-1" });
+    expect(current.current.indexOf("Machine transcript")).toBeLessThan(
+      current.current.lastIndexOf(">>>"),
+    );
+  });
+});
+
 describe("runAudioTranscribeJob", () => {
   it("releases the run with the transcript in its prompt, right after the file line", async () => {
     const { deps, prompt, enqueue } = setup();

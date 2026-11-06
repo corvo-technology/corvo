@@ -546,6 +546,7 @@ msgstr "Actividad"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/ScratchpadSection.tsx
 #: src/pages/shell/agent-import.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Add"
 msgstr "Agregar"
 
@@ -961,6 +962,10 @@ msgstr "Aprueba este servidor para que tu agente use sus herramientas."
 msgid "Apps"
 msgstr "Apps"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Apps visitors can use"
+msgstr "Apps que pueden usar los visitantes"
+
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "Archivar"
@@ -1301,6 +1306,7 @@ msgstr "No puede leer imágenes"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WhatsAppNumbers.tsx
 #: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "Cancelar"
@@ -1979,6 +1985,7 @@ msgstr "No se pudo completar la actualización. Inténtalo de nuevo."
 #: src/pages/AppCatalogGrid.tsx
 #: src/pages/ChatAppsRow.tsx
 #: src/pages/PluginsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not connect"
 msgstr "No se pudo conectar"
 
@@ -2062,6 +2069,10 @@ msgstr "No se pudo eliminar el espacio"
 #: src/pages/Artifacts.tsx
 msgid "Could not delete this artifact."
 msgstr "No se pudo eliminar este artefacto."
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Could not disconnect"
+msgstr "No se pudo desconectar"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Could not disconnect memory provider"
@@ -2383,6 +2394,7 @@ msgid "Could not undo the import"
 msgstr "No se pudo deshacer la importación"
 
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not update"
 msgstr "No se pudo actualizar"
 
@@ -2740,6 +2752,7 @@ msgstr "Descartar grabación"
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Disconnect"
 msgstr "Desconectar"
 
@@ -2750,6 +2763,10 @@ msgstr "¿Desconectar {disconnectName}?"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Disconnect Self-hosted"
 msgstr "Desconectar Self-hosted"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Disconnected"
+msgstr "Desconectado"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Disconnected {disconnectName}."
@@ -4748,6 +4765,7 @@ msgid "Paste your API key, then test again."
 msgstr "Pega tu clave de API y vuelve a probar."
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Pause"
 msgstr "Pausar"
 
@@ -4897,6 +4915,10 @@ msgstr "Solicitud de incorporación"
 #: src/pages/GroupPanel.tsx
 msgid "Purpose"
 msgstr "Propósito"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "QR code"
+msgstr "Código QR"
 
 #: src/pages/ActivityList.tsx
 msgid "Queued"
@@ -5281,6 +5303,7 @@ msgid "Restoring your workspace"
 msgstr "Restaurando tu espacio"
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Resume"
 msgstr "Reanudar"
 
@@ -6334,6 +6357,10 @@ msgstr "Este servidor ya está conectado. Desconéctalo primero para autorizarlo
 #: src/pages/model-settings/connection-controls.tsx
 msgid "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider."
 msgstr "Este inicio de sesión por suscripción aún no está disponible en Rook. Usa una credencial de despliegue o elige otro proveedor."
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "This uses WhatsApp without the official API. WhatsApp can ban the number."
+msgstr "Esto usa WhatsApp sin la API oficial. WhatsApp puede bloquear el número."
 
 #: src/pages/Artifacts.tsx
 msgid "This week"

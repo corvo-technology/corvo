@@ -134,6 +134,11 @@ export interface AppEnv {
   larkDomain: string | undefined;
   /** Unknown chat senders auto-provision their own accounts when true. */
   messagingOpenSignup: boolean;
+  /**
+   * Lets people link their own WhatsApp numbers by QR (an unofficial protocol: the number can be
+   * banned). Always on in the desktop app's engine; a server must turn it on.
+   */
+  whatsappLinkedDevicesEnabled: boolean;
   /** Bot that owns team/external chat rooms on the messaging surface. */
   teamChatBotId: string | undefined;
   /** Optional model override for ambient engagement judging. */
@@ -307,6 +312,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     larkEncryptKey: optional(source.LARK_ENCRYPT_KEY),
     larkDomain: optional(source.LARK_DOMAIN),
     messagingOpenSignup: source.MESSAGING_OPEN_SIGNUP === "true",
+    whatsappLinkedDevicesEnabled:
+      source.WHATSAPP_LINKED_DEVICES_ENABLED === "1" ||
+      source.WHATSAPP_LINKED_DEVICES_ENABLED === "true",
     teamChatBotId: optional(source.TEAM_CHAT_BOT_ID) ?? optional(source.SLACK_CORVO_BOT_ID),
     teamChatJudgeProvider: optional(source.TEAM_CHAT_JUDGE_PROVIDER),
     teamChatJudgeModel: optional(source.TEAM_CHAT_JUDGE_MODEL),

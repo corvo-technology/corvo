@@ -1,12 +1,13 @@
 import type { JobPublisher } from "@corvo/adapter-kit";
 import { messagingDeliverJob, runContinueJob } from "@corvo/adapter-kit";
-import type { Actor } from "@corvo/contracts";
+import type { Actor, MessageBlock } from "@corvo/contracts";
 import { isAttachmentAudioMimeType } from "@corvo/contracts";
-import { insertAttachmentNotes } from "@corvo/core";
+import { insertAttachmentNotes, visitorInstallationId } from "@corvo/core";
 import type { PrismaClient, ThreadEvents } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
 import type { TranscriptionOutcome } from "./audio-transcription.js";
 import { transcriptNote } from "./audio-transcription.js";
+import { createKeyedGate } from "./keyed-gate.js";
 import { publishMessage } from "./run-messages.js";
 
 /** The parts of a run the job and its notices need. */
@@ -25,11 +26,24 @@ export interface AudioTranscribeJobDeps {
   transcribe(input: {
     artifactId: string;
     actor: Actor;
+    /** Set for a visitor's audio: it must not cause a speech model to be downloaded. */
+    noDownload?: boolean;
     onPreparingModel: (model: { id: string; sizeBytes: number }) => Promise<void>;
   }): Promise<TranscriptionOutcome>;
+  /** Bounds a visitor's audio work per number. A shared default is used when absent. */
+  visitorGate?: VisitorAudioGate;
   /** Tells the owner a model is being fetched: in the conversation and, for a chat app, there. */
   announce(run: AnnouncedRun, text: string): Promise<void>;
 }
+
+/** One transcription at a time per number; the rest are turned away at once. */
+export interface VisitorAudioGate {
+  run<T>(key: string, task: () => Promise<T>): Promise<T | "full">;
+}
+// Nothing waits: a job that waited would hold one of the worker's few slots for as long as the
+// transcription before it takes, and a stranger could fill them all and stall the owner's runs.
+const VISITOR_AUDIO_QUEUE = 0;
+const defaultVisitorGate: VisitorAudioGate = createKeyedGate({ maxWaiting: VISITOR_AUDIO_QUEUE });
 
 /** One short line: the owner sees why nothing has happened yet. */
 export function modelDownloadNotice(sizeBytes: number): string {
@@ -85,11 +99,15 @@ export async function runAudioTranscribeJob(
     : null;
   const notes: Array<{ name: string; mimeType: string; size: number; note: string }> = [];
   let announced = false;
+  // A visitor's audio is bounded per number and never starts a model download.
+  const visitorNumber = visitorInstallationId(message?.blocks as MessageBlock[] | undefined);
+  const gate = deps.visitorGate ?? defaultVisitorGate;
   for (const block of audioFileBlocks(message?.blocks)) {
-    const outcome = await deps
-      .transcribe({
+    const transcribeOne = () =>
+      deps.transcribe({
         artifactId: block.artifactId,
         actor,
+        ...(visitorNumber ? { noDownload: true } : {}),
         onPreparingModel: async ({ sizeBytes }) => {
           if (announced) return;
           announced = true;
@@ -99,7 +117,12 @@ export async function runAudioTranscribeJob(
             });
           });
         },
-      })
+      });
+    const guarded = visitorNumber ? gate.run(visitorNumber, transcribeOne) : transcribeOne();
+    const outcome: TranscriptionOutcome = await guarded
+      .then((result) =>
+        result === "full" ? ({ status: "failed", reason: "busy" } as const) : result,
+      )
       .catch((error: unknown) => {
         getLogger().error("audio transcription failed", error);
         return unavailable;

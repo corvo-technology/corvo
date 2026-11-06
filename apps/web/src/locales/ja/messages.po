@@ -546,6 +546,7 @@ msgstr "アクティビティ"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/ScratchpadSection.tsx
 #: src/pages/shell/agent-import.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Add"
 msgstr "追加"
 
@@ -961,6 +962,10 @@ msgstr "このサーバーを承認すると、エージェントがそのツー
 msgid "Apps"
 msgstr "アプリ"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Apps visitors can use"
+msgstr "訪問者が使えるアプリ"
+
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "アーカイブ"
@@ -1301,6 +1306,7 @@ msgstr "画像を読み取れません"
 #: src/pages/shell/bot-credentials.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/WhatsAppNumbers.tsx
 #: src/pages/WikiBrowser.tsx
 msgid "Cancel"
 msgstr "キャンセル"
@@ -1979,6 +1985,7 @@ msgstr "アップデートを完了できませんでした。もう一度お試
 #: src/pages/AppCatalogGrid.tsx
 #: src/pages/ChatAppsRow.tsx
 #: src/pages/PluginsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not connect"
 msgstr "接続できませんでした"
 
@@ -2062,6 +2069,10 @@ msgstr "スペースを削除できませんでした"
 #: src/pages/Artifacts.tsx
 msgid "Could not delete this artifact."
 msgstr "このアーティファクトを削除できませんでした。"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Could not disconnect"
+msgstr "切断できませんでした"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Could not disconnect memory provider"
@@ -2383,6 +2394,7 @@ msgid "Could not undo the import"
 msgstr "インポートを元に戻せませんでした"
 
 #: src/pages/ScratchpadSection.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Could not update"
 msgstr "更新できませんでした"
 
@@ -2740,6 +2752,7 @@ msgstr "録音を破棄"
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Disconnect"
 msgstr "切断"
 
@@ -2750,6 +2763,10 @@ msgstr "{disconnectName}を切断しますか？"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Disconnect Self-hosted"
 msgstr "Self-hostedを切断"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Disconnected"
+msgstr "切断済み"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Disconnected {disconnectName}."
@@ -4748,6 +4765,7 @@ msgid "Paste your API key, then test again."
 msgstr "APIキーを貼り付けてから、もう一度テストしてください。"
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Pause"
 msgstr "一時停止"
 
@@ -4897,6 +4915,10 @@ msgstr "プルリクエスト"
 #: src/pages/GroupPanel.tsx
 msgid "Purpose"
 msgstr "目的"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "QR code"
+msgstr "QRコード"
 
 #: src/pages/ActivityList.tsx
 msgid "Queued"
@@ -5281,6 +5303,7 @@ msgid "Restoring your workspace"
 msgstr "ワークスペースを復元中"
 
 #: src/pages/PartnershipSettingsPanel.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Resume"
 msgstr "再開"
 
@@ -6334,6 +6357,10 @@ msgstr "このサーバーはすでに接続されています。再度認可す
 #: src/pages/model-settings/connection-controls.tsx
 msgid "This subscription sign-in is not available in Rook yet. Use a deployment credential or choose another provider."
 msgstr "このサブスクリプションでのログインはRookではまだ利用できません。デプロイメントの認証情報を使用するか、別のプロバイダーを選択してください。"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "This uses WhatsApp without the official API. WhatsApp can ban the number."
+msgstr "これは公式APIを使わずにWhatsAppを利用します。番号が停止される可能性があります。"
 
 #: src/pages/Artifacts.tsx
 msgid "This week"

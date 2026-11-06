@@ -131,6 +131,8 @@ import {
   VoiceCredentialSchema,
   VoiceInfoSchema,
   VoiceStatusSchema,
+  WhatsAppLinkStatusSchema,
+  WhatsAppNumberSchema,
   WorkflowSchema,
 } from "./domain.js";
 import { ComputerCommandSchema, ProductEventSchema } from "./events.js";
@@ -1118,6 +1120,33 @@ export const appContract = {
       remove: oc.input(z.object({ id: Id })).output(z.object({ ok: z.literal(true) })),
     },
     status: oc.output(MessagingStatusSchema),
+    whatsapp: {
+      link: {
+        /** Starts linking a number to an agent and returns the id to poll for the QR code. */
+        start: oc.input(z.object({ botId: Id })).output(z.object({ linkId: z.string() })),
+        status: oc.input(z.object({ linkId: z.string() })).output(WhatsAppLinkStatusSchema),
+        /** Stops a link that was not scanned, so its connection to WhatsApp does not linger. */
+        cancel: oc
+          .input(z.object({ linkId: z.string() }))
+          .output(z.object({ ok: z.literal(true) })),
+      },
+      numbers: {
+        list: oc.output(
+          z.object({ available: z.boolean(), numbers: z.array(WhatsAppNumberSchema) }),
+        ),
+        update: oc
+          .input(
+            z.object({
+              id: Id,
+              botId: Id.optional(),
+              visitorConnectors: z.array(z.string().min(1).max(100)).max(50).optional(),
+              paused: z.boolean().optional(),
+            }),
+          )
+          .output(WhatsAppNumberSchema),
+        disconnect: oc.input(z.object({ id: Id })).output(z.object({ ok: z.literal(true) })),
+      },
+    },
     link: {
       /** Issue a short-lived code the user sends to the line from a chat app. */
       start: oc

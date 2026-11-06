@@ -28,6 +28,7 @@ import {
   ChatSdkMessagingSurface,
   CodexCatalogCache,
   ComposioConnector,
+  CompositeMessagingSurface,
   contentKeyProviderFromEnv,
   createAgentHomeStore,
   createArtifactStore,
@@ -48,6 +49,9 @@ import {
   createSecretStore,
   createTicketChangeNotifier,
   createWebProvider,
+  createWhatsAppLinkSurface,
+  createWhatsAppOutboxDrain,
+  deliverMessagingOutbound,
   deploymentModelUsageLookup,
   EmailEmulator,
   ExpoPushProvider,
@@ -60,6 +64,7 @@ import {
   isComposioEnabled,
   isMessagingSurfaceEnabled,
   isPipedreamEnabled,
+  linkedWhatsAppEnabled,
   McpConnector,
   McpOAuthBroker,
   messagingPlatformsFromEnv,
@@ -82,6 +87,8 @@ import {
   stripeBillingConfigFromEnv,
   toTeamChatInbound,
   verifyModelServesAgents,
+  WHATSAPP_LINK_PROVIDER,
+  WHATSAPP_THREAD_PREFIX,
   withSecretPersistence,
 } from "@corvo/adapters";
 import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@corvo/auth";
@@ -190,6 +197,7 @@ import {
 } from "./team-chat-startup.js";
 import { mountVoiceHttpRoutes, voiceAccountErrorStatus } from "./voice.js";
 import { mountWebhookHttpRoutes } from "./webhook.js";
+import { createWhatsAppInboundHandler } from "./whatsapp-inbound.js";
 
 /**
  * Native clients always send the app scheme, including in Expo Go, so no
@@ -424,9 +432,30 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     })
       ? new ChatSdkMessagingSurface(messagingPlatforms)
       : undefined);
-  const { messaging, installations: messagingInstallations } = messagingOverride
+  const { messaging: messagingBase, installations: messagingInstallations } = messagingOverride
     ? { messaging: messagingOverride, installations: undefined }
     : installedMessaging(prisma, secrets, env, legacyMessaging, jobs);
+  // Linked WhatsApp numbers: sockets live in this process, which also owns inbound and polling.
+  // Only the desktop engine, or a deployment whose operator opted in, ever has the transport.
+  const whatsappOn =
+    !messagingOverride &&
+    linkedWhatsAppEnabled({
+      desktopStackToken: env.desktopStackToken,
+      operatorSwitch: env.whatsappLinkedDevicesEnabled,
+    });
+  // Every number's lock is held on this one connection, kept apart from the pool the API's own
+  // queries use, so linking numbers never takes a connection those queries need. With a
+  // prisma override (tests) there is no database to lock through.
+  const whatsappLockPool =
+    whatsappOn && !prismaOverride
+      ? createPool(env.databaseUrl, { poolMax: 1, applicationName: "corvo-api-whatsapp-locks" })
+      : undefined;
+  const whatsapp = whatsappOn
+    ? createWhatsAppLinkSurface({ prisma, secrets, pool: whatsappLockPool })
+    : undefined;
+  const messaging = whatsapp
+    ? new CompositeMessagingSurface(messagingBase, whatsapp)
+    : messagingBase;
   // An inbox service calls back over the internet, so a loopback or plain-http address cannot host it.
   const publicOrigin = new URL(env.authUrl);
   const emailAgentPublicUrl =
@@ -723,6 +752,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     dataDir: env.dataDir,
     billing,
     messagingInstallations,
+    whatsapp,
     emailAgentPublicUrl,
     messaging: messagingStatusSource(messaging, env.messagingOpenSignup),
     env: {
@@ -1001,6 +1031,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
   let messagingStopped = false;
   let stopInstalledBridges: (() => Promise<void>) | undefined;
   let clearMessagingRetryDelay: (() => void) | undefined;
+  let stopWhatsAppOutboxDrain: (() => void) | undefined;
   let messagingInitTask: Promise<void> | undefined;
   let clearTeamChatRetryDelay: (() => void) | undefined;
   let teamChatInitTask: Promise<void> | undefined;
@@ -1290,9 +1321,24 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         })();
       }
     }
+    // A linked WhatsApp number's messages are owner or visitor conversations, not a chat identity.
+    const whatsappInbound = whatsapp
+      ? createWhatsAppInboundHandler({
+          prisma,
+          events,
+          jobs,
+          audio,
+          storeAttachment: inboundDeps.storeAttachment,
+          allowRun: (installationId, senderId) => whatsapp.allowIncoming(installationId, senderId),
+        })
+      : undefined;
     const handleInbound = async (event: MessagingInboundEvent) => {
       if (event.type !== "message") {
         await applyMessagingOutboundStatus(prisma, event);
+        return;
+      }
+      if (event.provider === WHATSAPP_LINK_PROVIDER) {
+        await whatsappInbound?.(event);
         return;
       }
       if (event.installationBotId && !event.isDirect) {
@@ -1328,6 +1374,33 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     };
     messaging.onInbound((event) => runAsSystem("messaging inbound", () => handleInbound(event)));
     mountMessagingWebhookRoutes(app, { messaging });
+    if (whatsapp) {
+      stopWhatsAppOutboxDrain = createWhatsAppOutboxDrain({
+        drain: (outboxScope) =>
+          runAsSystem("send queued WhatsApp replies", () =>
+            deliverMessagingOutbound(
+              {
+                prisma,
+                messaging,
+                events,
+                jobs,
+                artifacts,
+                // Only the numbers this process holds: another API process sends the rest.
+                outboxScope: { ...outboxScope, holds: (threadId) => whatsapp.holds(threadId) },
+              },
+              {},
+              {
+                operationId: "whatsapp.outbox:drain",
+                traceId: "whatsapp.outbox:drain",
+                spaceId: "",
+                userId: "",
+                signal: shutdown.signal,
+              },
+            ),
+          ),
+        onError: (error) => getLogger().error("whatsapp outbox drain failed", error),
+      });
+    }
     // Start polling-mode adapters (e.g. Telegram with no public webhook URL
     // registered) immediately rather than waiting for the first webhook
     // POST or outbound send to lazily trigger it. This is the process that
@@ -1415,6 +1488,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       shutdown.abort();
       oauthLogins.abortAll();
       messagingStopped = true;
+      stopWhatsAppOutboxDrain?.();
       clearMessagingRetryDelay?.();
       clearTeamChatRetryDelay?.();
       receipts?.stop();
@@ -1440,6 +1514,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       await prisma.$disconnect().catch(() => undefined);
       await created.pool?.end().catch(() => undefined);
       await ownedJobPool?.end().catch(() => undefined);
+      await whatsappLockPool?.end().catch(() => undefined);
       await analytics?.flush();
       await logger.flush({ timeoutMs: 2_000 });
     },

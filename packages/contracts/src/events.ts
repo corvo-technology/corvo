@@ -352,6 +352,25 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     hop: z.number().int().nonnegative().optional(),
   }),
   z.object({
+    /**
+     * Marks a message from an outside person who wrote to a linked WhatsApp number. The run it
+     * starts is a visitor run, which is offered a small allowlist of tools.
+     */
+    kind: z.literal("visitor_message"),
+    installationId: Id,
+    conversationId: Id,
+  }),
+  z.object({
+    /**
+     * Marks a message the owner wrote in their own "Message yourself" chat of a linked WhatsApp
+     * number, so the agent's answer goes back to that chat and not to another app.
+     */
+    kind: z.literal("linked_chat"),
+    installationId: Id,
+    /** The provider thread the answer is sent to. */
+    threadId: z.string(),
+  }),
+  z.object({
     /** Shown in the sending bot's own chat, so the user can see what it sent. */
     kind: z.literal("bot_message_sent"),
     toBotId: Id,
