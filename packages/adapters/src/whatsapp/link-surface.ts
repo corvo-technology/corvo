@@ -1,0 +1,418 @@
+import { randomBytes } from "node:crypto";
+import type {
+  AdapterContext,
+  MessagingInboundEvent,
+  MessagingInboundMessage,
+  MessagingSendRequest,
+  MessagingSendResult,
+  MessagingSurface,
+} from "@corvo/adapter-kit";
+import type { PrismaClient } from "@corvo/db";
+import { runAsSystem } from "@corvo/db";
+import { getLogger } from "@corvo/logging";
+import { classifyIncoming } from "./classify.js";
+import type {
+  WhatsAppAuthStore,
+  WhatsAppClientFactory,
+  WhatsAppConnectionEvent,
+  WhatsAppIncoming,
+  WhatsAppLinkClient,
+} from "./client.js";
+import type { AcquireNumberLock } from "./number-lock.js";
+import { MemoryWhatsAppAuthStore } from "./scripted-client.js";
+
+export const WHATSAPP_LINK_PROVIDER = "whatsapp-web";
+const LINK_TTL_MS = 10 * 60_000;
+
+export interface WhatsAppLinkSurfaceDeps {
+  prisma: PrismaClient;
+  createClient: WhatsAppClientFactory;
+  /** Where a number's session lives once it is linked. */
+  authStoreFor(installation: { id: string; spaceId: string; userId: string }): WhatsAppAuthStore;
+  acquireLock: AcquireNumberLock;
+  now?: () => Date;
+  newId?: () => string;
+  /** How often a number another process holds is tried again. */
+  retryMs?: number;
+}
+
+export type LinkStatus =
+  | { state: "qr"; qr?: string }
+  | { state: "linked"; number: string }
+  | { state: "failed" };
+
+type Installation = {
+  id: string;
+  spaceId: string;
+  userId: string;
+  botId: string;
+  createdAt: Date;
+  pausedAt: Date | null;
+  resumedAt: Date | null;
+  status: string;
+};
+
+type Running = { client: WhatsAppLinkClient; release: () => Promise<void> };
+type PendingLink = {
+  status: LinkStatus;
+  client: WhatsAppLinkClient;
+  memory: MemoryWhatsAppAuthStore;
+  expires: number;
+};
+
+/** Releasing a lock must never stop a shutdown or a disconnect. */
+async function safeRelease(release: () => Promise<void>): Promise<void> {
+  try {
+    await release();
+  } catch (error) {
+    getLogger().warn("whatsapp number lock release failed", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/** "+15550100" shown as "+•••••••0100": the length is not given away. */
+export function maskNumber(number: string): string {
+  const digits = number.replace(/\D/g, "");
+  return `+${"•".repeat(7)}${digits.slice(-4)}`;
+}
+
+const extensionFor = (mimeType: string) =>
+  mimeType.startsWith("audio/ogg")
+    ? "voice-note.ogg"
+    : mimeType === "image/jpeg"
+      ? "image.jpg"
+      : mimeType.startsWith("image/")
+        ? `image.${mimeType.slice(6)}`
+        : "file";
+
+/**
+ * Holds one WhatsApp Web socket per linked number inside this process, and turns what arrives into
+ * the same inbound events the other messaging surfaces emit.
+ */
+export class WhatsAppLinkSurface implements MessagingSurface {
+  private sink: ((event: MessagingInboundEvent) => Promise<void>) | undefined;
+  private readonly running = new Map<string, Running>();
+  private readonly links = new Map<string, PendingLink>();
+  private readonly waiting = new Set<string>();
+  private retryTimer: ReturnType<typeof setInterval> | undefined;
+  private stopped = false;
+
+  constructor(private readonly deps: WhatsAppLinkSurfaceDeps) {}
+
+  private now() {
+    return this.deps.now?.() ?? new Date();
+  }
+  private newId() {
+    return this.deps.newId?.() ?? randomBytes(16).toString("hex");
+  }
+
+  describe() {
+    return {
+      id: WHATSAPP_LINK_PROVIDER,
+      contractVersion: "1",
+      adapterVersion: "1",
+      capabilities: { providers: [WHATSAPP_LINK_PROVIDER] },
+    };
+  }
+  platforms() {
+    return [
+      {
+        provider: WHATSAPP_LINK_PROVIDER,
+        capabilities: { direct: true, groups: false, receipt: null, files: false },
+      },
+    ];
+  }
+  handleWebhook(): null {
+    return null;
+  }
+  onInbound(sink: (event: MessagingInboundEvent) => Promise<void>) {
+    this.sink = sink;
+  }
+
+  async initialize(): Promise<void> {
+    this.stopped = false;
+    const rows = await runAsSystem("list linked whatsapp numbers", () =>
+      this.deps.prisma.messagingInstallation.findMany({
+        where: { provider: WHATSAPP_LINK_PROVIDER, status: "active" },
+      }),
+    );
+    for (const row of rows) await this.activate(row as Installation);
+  }
+
+  async shutdown(): Promise<void> {
+    this.stopped = true;
+    if (this.retryTimer) clearInterval(this.retryTimer);
+    this.retryTimer = undefined;
+    this.waiting.clear();
+    for (const link of this.links.values()) await link.client.close().catch(() => undefined);
+    this.links.clear();
+    const all = [...this.running.entries()];
+    this.running.clear();
+    for (const [, running] of all) {
+      await running.client.close().catch(() => undefined);
+      await safeRelease(running.release);
+    }
+  }
+
+  // ---- linking ----
+
+  async startLink(input: {
+    spaceId: string;
+    userId: string;
+    botId: string;
+  }): Promise<{ linkId: string }> {
+    const now = this.now().getTime();
+    for (const [id, link] of this.links) if (link.expires < now) this.links.delete(id);
+    const linkId = this.newId();
+    const memory = new MemoryWhatsAppAuthStore();
+    const client = this.deps.createClient(memory);
+    const link: PendingLink = {
+      status: { state: "qr" },
+      client,
+      memory,
+      expires: now + LINK_TTL_MS,
+    };
+    this.links.set(linkId, link);
+    client.onConnection((event) => {
+      if (event.state === "qr") link.status = { state: "qr", qr: event.qr };
+      else if (event.state === "open") void this.finishLink(link, event.number, input);
+      else if (event.reason !== "network") link.status = { state: "failed" };
+    });
+    await client.connect();
+    return { linkId };
+  }
+
+  linkStatus(linkId: string): LinkStatus {
+    return this.links.get(linkId)?.status ?? { state: "failed" };
+  }
+
+  private async finishLink(
+    link: PendingLink,
+    number: string,
+    input: { spaceId: string; userId: string; botId: string },
+  ): Promise<void> {
+    try {
+      const workspaceId = number.replace(/\D/g, "");
+      const existing = await runAsSystem("find linked whatsapp number", () =>
+        this.deps.prisma.messagingInstallation.findUnique({
+          where: { provider_workspaceId: { provider: WHATSAPP_LINK_PROVIDER, workspaceId } },
+        }),
+      );
+      if (existing && (existing.spaceId !== input.spaceId || existing.userId !== input.userId)) {
+        link.status = { state: "failed" };
+        await link.client.close();
+        return;
+      }
+      const id = existing?.id ?? this.newId();
+      const data = {
+        botId: input.botId,
+        status: "active",
+        pausedAt: null,
+        resumedAt: null,
+      };
+      const row = existing
+        ? await runAsSystem("relink whatsapp number", () =>
+            this.deps.prisma.messagingInstallation.update({ where: { id }, data }),
+          )
+        : await runAsSystem("link whatsapp number", () =>
+            this.deps.prisma.messagingInstallation.create({
+              data: {
+                id,
+                provider: WHATSAPP_LINK_PROVIDER,
+                workspaceId,
+                workspaceName: maskNumber(number),
+                spaceId: input.spaceId,
+                userId: input.userId,
+                ciphertext: "",
+                ...data,
+              },
+            }),
+          );
+      // The session moves from memory to the number's own encrypted store.
+      const store = this.deps.authStoreFor({ id, spaceId: input.spaceId, userId: input.userId });
+      for (const [name, value] of link.memory.entries()) await store.set(name, value);
+      await link.client.close();
+      link.status = { state: "linked", number: maskNumber(number) };
+      await this.activate(row as Installation);
+    } catch (error) {
+      getLogger().error("whatsapp link failed", error);
+      link.status = { state: "failed" };
+    }
+  }
+
+  // ---- holding sockets ----
+
+  private async activate(row: Installation): Promise<void> {
+    if (this.running.has(row.id) || this.stopped) return;
+    const release = await this.deps.acquireLock(row.id);
+    if (!release) {
+      // Another process holds this number; try again later, which also covers it dying.
+      this.waiting.add(row.id);
+      this.scheduleRetry();
+      return;
+    }
+    this.waiting.delete(row.id);
+    const client = this.deps.createClient(this.deps.authStoreFor(row));
+    const running: Running = { client, release };
+    this.running.set(row.id, running);
+    client.onConnection((event) => void this.onConnection(row.id, event));
+    client.onMessage((message) => void this.deliver(row.id, message));
+    try {
+      await client.connect();
+    } catch (error) {
+      getLogger().error("whatsapp connect failed", error);
+    }
+  }
+
+  private scheduleRetry() {
+    if (this.retryTimer || this.stopped) return;
+    this.retryTimer = setInterval(() => void this.retryWaiting(), this.deps.retryMs ?? 30_000);
+  }
+
+  private async retryWaiting() {
+    for (const id of [...this.waiting]) {
+      const row = await runAsSystem("reload linked whatsapp number", () =>
+        this.deps.prisma.messagingInstallation.findUnique({ where: { id } }),
+      );
+      if (row?.status !== "active") this.waiting.delete(id);
+      else await this.activate(row as Installation);
+    }
+    if (this.waiting.size === 0 && this.retryTimer) {
+      clearInterval(this.retryTimer);
+      this.retryTimer = undefined;
+    }
+  }
+
+  private async onConnection(id: string, event: WhatsAppConnectionEvent) {
+    if (event.state !== "closed" || event.reason === "network") return;
+    // WhatsApp ended this device's session, so there is nothing to reconnect.
+    await runAsSystem("mark whatsapp number disconnected", () =>
+      this.deps.prisma.messagingInstallation.update({
+        where: { id },
+        data: { status: "disconnected" },
+      }),
+    ).catch((error: unknown) => getLogger().error("whatsapp status update failed", error));
+    const running = this.running.get(id);
+    this.running.delete(id);
+    if (running) await safeRelease(running.release);
+  }
+
+  private async deliver(id: string, message: WhatsAppIncoming) {
+    try {
+      const row = await runAsSystem("read linked whatsapp number", () =>
+        this.deps.prisma.messagingInstallation.findUnique({ where: { id } }),
+      );
+      if (row?.status !== "active") return;
+      const audience = classifyIncoming(message, {
+        paused: row.pausedAt !== null,
+        linkedAt: row.createdAt,
+        resumedAt: row.resumedAt ?? undefined,
+        now: this.now(),
+      });
+      if (audience === "ignore") return;
+      const media = message.media;
+      const event: MessagingInboundMessage = {
+        type: "message",
+        provider: WHATSAPP_LINK_PROVIDER,
+        handle: message.messageId,
+        threadId: `${WHATSAPP_LINK_PROVIDER}:${id}:${message.chat.id}`,
+        isDirect: true,
+        from: message.senderId,
+        fromLabel: message.senderName ?? null,
+        channelName: null,
+        participants: [],
+        content: message.text,
+        mediaUrl: null,
+        ...(media
+          ? {
+              attachments: [
+                {
+                  name: media.name ?? extensionFor(media.mimeType),
+                  mimeType: media.mimeType,
+                  size: media.size,
+                  fetch: media.download,
+                },
+              ],
+            }
+          : {}),
+        installationId: id,
+        installationSpaceId: row.spaceId,
+        installationBotId: row.botId,
+        audience,
+      };
+      await this.sink?.(event);
+    } catch (error) {
+      getLogger().error("whatsapp inbound failed", error);
+    }
+  }
+
+  // ---- managing numbers ----
+
+  async pause(installationId: string): Promise<void> {
+    await runAsSystem("pause whatsapp number", () =>
+      this.deps.prisma.messagingInstallation.update({
+        where: { id: installationId },
+        data: { pausedAt: this.now() },
+      }),
+    );
+  }
+
+  async resume(installationId: string): Promise<void> {
+    await runAsSystem("resume whatsapp number", () =>
+      this.deps.prisma.messagingInstallation.update({
+        where: { id: installationId },
+        data: { pausedAt: null, resumedAt: this.now() },
+      }),
+    );
+  }
+
+  /** Logs the device out of WhatsApp, deletes the session and the number. */
+  async disconnect(installationId: string): Promise<void> {
+    const running = this.running.get(installationId);
+    this.running.delete(installationId);
+    this.waiting.delete(installationId);
+    try {
+      await running?.client.logout();
+    } catch (error) {
+      getLogger().warn("whatsapp logout failed; the session is deleted anyway", {
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
+    await runAsSystem("delete linked whatsapp number", () =>
+      this.deps.prisma.messagingInstallation.delete({ where: { id: installationId } }),
+    );
+    if (running) await safeRelease(running.release);
+  }
+
+  // ---- MessagingSurface ----
+
+  private target(threadId: string): { client: WhatsAppLinkClient; chatId: string } {
+    const prefix = `${WHATSAPP_LINK_PROVIDER}:`;
+    if (!threadId.startsWith(prefix)) throw new Error("Not a WhatsApp thread");
+    const rest = threadId.slice(prefix.length);
+    const split = rest.indexOf(":");
+    const installationId = rest.slice(0, split);
+    const running = this.running.get(installationId);
+    if (split < 0 || !running) throw new Error("That WhatsApp number is not connected here");
+    return { client: running.client, chatId: rest.slice(split + 1) };
+  }
+
+  async sendToThread(
+    request: MessagingSendRequest,
+    _context: AdapterContext,
+  ): Promise<MessagingSendResult> {
+    const { client, chatId } = this.target(request.threadId);
+    const sent = await client.sendText(chatId, request.body);
+    return { handle: sent.id };
+  }
+
+  async openDirectThread(): Promise<string> {
+    throw new Error("A WhatsApp conversation starts when the other person writes first");
+  }
+
+  async acknowledge(threadId: string, handle: string, _context?: AdapterContext): Promise<void> {
+    const { client, chatId } = this.target(threadId);
+    await client.markRead(chatId, handle).catch(() => undefined);
+  }
+}

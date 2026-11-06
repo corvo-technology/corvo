@@ -18,6 +18,9 @@ export class MemoryWhatsAppAuthStore implements WhatsAppAuthStore {
   async clear() {
     this.values.clear();
   }
+  entries(): Array<[string, string]> {
+    return [...this.values.entries()];
+  }
 }
 
 /** A client a test drives by hand: it never touches WhatsApp. */
