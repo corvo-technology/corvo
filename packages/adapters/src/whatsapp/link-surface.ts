@@ -315,6 +315,8 @@ export class WhatsAppLinkSurface implements MessagingSurface {
         now: this.now(),
       });
       if (audience === "ignore") return;
+      // Nothing to do with the owner's own old notes.
+      if (audience === "record" && message.chat.kind === "self") return;
       const media = message.media;
       const event: MessagingInboundMessage = {
         type: "message",

@@ -228,8 +228,8 @@ async function handleDirectEvent(
 }
 
 /** Download provider-held files into thread artifacts, mirroring the team-chat path. */
-async function storeInboundMedia(
-  deps: MessagingInboundDeps,
+export async function storeInboundMedia(
+  deps: Pick<MessagingInboundDeps, "storeAttachment">,
   ids: ProvisionedMessagingIdentity,
   event: MessagingInboundMessage,
 ) {
