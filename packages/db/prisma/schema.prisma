@@ -1282,9 +1282,9 @@ model Artifact {
 
   // Null on the first version; that row's id is the family's stable id.
   rootArtifactId String?
-  rootArtifact   Artifact?  @relation("ArtifactVersions", fields: [rootArtifactId], references: [id], onDelete: Cascade)
-  versions       Artifact[] @relation("ArtifactVersions")
-  version        Int        @default(1)
+  rootArtifact   Artifact?           @relation("ArtifactVersions", fields: [rootArtifactId], references: [id], onDelete: Cascade)
+  versions       Artifact[]          @relation("ArtifactVersions")
+  version        Int                 @default(1)
   // Client-chosen per upload so a retried upload that already landed returns this row.
   clientNonce    String?
   transcript     ArtifactTranscript?
@@ -2041,24 +2041,43 @@ model UserActionAutoReviewPreference {
 }
 
 model MessagingInstallation {
-  id            String              @id @default(cuid())
-  provider      String
-  workspaceId   String
-  workspaceName String
-  spaceId       String
-  space         Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId        String
-  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  botId         String
-  bot           Bot                 @relation(fields: [botId], references: [id], onDelete: Cascade)
-  ciphertext    String
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  identities    MessagingIdentity[]
+  id                String              @id @default(cuid())
+  provider          String
+  workspaceId       String
+  workspaceName     String
+  spaceId           String
+  space             Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  botId             String
+  bot               Bot                 @relation(fields: [botId], references: [id], onDelete: Cascade)
+  ciphertext        String
+  /// Connector ids a visitor's run may use on a linked WhatsApp number; everything else is off.
+  visitorConnectors String[]            @default([])
+  /// "active" or "disconnected" (WhatsApp logged the linked device out).
+  status            String              @default("active")
+  pausedAt          DateTime?
+  resumedAt         DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  identities        MessagingIdentity[]
+  whatsappAuth      WhatsAppAuthEntry[]
 
   @@unique([provider, workspaceId])
   @@index([spaceId, userId])
   @@map("messaging_installations")
+}
+
+/// One encrypted piece of a linked WhatsApp number's session (credentials and signal keys).
+model WhatsAppAuthEntry {
+  installationId String
+  installation   MessagingInstallation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  name           String
+  ciphertext     String
+  updatedAt      DateTime              @updatedAt
+
+  @@id([installationId, name])
+  @@map("whatsapp_auth_entries")
 }
 
 model MessagingInstallSession {
