@@ -36,6 +36,42 @@ export const READ_ONLY_AGENT_TOOLS = new Set([
   "cloud_agent_status",
 ]);
 
+/**
+ * The only built-in tools a visitor's run may be offered. A tool is off unless it is named here:
+ * a tool added later stays off for visitors until someone decides it belongs. Replying and
+ * opening a ticket are what an attendant does; everything that reads or changes the owner's
+ * world (computer, browser, memory, wiki, files, secrets, fleet, other agents) is not.
+ */
+export const VISITOR_BUILTIN_TOOL_NAMES: ReadonlySet<string> = new Set([
+  "message_user",
+  "ticket_create",
+]);
+
+/**
+ * The connector tools a visitor's run may use: those of an app the owner ticked for the number.
+ * A tool is recognized by its installed app's id, its source label, or the app prefix of a
+ * Composio tool name; a tool that none of these ties to a ticked app is dropped.
+ */
+export function visitorConnectorTools<
+  T extends {
+    name: string;
+    route?: { connectorId?: string; resourceId?: string; catalogGroup?: string } | undefined;
+  },
+>(tools: readonly T[], ticked: ReadonlySet<string>): T[] {
+  if (ticked.size === 0) return [];
+  const keys = new Set([...ticked].map((key) => key.toLowerCase()));
+  return tools.filter((tool) => {
+    const route = tool.route;
+    if (route?.resourceId && keys.has(route.resourceId.toLowerCase())) return true;
+    if (route?.catalogGroup && keys.has(route.catalogGroup.toLowerCase())) return true;
+    if (route?.connectorId === "composio") {
+      const app = tool.name.split("_")[0]?.toLowerCase();
+      return app !== undefined && keys.has(app);
+    }
+    return false;
+  });
+}
+
 export const BUILTIN_AGENT_TOOL_NAMES = new Set(builtinAgentTools.map((tool) => tool.name));
 
 const FLEET_TOOL_NAMES_SET: ReadonlySet<string> = new Set(FLEET_TOOL_NAMES);
@@ -76,6 +112,8 @@ export function selectBuiltinToolsForRun(options: {
   followUpFromUser?: boolean;
   /** A routine run with later workflow steps, which may end the chain early. */
   workflowContinues?: boolean;
+  /** An outside person's message on a linked number woke this run: only the visitor allowlist. */
+  visitorRun?: boolean;
 }) {
   const disabled = disabledBuiltinToolSet(options.disabledBuiltinTools);
   const fleetToolsAllowed = isOwnerStartedRun(options.trigger, Boolean(options.followUpFromUser));
@@ -97,6 +135,7 @@ export function selectBuiltinToolsForRun(options: {
     Boolean(options.cloudAgentEnabled),
   ).filter(
     (tool) =>
+      (!options.visitorRun || VISITOR_BUILTIN_TOOL_NAMES.has(tool.name)) &&
       !disabled.has(tool.name) &&
       (options.trigger !== "created" || CREATED_RUN_TOOL_NAMES.has(tool.name)) &&
       (!FLEET_TOOL_NAMES_SET.has(tool.name) ||
