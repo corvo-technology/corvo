@@ -39,6 +39,7 @@ const payloadSchemas = {
     ticketId: z.string().min(1),
     tokenDigest: z.string().min(1),
   }),
+  "audio.transcribe": z.object({ runId: z.string().min(1) }),
 } satisfies { [Name in BackgroundJobName]: z.ZodType<BackgroundJobPayloads[Name]> };
 
 export function parseBackgroundJob(name: string, payload: unknown): BackgroundJob {
@@ -83,6 +84,19 @@ export function computerControlExpireJobKey(computerId: string, leaseId?: string
 
 export function skillTeachingExpireJobKey(skillId: string): string {
   return `skill.teaching-expire:${skillId}`;
+}
+
+export function audioTranscribeJobKey(runId: string): string {
+  return `audio.transcribe:${runId}`;
+}
+
+/** Keyed to the run, so a repeated enqueue is one job. */
+export function audioTranscribeJob(runId: string): BackgroundJob {
+  return {
+    name: "audio.transcribe",
+    payload: { runId },
+    replaceKey: audioTranscribeJobKey(runId),
+  };
 }
 
 export function runContinueJob(runId: string): BackgroundJob {

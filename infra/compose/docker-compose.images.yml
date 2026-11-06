@@ -455,6 +455,7 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       <<: *app-environment
+      CORVO_DESKTOP_STACK_TOKEN: ${CORVO_DESKTOP_STACK_TOKEN:-}
       GRAPHILE_WORKER_CONCURRENCY:
     volumes:
       - appdata:/data

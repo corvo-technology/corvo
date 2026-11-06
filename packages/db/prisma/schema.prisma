@@ -300,6 +300,7 @@ model Space {
   providerQuotas              ProviderQuota[]
   wikiSettings                WikiSettings?
   wikiSources                 WikiSource[]
+  artifactTranscripts         ArtifactTranscript[]
   wikiChanges                 WikiChange[]
   botMcpServers               BotMcpServer[]
   messagingIdentities         MessagingIdentity[]
@@ -774,6 +775,8 @@ model Run {
   // stepOfRunId is unique, so a step runs at most once for each run before it.
   routineStepId        String?
   stepOfRunId          String?           @unique
+  /// Set while a voice note is being transcribed; the reconciler leaves the queued run alone.
+  awaitingAudioAt      DateTime?
   // Durable retry schedule; null means runnable immediately when queued.
   wakeAt               DateTime?
   // Server-side first visible output, preserved across attempts and resumes.
@@ -1284,6 +1287,7 @@ model Artifact {
   version        Int        @default(1)
   // Client-chosen per upload so a retried upload that already landed returns this row.
   clientNonce    String?
+  transcript     ArtifactTranscript?
 
   @@unique([spaceId, userId, clientNonce])
   @@index([spaceId, botId])
@@ -1291,6 +1295,22 @@ model Artifact {
   @@index([rootArtifactId])
   // artifacts_family_version_key is raw SQL: Prisma cannot express COALESCE indexes.
   @@map("artifacts")
+}
+
+/// What an audio artifact said, kept so a retry or a later run does not transcribe it again.
+/// Only successful transcriptions are stored: a failure such as being offline is tried again.
+model ArtifactTranscript {
+  artifactId String   @id
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  spaceId    String
+  space      Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  text       String
+  /// The language the model heard, as an ISO 639-1 code, when it said.
+  language   String?
+  createdAt  DateTime @default(now())
+
+  @@index([spaceId])
+  @@map("artifact_transcripts")
 }
 
 model UsageRecord {

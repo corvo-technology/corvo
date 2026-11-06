@@ -1,6 +1,11 @@
 import { setImmediate } from "node:timers/promises";
 import type { JobPublisher, NotificationProvider } from "@corvo/adapter-kit";
-import { messagingDeliverJob, routineWakeupJob, runContinueJob } from "@corvo/adapter-kit";
+import {
+  audioTranscribeJob,
+  messagingDeliverJob,
+  routineWakeupJob,
+  runContinueJob,
+} from "@corvo/adapter-kit";
 import type { MessageBlock } from "@corvo/contracts";
 import { stuckWorkStatusMessages } from "@corvo/core";
 import type { Pool, PrismaClient, ThreadEvents } from "@corvo/db";
@@ -23,6 +28,17 @@ const CONTROL_LOOKAHEAD_MS = 60_000;
  * finishing a failed attempt holds it for seconds before Graphile unlocks it.
  */
 const ABANDONED_QUEUED_LOCK_MS = 5 * 60_000;
+/**
+ * A run held for its voice note is left alone this long. The transcription job keeps no job lock
+ * the reconciler could see, and a first download can take minutes; past this the run starts
+ * without the transcript rather than wait for a job that died.
+ */
+export const AUDIO_HOLD_MS = 30 * 60_000;
+/**
+ * A run held this long has outlived any download lock a live job could still hold, so its audio
+ * job is started again. A job that is still alive is left alone, a dead one is replaced.
+ */
+const AUDIO_RETRY_MS = 6 * 60_000;
 // Two keys give Rook's lock a namespace without relying on a hash that might collide
 // with an application using the one-key advisory-lock API.
 const RECONCILIATION_LOCK_NAMESPACE = 1_380_019_075;
@@ -187,13 +203,19 @@ export function createJobReconciler(
             ],
           }
         : undefined;
-      const [runs, dueOutbound, unmirroredMessagingRuns] = await Promise.all([
+      const [runs, dueOutbound, unmirroredMessagingRuns, heldRuns] = await Promise.all([
         deps.prisma.run.findMany({
           where: {
             AND: [
               {
                 OR: [
-                  { status: "queued" },
+                  {
+                    status: "queued",
+                    OR: [
+                      { awaitingAudioAt: null },
+                      { awaitingAudioAt: { lt: new Date(now.getTime() - AUDIO_HOLD_MS) } },
+                    ],
+                  },
                   {
                     status: { in: ["leased", "running"] },
                     leaseExpiresAt: { lte: now },
@@ -217,6 +239,18 @@ export function createJobReconciler(
         deps.prisma.run.findMany({
           where: { trigger: "messaging", status: "completed", messagingMirroredAt: null },
           orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
+          take: batchSize,
+          select: { id: true },
+        }),
+        deps.prisma.run.findMany({
+          where: {
+            status: "queued",
+            awaitingAudioAt: {
+              gte: new Date(now.getTime() - AUDIO_HOLD_MS),
+              lt: new Date(now.getTime() - AUDIO_RETRY_MS),
+            },
+          },
+          orderBy: [{ awaitingAudioAt: "asc" }, { id: "asc" }],
           take: batchSize,
           select: { id: true },
         }),
@@ -314,6 +348,13 @@ export function createJobReconciler(
         ),
         ...(dueOutbound ? [deps.jobs.enqueue(messagingDeliverJob())] : []),
         ...unmirroredMessagingRuns.map((run) => deps.jobs.enqueue(messagingDeliverJob(run.id))),
+        ...heldRuns.map((run) =>
+          deps.jobs.enqueue({
+            ...audioTranscribeJob(run.id),
+            keepExisting: true,
+            replaceLockedBefore: new Date(now.getTime() - AUDIO_RETRY_MS),
+          }),
+        ),
       ]);
 
       const lastRun = runs.at(-1);

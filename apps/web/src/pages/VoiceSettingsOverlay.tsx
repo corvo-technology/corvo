@@ -8,6 +8,7 @@ import type {
 import {
   DEFAULT_COMPATIBLE_STT_MODEL,
   DEFAULT_COMPATIBLE_TTS_MODEL,
+  LOCAL_VOICE_PROVIDER_ID,
   OPENAI_COMPATIBLE_PROVIDER_ID,
 } from "@corvo/contracts";
 import { fetchFresh } from "@corvo/core/query";
@@ -32,6 +33,7 @@ import { useSpaceQueries } from "../lib/query";
 import { useBoundSpaceId, useSpaceRpc } from "../lib/space-rpc";
 import { speaker } from "../lib/tts";
 import { errorText } from "../lib/user-error";
+import { LocalSpeechSection } from "./LocalSpeechSection";
 
 export function VoiceSettingsOverlay({
   onClose,
@@ -202,6 +204,8 @@ export function VoiceSettingsOverlay({
   );
 
   const selfHosted = selected?.id === OPENAI_COMPATIBLE_PROVIDER_ID;
+  // "This computer" has models to download instead of a key, and no voices yet.
+  const local = selected?.id === LOCAL_VOICE_PROVIDER_ID;
   // Connections are managed from the account; a Space can still connect one it lacks.
   const managesConnection = scope === "account" || !credential;
   const canConnect = selfHosted ? Boolean(baseUrl.trim()) : apiKey.trim().length >= 8;
@@ -365,7 +369,17 @@ export function VoiceSettingsOverlay({
           <Trans>Disconnect Self-hosted</Trans>
         </Button>
       ) : null}
-      {selected ? (
+      {selected && local ? (
+        <div className="mt-5">
+          <LocalSpeechSection
+            scope={scope}
+            credential={credential}
+            disabled={busy}
+            onChanged={() => refresh(selected.id)}
+          />
+        </div>
+      ) : null}
+      {selected && !local ? (
         <>
           {managesConnection ? (
             <>

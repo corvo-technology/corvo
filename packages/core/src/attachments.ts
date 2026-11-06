@@ -114,16 +114,42 @@ export function messageBlockForArtifact(artifact: {
 
 export function promptTextForAttachments(
   text: string | undefined,
-  artifacts: Array<{ name: string; mimeType: string; size: number }>,
+  artifacts: Array<{ name: string; mimeType: string; size: number; note?: string | undefined }>,
 ): string {
   const caption = text?.trim() ?? "";
   const notes = artifacts
     .filter((artifact) => !isAttachmentImageMimeType(artifact.mimeType))
-    .map(
-      (artifact) =>
-        `User attached file ${JSON.stringify(artifact.name)} (${artifact.mimeType}, ${artifact.size} bytes).`,
-    );
+    .flatMap((artifact) => [
+      `User attached file ${JSON.stringify(artifact.name)} (${artifact.mimeType}, ${artifact.size} bytes).`,
+      ...(artifact.note ? [artifact.note] : []),
+    ]);
   return [caption, ...notes].filter(Boolean).join("\n\n") || "See attached files.";
+}
+
+/**
+ * Puts each attachment's note right after its file line in a prompt that was already built, so a
+ * connectors line or anything else the prompt carries stays where it is. A note already in the
+ * prompt is not added again; one whose file line is missing goes at the end.
+ */
+export function insertAttachmentNotes(
+  prompt: string,
+  artifacts: Array<{ name: string; mimeType: string; size: number; note?: string | undefined }>,
+): string {
+  let out = prompt;
+  const unplaced: string[] = [];
+  for (const artifact of artifacts) {
+    const { note } = artifact;
+    if (!note || out.includes(note)) continue;
+    const line = `User attached file ${JSON.stringify(artifact.name)} (${artifact.mimeType}, ${artifact.size} bytes).`;
+    const at = out.indexOf(line);
+    if (at === -1) {
+      unplaced.push(note);
+      continue;
+    }
+    const end = at + line.length;
+    out = `${out.slice(0, end)}\n\n${note}${out.slice(end)}`;
+  }
+  return unplaced.length > 0 ? [out, ...unplaced].join("\n\n") : out;
 }
 
 export function blocksToAgentHistoryText(blocks: MessageBlock[]): string {

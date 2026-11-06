@@ -47,6 +47,8 @@ import {
   resolveGroupSendAttachments,
   resolveSendAttachments,
 } from "./artifacts.js";
+import type { AudioHold } from "./audio-hold.js";
+import { startRunOrAwaitAudio } from "./audio-hold.js";
 import { resolveBusyBotName, toComputerStatus } from "./computer-status.js";
 import { groupConversationOwner } from "./group-owner.js";
 import { withSerializableRetry } from "./serializable-retry.js";
@@ -148,15 +150,47 @@ function sendRunClientNonce(
   return botId ? `send:${messageId}:${botId}` : `send:${messageId}`;
 }
 
-async function enqueueRunsNeedingContinue(
-  jobs: JobPublisher,
+/** The mime types of the files a message carries, from its stored blocks. */
+function fileMimeTypes(blocks: unknown): Array<{ mimeType: string }> {
+  if (!Array.isArray(blocks)) return [];
+  return blocks.flatMap((block) =>
+    block?.kind === "file" && typeof block.mimeType === "string"
+      ? [{ mimeType: block.mimeType }]
+      : [],
+  );
+}
+
+/**
+ * Wakes the queued runs of a send. With `audio` given, a run whose message carries the owner's
+ * voice note is held for its transcription instead (see `startRunOrAwaitAudio`).
+ */
+export async function enqueueRunsNeedingContinue(
+  deps: { jobs: Pick<JobPublisher, "enqueue">; prisma?: PrismaClient; audio?: AudioHold },
   runs: Array<{ id: string; status: string }>,
+  audio?: {
+    actor: { spaceId: string; userId: string };
+    messageId: string;
+    attachments: ReadonlyArray<{ mimeType: string }>;
+  },
 ) {
+  const { prisma } = deps;
   await Promise.all(
     runs
       .filter((run) => RUNS_NEEDING_CONTINUE.has(run.status))
       .map((run) =>
-        jobs.enqueue(runContinueJob(run.id)).catch((error) => {
+        (prisma && audio
+          ? startRunOrAwaitAudio(
+              { jobs: deps.jobs, prisma, audio: deps.audio },
+              {
+                runId: run.id,
+                messageId: audio.messageId,
+                actor: audio.actor,
+                fromOwner: true,
+                attachments: audio.attachments,
+              },
+            )
+          : deps.jobs.enqueue(runContinueJob(run.id))
+        ).catch((error) => {
           // The queued run is durable; the reconciler repairs a missed immediate wake.
           getLogger().error("thread send enqueue", error);
         }),
@@ -172,7 +206,7 @@ async function findSendReceipt(prisma: PrismaClient, threadId: string, clientNon
 }
 
 async function replayExistingSend(
-  deps: { prisma: PrismaClient; events: ThreadEvents; jobs: JobPublisher },
+  deps: { prisma: PrismaClient; events: ThreadEvents; jobs: JobPublisher; audio?: AudioHold },
   threadId: string,
   clientNonce: string | undefined,
   releaseTakeover?: (runId: string) => Promise<void>,
@@ -214,7 +248,18 @@ async function replayExistingSend(
       })
     : null;
   if (releaseTakeover && pendingSteering?.runId) await releaseTakeover(pendingSteering.runId);
-  await enqueueRunsNeedingContinue(deps.jobs, runs);
+  const replayed = runs[0];
+  await enqueueRunsNeedingContinue(
+    deps,
+    runs,
+    replayed
+      ? {
+          actor: { spaceId: replayed.spaceId, userId: replayed.userId },
+          messageId: message.id,
+          attachments: fileMimeTypes(message.blocks),
+        }
+      : undefined,
+  );
   const latestEvent = await deps.prisma.event.findFirst({
     where: { threadId },
     orderBy: { seq: "desc" },
@@ -711,6 +756,8 @@ export async function sendThreadMessage(
     jobs: JobPublisher;
     imageAdmission?: Parameters<typeof assertThreadImageInput>[5];
     analytics?: ProductAnalytics;
+    /** Where voice notes can be transcribed; absent keeps them as files. */
+    audio?: AudioHold;
   },
   actor: Actor,
   target: ThreadTarget,
@@ -1192,7 +1239,11 @@ export async function sendThreadMessage(
       if (steersUserMessage(run)) await releaseTakeover(run.id);
     }
   }
-  await enqueueRunsNeedingContinue(deps.jobs, committed.runs);
+  await enqueueRunsNeedingContinue(deps, committed.runs, {
+    actor,
+    messageId: committed.message.id,
+    attachments: fileMimeTypes(committed.message.blocks),
+  });
   return sendResult(committed.message, committed.runs);
 }
 
@@ -1290,7 +1341,7 @@ export async function reactToThreadMessage(
       if (run.status === "waiting_takeover") await releaseTakeover(run.id);
     }
   }
-  await enqueueRunsNeedingContinue(deps.jobs, committed.runs);
+  await enqueueRunsNeedingContinue(deps, committed.runs);
   return { eventSeq: committed.eventSeq, runIds: committed.runs.map((run) => run.id) };
 }
 

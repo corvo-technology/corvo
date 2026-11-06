@@ -721,6 +721,12 @@ export interface VoiceTranscribeRequest {
   signal?: AbortSignal;
 }
 
+export interface VoiceTranscribeResult {
+  text: string;
+  /** The language the provider heard, as an ISO 639-1 code, when it says. */
+  language?: string;
+}
+
 export interface BackgroundJobPayloads {
   "run.continue": { runId: string };
   "routine.wakeup": { routineId: string; scheduledFor: string };
@@ -743,6 +749,8 @@ export interface BackgroundJobPayloads {
   "cloud_agent.poll": { agentId: string };
   /** Read an Expo push receipt; the token is identified by its digest, never stored. */
   "push.receipt": { userId: string; ticketId: string; tokenDigest: string };
+  /** Transcribe the audio of a queued run's message, then start the run. */
+  "audio.transcribe": { runId: string };
 }
 
 export type BackgroundJobName = keyof BackgroundJobPayloads;

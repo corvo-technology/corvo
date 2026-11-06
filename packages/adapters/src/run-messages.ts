@@ -29,7 +29,7 @@ export function isUniqueViolation(error: unknown): boolean {
 }
 
 export async function publishMessage(
-  deps: ExecutorDeps,
+  deps: Pick<ExecutorDeps, "prisma" | "events">,
   run: { id: string; spaceId: string; threadId: string; botId: string; trigger: string },
   role: "user" | "bot" | "system",
   blocks: MessageBlock[],

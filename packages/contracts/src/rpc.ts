@@ -74,6 +74,8 @@ import {
   GroupDetailSchema,
   GroupSchema,
   IntegrationCatalogResultSchema,
+  LOCAL_VOICE_PROVIDER_ID,
+  LocalSpeechModelSchema,
   McpServerConfigInput,
   McpServerSchema,
   MemoryDocumentSchema,
@@ -1264,11 +1266,17 @@ export const appContract = {
             baseUrl: z.string().max(2048).optional(),
             ttsModel: z.string().max(200).optional(),
             sttModel: z.string().max(200).optional(),
+            /** The local provider only: the language of the recordings. */
+            language: z.enum(["auto", "en", "pt"]).optional(),
             /** Where the connection becomes the default voice. */
             scope: SettingsScopeSchema.optional(),
           })
           .superRefine((input, ctx) => {
-            if (input.provider === OPENAI_COMPATIBLE_PROVIDER_ID) {
+            if (input.provider === LOCAL_VOICE_PROVIDER_ID) {
+              if (!input.sttModel?.trim()) {
+                ctx.addIssue({ code: "custom", path: ["sttModel"], message: "Pick a model." });
+              }
+            } else if (input.provider === OPENAI_COMPATIBLE_PROVIDER_ID) {
               if (!input.baseUrl?.trim()) {
                 ctx.addIssue({ code: "custom", path: ["baseUrl"], message: "Enter a server URL." });
               }
@@ -1280,6 +1288,17 @@ export const appContract = {
       .output(VoiceCredentialSchema),
     disconnect: oc
       .input(z.object({ provider: z.string().min(1) }))
+      .output(z.object({ ok: z.literal(true) })),
+    /** The speech models "This computer" can use, and where each download stands. */
+    localModels: oc.output(z.array(LocalSpeechModelSchema)),
+    downloadLocalModel: oc
+      .input(z.object({ id: z.string().min(1).max(80) }))
+      .output(z.object({ ok: z.literal(true) })),
+    cancelLocalModelDownload: oc
+      .input(z.object({ id: z.string().min(1).max(80) }))
+      .output(z.object({ ok: z.literal(true) })),
+    removeLocalModel: oc
+      .input(z.object({ id: z.string().min(1).max(80) }))
       .output(z.object({ ok: z.literal(true) })),
     setVoice: oc
       .input(

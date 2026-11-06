@@ -1,20 +1,24 @@
 import type { AdapterContext, SecretStore } from "@corvo/adapter-kit";
 import { VoiceAccountError } from "@corvo/adapter-kit";
+import type { LocalSpeech } from "@corvo/adapters";
 import {
   createVoiceProvider,
   isFishSpeechModelId,
   isVoiceProviderId,
+  LOCAL_VOICE_PROVIDER_ID,
   listVoiceCatalog,
   MAX_SPEAK_CHARS,
   MAX_TRANSCRIBE_BYTES,
   NoVoiceConfigured,
   OPENAI_COMPATIBLE_VOICE_PROVIDER_ID,
   openAiCompatibleVoiceServer,
+  parseLocalVoiceSecret,
   serializeOpenAiCompatibleVoiceSecret,
   voiceCatalogEntry,
 } from "@corvo/adapters";
 import type {
   Actor,
+  LocalSpeechModel,
   SettingsScope,
   VoiceAccountErrorCode,
   VoiceCredential,
@@ -52,6 +56,8 @@ export interface VoiceDeps {
   env?: { mcpAllowPrivateEndpoint?: boolean };
   /** Set only when `VOICE_SUMMARY_MIN_CHARS` turns spoken summaries on. */
   speechSummary?: { summarize: SpeechSummarizer; minChars: number };
+  /** Present only when the engine is the owner's own computer; see `createLocalSpeech`. */
+  localSpeech?: LocalSpeech;
 }
 
 /** A self-hosted speech server on a private address is limited like model endpoints. */
@@ -65,6 +71,7 @@ async function voiceMayUsePrivateEndpoint(deps: VoiceDeps, _actor: Actor, provid
 export async function voiceProviderFor(deps: VoiceDeps, actor: Actor, provider: string) {
   return createVoiceProvider(provider, {
     allowPrivateEndpoint: await voiceMayUsePrivateEndpoint(deps, actor, provider),
+    local: deps.localSpeech,
   });
 }
 
@@ -82,6 +89,14 @@ export function voiceContext(actor: Actor, signal?: AbortSignal): AdapterContext
     userId: actor.userId,
     signal: signal ?? new AbortController().signal,
   };
+}
+
+/** The providers offered here; "This computer" only where the engine is the owner's own. */
+export function voiceCatalogFor(deps: Pick<VoiceDeps, "env" | "localSpeech">) {
+  return listVoiceCatalog({
+    allowPrivateEndpoint: deps.env?.mcpAllowPrivateEndpoint,
+    localEngine: Boolean(deps.localSpeech),
+  });
 }
 
 export function catalogEntry(provider: string) {
@@ -106,6 +121,8 @@ export function toVoiceCredential(row: {
   voiceId: string;
   speechModel?: string | null;
   server?: { endpoint: string; ttsModel: string; sttModel: string };
+  /** The local provider's choice: its model and the language of the recordings. */
+  local?: { model: string; language: string };
 }): VoiceCredential {
   return {
     id: row.id,
@@ -117,7 +134,8 @@ export function toVoiceCredential(row: {
     transcribe: Boolean(catalogEntry(row.provider)?.transcribe),
     endpoint: row.server?.endpoint ?? "",
     ttsModel: row.server?.ttsModel ?? "",
-    sttModel: row.server?.sttModel ?? "",
+    sttModel: row.server?.sttModel ?? row.local?.model ?? "",
+    language: row.local?.language ?? "",
   };
 }
 
@@ -143,6 +161,24 @@ export async function voiceCredentialServer(
   }
 }
 
+/** A local connection's model and language, read from its secret; undefined for other providers. */
+export async function voiceCredentialLocal(
+  deps: VoiceDeps,
+  actor: Actor,
+  row: { provider: string; secretId: string },
+) {
+  if (row.provider !== LOCAL_VOICE_PROVIDER_ID) return undefined;
+  try {
+    const secret = await deps.prisma.secret.findFirst({
+      where: { id: row.secretId, userId: actor.userId, spaceId: null },
+    });
+    if (!secret) return undefined;
+    return parseLocalVoiceSecret(await deps.secrets.load(secret.ciphertext, secret.id));
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Another server or speech model has its own voices, so saved voice choices cannot carry
  * over. Only self-hosted connections can change either while keeping the credential.
@@ -164,10 +200,26 @@ export function voiceCredentialPlaintext(input: {
   baseUrl?: string;
   ttsModel?: string;
   sttModel?: string;
+  /** The local provider's recording language: auto, en or pt. */
+  language?: string;
   /** The stored secret for this provider; blank fields keep its key and models. */
   previousPlaintext?: string;
   allowPrivateEndpoint?: boolean;
 }): string {
+  if (input.provider === LOCAL_VOICE_PROVIDER_ID) {
+    // There is no key: the secret is the owner's choice of model and language.
+    const model = input.sttModel?.trim() ?? "";
+    if (!model) throw new ORPCError("BAD_REQUEST", { message: "Pick a model." });
+    const serialized = JSON.stringify({ model, language: input.language ?? "auto" });
+    try {
+      parseLocalVoiceSecret(serialized);
+    } catch (error) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: error instanceof Error ? error.message : "Pick a language.",
+      });
+    }
+    return serialized;
+  }
   if (input.provider !== OPENAI_COMPATIBLE_VOICE_PROVIDER_ID) {
     if (input.plaintext.trim().length < 8) {
       throw new ORPCError("BAD_REQUEST", { message: "Enter an API key." });
@@ -261,6 +313,8 @@ export async function persistVoiceCredential(
     baseUrl?: string;
     ttsModel?: string;
     sttModel?: string;
+    /** The local provider only: auto, en or pt. */
+    language?: string;
     /** Which copy the connection becomes the default voice in; omitted is what applies. */
     scope?: SettingsScope;
     signal?: AbortSignal;
@@ -268,6 +322,9 @@ export async function persistVoiceCredential(
 ): Promise<VoiceCredential> {
   if (!isVoiceProviderId(input.provider)) {
     throw new ORPCError("BAD_REQUEST", { message: "Unknown voice provider." });
+  }
+  if (input.provider === LOCAL_VOICE_PROVIDER_ID) {
+    await requireReadyLocalModel(deps, input.sttModel);
   }
   const previous =
     input.provider === OPENAI_COMPATIBLE_VOICE_PROVIDER_ID
@@ -289,7 +346,10 @@ export async function persistVoiceCredential(
     input.provider === FISH_AUDIO_PROVIDER && input.speechModel !== undefined
       ? fishSpeechModelValue(input.speechModel)
       : undefined;
-  const provider = createVoiceProvider(input.provider, { allowPrivateEndpoint });
+  const provider = createVoiceProvider(input.provider, {
+    allowPrivateEndpoint,
+    local: deps.localSpeech,
+  });
   const verified = await provider.verify(plaintext, voiceContext(actor, input.signal));
   if (!verified.ok) {
     throw new ORPCError("BAD_REQUEST", { message: verified.message ?? "That key was rejected." });
@@ -384,12 +444,93 @@ export async function persistVoiceCredential(
           voiceId: selectedVoiceId,
           speechModel: speechModel ?? "",
           server,
+          local:
+            input.provider === LOCAL_VOICE_PROVIDER_ID
+              ? parseLocalVoiceSecret(plaintext)
+              : undefined,
         };
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     ),
   );
   return toVoiceCredential(cred);
+}
+
+function requireLocalSpeech(deps: Pick<VoiceDeps, "localSpeech">): LocalSpeech {
+  if (!deps.localSpeech) {
+    throw new ORPCError("BAD_REQUEST", { message: "Local speech is not available here." });
+  }
+  return deps.localSpeech;
+}
+
+/** A model can be used only once it is on this computer. */
+async function requireReadyLocalModel(
+  deps: Pick<VoiceDeps, "localSpeech">,
+  id: string | undefined,
+) {
+  const local = requireLocalSpeech(deps);
+  const found = (await local.store.list()).find((model) => model.id === (id ?? "").trim());
+  if (!found) throw new ORPCError("BAD_REQUEST", { message: "Pick a model from the list." });
+  if (found.state !== "ready") {
+    throw new ORPCError("BAD_REQUEST", { message: "Download the model first." });
+  }
+}
+
+/** Every model "This computer" can use, with its download state. Empty where there is no engine. */
+export async function localSpeechModels(
+  deps: Pick<VoiceDeps, "localSpeech">,
+): Promise<LocalSpeechModel[]> {
+  return deps.localSpeech ? deps.localSpeech.store.list() : [];
+}
+
+/** Starts a download and returns at once; progress is read from `localSpeechModels`. */
+export async function downloadLocalModel(deps: Pick<VoiceDeps, "localSpeech">, id: string) {
+  const local = requireLocalSpeech(deps);
+  if (!(await local.store.list()).some((model) => model.id === id)) {
+    throw new ORPCError("BAD_REQUEST", { message: "Pick a model from the list." });
+  }
+  // The owner asked for this download, so automatic ones are welcome again.
+  await local.store.allowAutomaticDownload();
+  void local.store.ensure(id).catch((error: unknown) => {
+    getLogger().warn("local speech model download failed", {
+      model: id,
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  });
+  return { ok: true as const };
+}
+
+export async function cancelLocalModelDownload(deps: Pick<VoiceDeps, "localSpeech">, id: string) {
+  const { store } = requireLocalSpeech(deps);
+  if (!(await store.list()).some((model) => model.id === id)) {
+    throw new ORPCError("BAD_REQUEST", { message: "Pick a model from the list." });
+  }
+  store.cancel(id);
+  return { ok: true as const };
+}
+
+/** Removes the model, and the "This computer" choice too when it was the model in use. */
+export async function removeLocalModel(deps: VoiceDeps, actor: Actor, id: string) {
+  const local = requireLocalSpeech(deps);
+  if (!(await local.store.list()).some((model) => model.id === id)) {
+    throw new ORPCError("BAD_REQUEST", { message: "Pick a model from the list." });
+  }
+  await local.store.remove(id);
+  const selected = await loadVoiceCredential(deps, actor, LOCAL_VOICE_PROVIDER_ID).catch(
+    () => null,
+  );
+  const inUse = selected ? safeLocalModel(selected.apiKey) : undefined;
+  if (inUse === id)
+    await disconnectVoiceCredential(deps, actor, { provider: LOCAL_VOICE_PROVIDER_ID });
+  return { ok: true as const };
+}
+
+function safeLocalModel(plaintext: string): string | undefined {
+  try {
+    return parseLocalVoiceSecret(plaintext).model;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function disconnectVoiceCredential(

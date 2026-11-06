@@ -2,6 +2,7 @@ import type { VoiceProvider } from "@corvo/adapter-kit";
 import { CartesiaVoiceProvider } from "./cartesia-voice.js";
 import { ElevenLabsVoiceProvider } from "./elevenlabs-voice.js";
 import { FishAudioVoiceProvider } from "./fish-audio-voice.js";
+import { LOCAL_VOICE_PROVIDER_ID, type LocalVoiceDeps, LocalVoiceProvider } from "./local-voice.js";
 import { openAiCompatAllowPublicHosts } from "./openai-compatible-url.js";
 import {
   OPENAI_COMPATIBLE_VOICE_PROVIDER_ID,
@@ -41,6 +42,13 @@ export const VOICE_CATALOG = [
     description: "Any OpenAI-compatible speech server, like Kokoro or Whisper.",
     transcribe: true,
   },
+  {
+    id: LOCAL_VOICE_PROVIDER_ID,
+    name: "This computer",
+    description:
+      "Transcribes on this computer with a downloaded model. No key, nothing is sent out.",
+    transcribe: true,
+  },
 ] as const;
 
 export { SCRIPTED_VOICE_CATALOG_ENTRY };
@@ -52,13 +60,18 @@ export function scriptedVoiceEnabled() {
   return process.env.AGENT_RUNTIME === "scripted";
 }
 
-export function listVoiceCatalog(options: { allowPrivateEndpoint?: boolean } = {}) {
-  const catalog = VOICE_CATALOG.filter(
-    (entry) =>
+export function listVoiceCatalog(
+  options: { allowPrivateEndpoint?: boolean; localEngine?: boolean } = {},
+) {
+  const catalog = VOICE_CATALOG.filter((entry) => {
+    // The local provider needs an engine on the owner's own computer.
+    if (entry.id === LOCAL_VOICE_PROVIDER_ID) return options.localEngine === true;
+    return (
       entry.id !== OPENAI_COMPATIBLE_VOICE_PROVIDER_ID ||
       options.allowPrivateEndpoint === true ||
-      openAiCompatAllowPublicHosts(),
-  );
+      openAiCompatAllowPublicHosts()
+    );
+  });
   return scriptedVoiceEnabled() ? [...catalog, SCRIPTED_VOICE_CATALOG_ENTRY] : catalog;
 }
 
@@ -75,7 +88,7 @@ export function isVoiceProviderId(value: string): value is VoiceProviderId {
 /** Construct the provider adapter selected by a persisted voice credential. */
 export function createVoiceProvider(
   kind: string,
-  options: { allowPrivateEndpoint?: boolean } = {},
+  options: { allowPrivateEndpoint?: boolean; local?: LocalVoiceDeps } = {},
 ): VoiceProvider {
   switch (kind) {
     case "elevenlabs":
@@ -90,6 +103,9 @@ export function createVoiceProvider(
       return new OpenAiCompatibleVoiceProvider({
         allowPrivateEndpoint: options.allowPrivateEndpoint,
       });
+    case LOCAL_VOICE_PROVIDER_ID:
+      if (!options.local) throw new Error("Local voice is not available here.");
+      return new LocalVoiceProvider(options.local);
     case "scripted":
       if (!scriptedVoiceEnabled()) break;
       return new ScriptedVoiceProvider();

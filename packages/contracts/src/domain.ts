@@ -1396,6 +1396,8 @@ export function modelChoiceListSchema<T extends z.ZodType<ModelBackupChoice>>(ch
 export const ModelBackupListSchema = modelChoiceListSchema(ModelBackupChoiceSchema);
 
 export const OPENAI_COMPATIBLE_PROVIDER_ID = "openai-compatible";
+/** Speech models that run on the owner's own computer; no key, models are downloaded. */
+export const LOCAL_VOICE_PROVIDER_ID = "local";
 
 export const MAX_ENABLED_MODEL_IDS = 500;
 
@@ -1571,6 +1573,18 @@ export const VoiceCatalogEntrySchema = z.object({
 });
 export type VoiceCatalogEntry = z.infer<typeof VoiceCatalogEntrySchema>;
 
+/** A speech model the local provider can download, and where its download stands. */
+export const LocalSpeechModelSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  sizeBytes: z.number().int().nonnegative(),
+  languages: z.array(z.string()),
+  state: z.enum(["absent", "downloading", "ready", "failed"]),
+  bytesDone: z.number().int().nonnegative(),
+  error: z.string().optional(),
+});
+export type LocalSpeechModel = z.infer<typeof LocalSpeechModelSchema>;
+
 export const VoiceInfoSchema = z.object({
   id: z.string(),
   label: z.string(),
@@ -1591,6 +1605,8 @@ export const VoiceCredentialSchema = z.object({
   endpoint: z.string().default(""),
   ttsModel: z.string().default(""),
   sttModel: z.string().default(""),
+  /** The local provider only: automatic, en or pt. Empty for every other provider. */
+  language: z.string().default(""),
 });
 export type VoiceCredential = z.infer<typeof VoiceCredentialSchema>;
 

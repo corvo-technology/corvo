@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { AiDataUse, AiRecipient } from "@corvo/contracts";
+import { LOCAL_VOICE_PROVIDER_ID } from "@corvo/contracts";
 import { localBaseUrl } from "./pi-local-provider.js";
 import { listPiCatalog } from "./pi-models.js";
 import { voiceCatalogEntry } from "./voice-factory.js";
@@ -27,6 +28,8 @@ export function aiRecipient(input: {
   baseUrl?: string;
 }): Omit<AiRecipient, "allowed"> | null {
   if (input.provider === "scripted") return null;
+  // "This computer" transcribes on the owner's own machine: no recipient receives the audio.
+  if (input.provider === LOCAL_VOICE_PROVIDER_ID && input.use === "voice") return null;
   const endpoint = input.baseUrl ?? (input.provider === "local" ? localBaseUrl() : undefined);
   const origin = endpoint ? new URL(endpoint).origin : undefined;
   const name = recipientName(input.provider, input.use);

@@ -83,6 +83,7 @@ import type {
   VoiceInfo,
   VoiceSynthesizeRequest,
   VoiceTranscribeRequest,
+  VoiceTranscribeResult,
   VoiceVerifyResult,
   WebFetchCapabilities,
   WebFetchRequest,
@@ -479,7 +480,10 @@ export interface VoiceProvider {
   verify(apiKey: string, context: AdapterContext): Promise<VoiceVerifyResult>;
   listVoices(apiKey: string, context: AdapterContext): Promise<VoiceInfo[]>;
   synthesize(request: VoiceSynthesizeRequest, context: AdapterContext): Promise<SpeechClip>;
-  transcribe?(request: VoiceTranscribeRequest, context: AdapterContext): Promise<{ text: string }>;
+  transcribe?(
+    request: VoiceTranscribeRequest,
+    context: AdapterContext,
+  ): Promise<VoiceTranscribeResult>;
 }
 
 /**

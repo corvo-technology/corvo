@@ -6,6 +6,7 @@ import {
   blocksToAgentHistoryText,
   decodeAttachmentBase64,
   inferAttachmentMimeType,
+  insertAttachmentNotes,
   promptTextForAttachments,
   userTurnMessageForRun,
   validateAttachmentMimeType,
@@ -214,5 +215,56 @@ describe("ask history", () => {
         { kind: "ask", text: "API key", input: "secret", status: "answered", answer: "" },
       ]),
     ).toBe("API key");
+  });
+});
+
+describe("promptTextForAttachments notes", () => {
+  const voice = { name: "memo.ogg", mimeType: "audio/ogg", size: 4000 };
+
+  it("puts an attachment's note right after its file line", () => {
+    const prompt = promptTextForAttachments("see this", [
+      { ...voice, note: 'Machine transcript of "memo.ogg" (pt), may contain errors:\nolá' },
+      { name: "a.pdf", mimeType: "application/pdf", size: 9 },
+    ]);
+    expect(prompt).toBe(
+      [
+        "see this",
+        'User attached file "memo.ogg" (audio/ogg, 4000 bytes).',
+        'Machine transcript of "memo.ogg" (pt), may contain errors:\nolá',
+        'User attached file "a.pdf" (application/pdf, 9 bytes).',
+      ].join("\n\n"),
+    );
+  });
+
+  it("is unchanged for attachments without a note", () => {
+    expect(promptTextForAttachments("", [voice])).toBe(
+      'User attached file "memo.ogg" (audio/ogg, 4000 bytes).',
+    );
+  });
+});
+
+describe("insertAttachmentNotes", () => {
+  const voice = { name: "memo.ogg", mimeType: "audio/ogg", size: 4000 };
+  const line = 'User attached file "memo.ogg" (audio/ogg, 4000 bytes).';
+  const note = 'Machine transcript of "memo.ogg" (pt), may contain errors:\nolá';
+
+  it("puts a note right after its file line and keeps everything else", () => {
+    const prompt = `see this\n\n${line}\n\nUse these connectors if relevant: gmail.`;
+    expect(insertAttachmentNotes(prompt, [{ ...voice, note }])).toBe(
+      `see this\n\n${line}\n\n${note}\n\nUse these connectors if relevant: gmail.`,
+    );
+  });
+
+  it("does not add the same note twice", () => {
+    const once = insertAttachmentNotes(line, [{ ...voice, note }]);
+    expect(insertAttachmentNotes(once, [{ ...voice, note }])).toBe(once);
+  });
+
+  it("puts a note whose file line is missing at the end", () => {
+    expect(insertAttachmentNotes("hello", [{ ...voice, note }])).toBe(`hello\n\n${note}`);
+  });
+
+  it("leaves the prompt alone for attachments without a note", () => {
+    expect(insertAttachmentNotes(line, [voice])).toBe(line);
   });
 });

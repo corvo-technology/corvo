@@ -13,6 +13,12 @@ import { messagingDeliverJob } from "@corvo/adapter-kit";
 import type { PrismaClient, ThreadEvents } from "@corvo/db";
 import { runAsSystem, runAsTenant } from "@corvo/db";
 import { getLogger } from "@corvo/logging";
+import { createAnnouncer, runAudioTranscribeJob } from "./audio-transcribe-job.js";
+import {
+  dbVoiceCredential,
+  prismaConsent,
+  transcribeAudioArtifact,
+} from "./audio-transcription.js";
 import { settleCallRequest } from "./call-request.js";
 import type { CloudAgentConnection } from "./cloud-agent-factory.js";
 import { pollCloudAgent } from "./cloud-agent-poll.js";
@@ -22,6 +28,7 @@ import { performComputerUpdate } from "./computer-update.js";
 import type { createRunExecutor } from "./executor.js";
 import type { ExpoPushProvider } from "./expo-push.js";
 import { compactHistory } from "./history-compaction.js";
+import type { LocalSpeech } from "./local-speech.js";
 import type { MemoryProviderResolver } from "./memory-provider-factory.js";
 import { deliverMessagingOutbound, mirrorMessagingOutbound } from "./messaging-delivery.js";
 import { expireTaughtSkillTeaching } from "./teaching-session.js";
@@ -66,7 +73,28 @@ export function createBackgroundJobHandlers(deps: {
   messaging?: MessagingSurface;
   cloudAgent?: CloudAgentConnection | null;
   notifications?: ExpoPushProvider;
+  /** Present only on the desktop app's own engine: where speech models live. */
+  localSpeech?: LocalSpeech;
+  /** The operator's allowance for self-hosted speech servers on private addresses. */
+  allowPrivateEndpoint?: boolean;
 }): BackgroundJobHandlers {
+  const audioTranscription = {
+    prisma: deps.prisma,
+    artifacts: deps.artifacts,
+    ...(deps.localSpeech ? { localSpeech: deps.localSpeech } : {}),
+    loadVoiceCredential: dbVoiceCredential(deps.prisma, deps.secretStore),
+    hasConsent: prismaConsent(deps.prisma),
+    ...(deps.allowPrivateEndpoint === undefined
+      ? {}
+      : { allowPrivateEndpoint: deps.allowPrivateEndpoint }),
+  };
+  const audioJob = {
+    prisma: deps.prisma,
+    jobs: deps.jobs,
+    transcribe: (input: Parameters<typeof transcribeAudioArtifact>[1]) =>
+      transcribeAudioArtifact(audioTranscription, input),
+    announce: createAnnouncer({ prisma: deps.prisma, events: deps.events, jobs: deps.jobs }),
+  };
   const messagingDeps = deps.messaging
     ? {
         prisma: deps.prisma,
@@ -147,6 +175,9 @@ export function createBackgroundJobHandlers(deps: {
       }
       await drainMessaging();
     },
+    "audio.transcribe": asOwner(run, async (payload) => {
+      await runAudioTranscribeJob(audioJob, payload);
+    }),
     "routine.wakeup": asOwner(routine, async (payload) => {
       await deps.executor.wakeRoutine(payload.routineId, payload.scheduledFor);
     }),
