@@ -409,6 +409,7 @@ services:
       start_period: 2m
     environment:
       <<: *app-environment
+      CORVO_DESKTOP_STACK_TOKEN:
       GRAPHILE_WORKER_CONCURRENCY:
     volumes:
       - appdata:/data

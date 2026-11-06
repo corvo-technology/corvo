@@ -32,7 +32,12 @@ function fakePrisma(
 ) {
   return {
     message: { findMany: vi.fn(async () => []) },
-    run: { findMany: vi.fn(async () => runs) },
+    run: {
+      // The held-audio scan has its own filter and finds nothing unless a test says otherwise.
+      findMany: vi.fn(async (args?: { where?: { awaitingAudioAt?: unknown } }) =>
+        args?.where && "awaitingAudioAt" in args.where ? [] : runs,
+      ),
+    },
     routine: { findMany: vi.fn(async () => routines) },
     computer: { findMany: vi.fn(async () => controls) },
     messagingOutbound: { findFirst: vi.fn(async () => null) },
@@ -196,6 +201,36 @@ describe("createJobReconciler", () => {
     expect(heldFor).toBeLessThan(31 * 60_000);
   });
 
+  it("starts the audio job again for a run held past the point where a live job would have finished, keeping a live one", async () => {
+    const prisma = fakePrisma([]);
+    const heldRun = { id: "run-held" };
+    vi.mocked(prisma.run.findMany).mockImplementation((async (args?: {
+      where?: { awaitingAudioAt?: unknown };
+    }) =>
+      args?.where && "awaitingAudioAt" in args.where && !("AND" in args.where)
+        ? [heldRun]
+        : []) as never);
+    const { jobs, enqueue } = publisher();
+    const before = Date.now();
+    await createJobReconciler({ prisma, jobs }).reconcileOnce();
+
+    const query = vi
+      .mocked(prisma.run.findMany)
+      .mock.calls.map(([args]) => args?.where as Record<string, unknown> | undefined)
+      .find((where) => where && "awaitingAudioAt" in where && !("AND" in where));
+    expect(query).toMatchObject({ status: "queued" });
+    const range = query?.awaitingAudioAt as { gte: Date; lt: Date };
+    // Older than a download lock can be live, younger than the point where the run is released.
+    expect(before - range.lt.getTime()).toBeGreaterThan(5 * 60_000);
+    expect(before - range.gte.getTime()).toBeGreaterThan(29 * 60_000);
+
+    const job = enqueue.mock.calls
+      .map(([queued]) => queued)
+      .find((queued) => queued.name === "audio.transcribe");
+    expect(job).toMatchObject({ payload: { runId: "run-held" }, keepExisting: true });
+    expect(job?.replaceLockedBefore?.getTime()).toBeLessThanOrEqual(range.lt.getTime() + 1000);
+  });
+
   it("replaces any lock for an expired lease but only an old lock for a queued run", async () => {
     const prisma = fakePrisma([
       { id: "run-queued", status: "queued", updatedAt: new Date() },
@@ -335,7 +370,7 @@ describe("createJobReconciler", () => {
     const runPages = [runs.slice(0, 2), runs.slice(2, 4), runs.slice(4)];
     let runPage = 0;
     const runFindMany = vi.fn(async (args: { where?: Record<string, unknown> } = {}) => {
-      if (args.where?.messagingMirroredAt === null) return [];
+      if (args.where?.messagingMirroredAt === null || args.where?.awaitingAudioAt) return [];
       const status = args.where?.status as { in?: string[] } | undefined;
       if (status?.in?.includes("waiting_takeover")) return [];
       return runPages[runPage++] ?? [];
@@ -371,7 +406,8 @@ describe("createJobReconciler", () => {
       "run:run-5",
       "routine:routine-5",
     ]);
-    expect(runFindMany.mock.calls[4]?.[0]).toMatchObject({
+    const scans = runFindMany.mock.calls.filter(([args]) => !args?.where?.awaitingAudioAt);
+    expect(scans[4]?.[0]).toMatchObject({
       orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
       where: {
         AND: [
@@ -421,8 +457,8 @@ describe("createJobReconciler", () => {
     expect(new Set(enqueue.mock.calls.map(([job]) => job.replaceKey)).size).toBe(1_000);
     expect(findMany).toHaveBeenCalledTimes(10);
     expect(prisma.computer.findMany).toHaveBeenCalledOnce();
-    // Stuck-work, legacy-run, and unmirrored-messaging scans run once each.
-    expect(prisma.run.findMany).toHaveBeenCalledTimes(3);
+    // Stuck-work, legacy-run, unmirrored-messaging and held-audio scans run once each.
+    expect(prisma.run.findMany).toHaveBeenCalledTimes(4);
     expect(prisma.messagingOutbound.findFirst).toHaveBeenCalledOnce();
     expect(auxiliary).toHaveBeenCalledOnce();
   });
@@ -549,7 +585,7 @@ describe("createJobReconciler", () => {
     };
     let terminalScan = 0;
     const runFindMany = vi.fn(async (args: { where?: Record<string, unknown> } = {}) => {
-      if (args.where?.messagingMirroredAt === null) return [];
+      if (args.where?.messagingMirroredAt === null || args.where?.awaitingAudioAt) return [];
       if (args.where?.trigger === "bot_message") {
         terminalScan += 1;
         return terminalScan === 2 ? [] : [terminalRun];
@@ -578,7 +614,7 @@ describe("createJobReconciler", () => {
     await reconciler.reconcileOnce();
 
     expect(runFindMany).toHaveBeenNthCalledWith(
-      4,
+      5,
       expect.objectContaining({
         orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
         where: {
