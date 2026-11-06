@@ -168,6 +168,7 @@ async function handleVisitor(
       messageId: sent.messageId,
       actor: { spaceId: ids.spaceId, userId: ids.userId },
       fromOwner: false,
+      allowVisitor: true,
       attachments: stored.artifacts,
     },
   ).catch((error) => getLogger().error("whatsapp visitor run enqueue error", error));

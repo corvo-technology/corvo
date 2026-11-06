@@ -241,6 +241,53 @@ describe("transcribeAudioArtifact", () => {
   });
 });
 
+describe("audio from a visitor, who cannot cause a download", () => {
+  it("does not fetch a missing model, and says so", async () => {
+    const { deps, ensure } = setup({ modelState: "absent" });
+    const outcome = await transcribeAudioArtifact(deps, {
+      artifactId: "art-1",
+      actor,
+      noDownload: true,
+    });
+    expect(outcome).toEqual({ status: "failed", reason: "model-missing" });
+    expect(ensure).not.toHaveBeenCalled();
+    expect(transcriptNote("memo.wav", { status: "failed", reason: "model-missing" })).toContain(
+      "not on this computer",
+    );
+  });
+
+  it("transcribes with a model that is already there", async () => {
+    const { deps, ensure } = setup({ modelState: "ready" });
+    const outcome = await transcribeAudioArtifact(deps, {
+      artifactId: "art-1",
+      actor,
+      noDownload: true,
+    });
+    expect(outcome.status).toBe("transcribed");
+    expect(ensure).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not stop a hosted provider the owner chose", async () => {
+    const { deps } = setup({
+      modelState: "absent",
+      credential: { provider: "openai", secret: "sk-test-12345" },
+      createProvider: () => ({ transcribe: async () => ({ text: "hi" }) }) as never,
+    });
+    const outcome = await transcribeAudioArtifact(deps, {
+      artifactId: "art-1",
+      actor,
+      noDownload: true,
+    });
+    expect(outcome).toMatchObject({ status: "transcribed", text: "hi" });
+  });
+
+  it("still downloads for the owner's own audio", async () => {
+    const { deps, ensure } = setup({ modelState: "absent" });
+    await transcribeAudioArtifact(deps, { artifactId: "art-1", actor });
+    expect(ensure).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("after the owner removed a model", () => {
   it("does not download the default model on its own, and tells the agent why", async () => {
     const { deps, ensure } = setup({ modelState: "absent", automatic: false });

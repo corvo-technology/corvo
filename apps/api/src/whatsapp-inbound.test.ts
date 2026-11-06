@@ -212,6 +212,67 @@ describe("a visitor's conversation", () => {
   });
 });
 
+describe("a visitor's voice note", () => {
+  const voiceEvent = () =>
+    event({
+      content: "",
+      attachments: [
+        {
+          name: "voice-note.ogg",
+          mimeType: "audio/ogg",
+          size: 4096,
+          fetch: async () => new Uint8Array([1]),
+        },
+      ],
+    });
+
+  function withAudio() {
+    const base = setup();
+    const jobs = { enqueue: vi.fn(async () => undefined) };
+    const prisma = {
+      messagingInstallation: { findUnique: vi.fn(async () => installation) },
+      thread: { findFirst: vi.fn(async () => ({ id: "main-thread" })) },
+      externalConversation: {
+        upsert: vi.fn(async () => ({
+          id: "conv-1",
+          botId: "bot-1",
+          spaceId: "space-1",
+          userId: "owner-1",
+          thread: { id: "thread-1" },
+        })),
+      },
+      run: {
+        findUnique: vi.fn(async () => ({ status: "queued", sourceMessageId: "msg-1" })),
+        update: vi.fn(async () => ({})),
+      },
+    } as unknown as PrismaClient;
+    const handler = createWhatsAppInboundHandler({
+      prisma,
+      events: { sendUserMessage: base.sendUserMessage } as never,
+      jobs,
+      audio: { canTranscribe: async () => true },
+      storeAttachment: async () => ({
+        id: "art-1",
+        name: "voice-note.ogg",
+        mimeType: "audio/ogg",
+        size: 4096,
+      }),
+    });
+    return { handler, jobs };
+  }
+
+  it("is held for transcription, like the owner's", async () => {
+    const { handler, jobs } = withAudio();
+    await handler(voiceEvent());
+    expect(jobs.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "audio.transcribe" }),
+    );
+    expect(jobs.enqueue).not.toHaveBeenCalledWith(
+      expect.objectContaining({ name: "run.continue" }),
+    );
+  });
+});
+
 describe("recorded messages", () => {
   it("appear in a conversation that already exists, and start no run", async () => {
     const { handler, sent, jobs } = setup({

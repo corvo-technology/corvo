@@ -104,6 +104,37 @@ describe("startRunOrAwaitAudio", () => {
   });
 });
 
+describe("startRunOrAwaitAudio for someone who is not the owner", () => {
+  it("leaves their audio a file, as before", async () => {
+    const { deps, update, enqueue } = setup();
+    const outcome = await startRunOrAwaitAudio(deps, {
+      runId: "run-1",
+      messageId: "msg-1",
+      actor,
+      fromOwner: false,
+      attachments: [voice],
+    });
+    expect(outcome).toBe("started");
+    expect(update).not.toHaveBeenCalled();
+    expect(enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
+  });
+
+  it("holds the run for a visitor on a linked number, when that is allowed", async () => {
+    const { deps, update, enqueue } = setup();
+    const outcome = await startRunOrAwaitAudio(deps, {
+      runId: "run-1",
+      messageId: "msg-1",
+      actor,
+      fromOwner: false,
+      allowVisitor: true,
+      attachments: [voice],
+    });
+    expect(outcome).toBe("held");
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "audio.transcribe" }));
+  });
+});
+
 describe("startRunOrAwaitAudio for a message that steers a run that is already going", () => {
   it("does not hold that run: it belongs to an earlier message and may be running", async () => {
     const { deps, update, enqueue } = setup({
