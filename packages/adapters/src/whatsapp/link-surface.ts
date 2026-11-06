@@ -23,6 +23,8 @@ import { createPacer, type Pacer } from "./pacing.js";
 import { MemoryWhatsAppAuthStore } from "./scripted-client.js";
 
 export const WHATSAPP_LINK_PROVIDER = "whatsapp-web";
+/** Every thread this surface owns starts with this, so others can tell where to send. */
+export const WHATSAPP_THREAD_PREFIX = `${WHATSAPP_LINK_PROVIDER}:`;
 const LINK_TTL_MS = 10 * 60_000;
 
 export interface WhatsAppLinkSurfaceDeps {

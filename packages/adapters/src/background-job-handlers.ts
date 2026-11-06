@@ -32,6 +32,7 @@ import type { LocalSpeech } from "./local-speech.js";
 import type { MemoryProviderResolver } from "./memory-provider-factory.js";
 import { deliverMessagingOutbound, mirrorMessagingOutbound } from "./messaging-delivery.js";
 import { expireTaughtSkillTeaching } from "./teaching-session.js";
+import { WHATSAPP_THREAD_PREFIX } from "./whatsapp/link-surface.js";
 import { curateWiki } from "./wiki-curator-run.js";
 
 type Tenant = { spaceId: string; userId: string };
@@ -102,6 +103,9 @@ export function createBackgroundJobHandlers(deps: {
         events: deps.events,
         jobs: deps.jobs,
         artifacts: deps.artifacts,
+        // A linked WhatsApp number's socket lives in the API process, so the worker never sends
+        // those rows; the API process does.
+        outboxScope: { skipThreadPrefix: WHATSAPP_THREAD_PREFIX },
       }
     : undefined;
   // The outbox holds every Space's pending sends, so draining it is cross-tenant.

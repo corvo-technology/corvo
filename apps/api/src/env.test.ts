@@ -7,6 +7,20 @@ const base = {
 };
 
 describe("loadEnv", () => {
+  it("keeps linked WhatsApp numbers off a server unless the operator turns them on", () => {
+    expect(loadEnv(base).whatsappLinkedDevicesEnabled).toBe(false);
+    for (const value of ["", "0", "false", "yes", "TRUE"]) {
+      expect(
+        loadEnv({ ...base, WHATSAPP_LINKED_DEVICES_ENABLED: value }).whatsappLinkedDevicesEnabled,
+      ).toBe(false);
+    }
+    for (const value of ["1", "true"]) {
+      expect(
+        loadEnv({ ...base, WHATSAPP_LINKED_DEVICES_ENABLED: value }).whatsappLinkedDevicesEnabled,
+      ).toBe(true);
+    }
+  });
+
   it("keeps calls off unless explicitly enabled", () => {
     expect(loadEnv(base).phoneCallsEnabled).toBe(false);
     for (const value of ["false", "1", ""]) {

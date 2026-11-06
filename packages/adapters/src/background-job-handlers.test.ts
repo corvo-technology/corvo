@@ -69,6 +69,30 @@ describe("createBackgroundJobHandlers", () => {
     installLogger(createLogger({ service: "corvo-worker", level: "off", sinks: [] }));
   });
 
+  it("leaves linked WhatsApp rows to the process that holds the sockets, which is never the worker", async () => {
+    vi.mocked(deliverMessagingOutbound).mockClear();
+    const handlers = createBackgroundJobHandlers({
+      executor: {} as unknown as ReturnType<typeof createRunExecutor>,
+      prisma: { run: owned() } as unknown as PrismaClient,
+      sandbox: {} as unknown as SandboxProvider,
+      home: {} as unknown as AgentHomeStore,
+      artifacts: {} as unknown as ArtifactStore,
+      jobs: { enqueue: vi.fn(async () => undefined) } as unknown as JobPublisher,
+      events: {} as unknown as ThreadEvents,
+      workerId: "worker-1",
+      runtime: {} as unknown as AgentRuntime,
+      secretStore: {} as unknown as EncryptedSecretStore,
+      memoryProviders: { resolve: vi.fn(async () => null) },
+      messaging: {} as unknown as MessagingSurface,
+    });
+    await handlers["messaging.deliver"]({});
+    expect(deliverMessagingOutbound).toHaveBeenCalledWith(
+      expect.objectContaining({ outboxScope: { skipThreadPrefix: "whatsapp-web:" } }),
+      expect.anything(),
+      expect.anything(),
+    );
+  });
+
   it("compacts the requested thread with the runtime, job publisher, and model key it was given", async () => {
     const prisma = { thread: owned() } as unknown as PrismaClient;
     const runtime = {} as unknown as AgentRuntime;

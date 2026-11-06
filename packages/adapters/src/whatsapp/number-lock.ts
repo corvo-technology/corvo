@@ -45,3 +45,18 @@ export function createPostgresNumberLock(pool: Pick<Pool, "connect">): AcquireNu
     };
   };
 }
+
+/**
+ * For a process with no shared database to lock through (tests, a single-process setup): one
+ * process is the only holder there is, so the lock only guards against taking a number twice.
+ */
+export function createInProcessNumberLock(): AcquireNumberLock {
+  const held = new Set<string>();
+  return async (installationId) => {
+    if (held.has(installationId)) return undefined;
+    held.add(installationId);
+    return async () => {
+      held.delete(installationId);
+    };
+  };
+}

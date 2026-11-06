@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createPostgresNumberLock } from "./number-lock.js";
+import { createInProcessNumberLock, createPostgresNumberLock } from "./number-lock.js";
 
 function fakePool(grant: boolean) {
   const queries: Array<{ sql: string; values: unknown[] }> = [];
@@ -32,5 +32,17 @@ describe("createPostgresNumberLock", () => {
     const { pool, release } = fakePool(false);
     expect(await createPostgresNumberLock(pool as never)("inst-1")).toBeUndefined();
     expect(release).toHaveBeenCalled();
+  });
+});
+
+describe("createInProcessNumberLock", () => {
+  it("grants a number once until it is released", async () => {
+    const acquire = createInProcessNumberLock();
+    const first = await acquire("inst-1");
+    expect(first).toBeTypeOf("function");
+    expect(await acquire("inst-1")).toBeUndefined();
+    expect(await acquire("inst-2")).toBeTypeOf("function");
+    await first?.();
+    expect(await acquire("inst-1")).toBeTypeOf("function");
   });
 });

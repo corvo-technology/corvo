@@ -326,6 +326,7 @@ services:
     command: ["bash", "-lc", "pnpm db:deploy && exec env -u DATABASE_MIGRATION_URL node --enable-source-maps dist/index.js"]
     environment:
       <<: *app-environment
+      WHATSAPP_LINKED_DEVICES_ENABLED:
       # Owner login for migrations; the start command drops it before serving.
       DATABASE_MIGRATION_URL: postgres://${POSTGRES_USER:-corvo}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-corvo}
       # Sign-in, sessions, billing and inbound webhooks: API only.
