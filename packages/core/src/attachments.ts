@@ -5,6 +5,7 @@ import {
   isAllowedAttachmentMimeType,
   isAttachmentImageMimeType,
 } from "@corvo/contracts";
+import { visitorMessagePrompt } from "./messaging-prompts.js";
 
 export class AttachmentValidationError extends Error {
   constructor(message: string) {
@@ -153,6 +154,15 @@ export function insertAttachmentNotes(
 }
 
 export function blocksToAgentHistoryText(blocks: MessageBlock[]): string {
+  const text = unframedHistoryText(blocks);
+  // What an outside person wrote stays framed every time it is read back, not only on the turn
+  // it arrived.
+  return blocks.some((block) => block.kind === "visitor_message")
+    ? visitorMessagePrompt({ fromLabel: "someone", text })
+    : text;
+}
+
+function unframedHistoryText(blocks: MessageBlock[]): string {
   return blocks
     .map((block) => {
       if (block.kind === "text") return block.text;

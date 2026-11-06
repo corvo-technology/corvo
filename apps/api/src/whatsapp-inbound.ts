@@ -201,7 +201,15 @@ async function handleRecord(
     userId: conversation.userId,
     botId: conversation.botId,
     threadId: conversation.thread.id,
-    blocks: [{ kind: "text" as const, text: event.content }],
+    blocks: [
+      { kind: "text" as const, text: event.content },
+      // Marked, so it is framed as an outside person's words whenever a later turn reads it.
+      {
+        kind: "visitor_message" as const,
+        installationId: installation.id,
+        conversationId: conversation.id,
+      },
+    ],
     prompt: event.content,
     trigger: "messaging",
     clientNonce: `${PROVIDER}:rec:${installation.id}:${event.handle}`,
