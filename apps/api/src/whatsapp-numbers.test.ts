@@ -2,6 +2,7 @@ import type { Actor } from "@corvo/contracts";
 import type { PrismaClient } from "@corvo/db";
 import { describe, expect, it, vi } from "vitest";
 import {
+  cancelWhatsAppLink,
   disconnectWhatsAppNumber,
   listWhatsAppNumbers,
   startWhatsAppLink,
@@ -65,6 +66,7 @@ function setup(
       : {
           startLink: vi.fn(async () => ({ linkId: "link-1" })),
           linkStatus: vi.fn(() => ({ state: "qr" as const, qr: "qr-string" })),
+          cancelLink: vi.fn(),
           pause: vi.fn(async () => undefined),
           resume: vi.fn(async () => undefined),
           disconnect: vi.fn(async () => undefined),
@@ -217,5 +219,17 @@ describe("WhatsApp numbers: disconnect", () => {
       code: "NOT_FOUND",
     });
     expect(foreign.whatsapp?.disconnect).not.toHaveBeenCalled();
+  });
+});
+
+describe("WhatsApp numbers: cancelling a link", () => {
+  it("stops the person's own link, and is unavailable where the transport is off", async () => {
+    const { deps, whatsapp } = setup();
+    expect(await cancelWhatsAppLink(deps, actor, "link-1")).toEqual({ ok: true });
+    expect(whatsapp?.cancelLink).toHaveBeenCalledWith("link-1", "user-1");
+    const off = setup({ surface: false });
+    await expect(cancelWhatsAppLink(off.deps, actor, "link-1")).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
 });

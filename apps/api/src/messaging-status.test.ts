@@ -27,4 +27,17 @@ describe("messagingStatusSource", () => {
       openSignup: true,
     });
   });
+
+  it("does not list a linked WhatsApp number as a chat app to connect, and does not turn messaging on by itself", () => {
+    const only = messagingStatusSource(
+      surface(() => [{ provider: "whatsapp-web" }]),
+      false,
+    );
+    expect(only).toMatchObject({ enabled: false, providers: [], addresses: {} });
+    const both = messagingStatusSource(
+      surface(() => [{ provider: "telegram" }, { provider: "whatsapp-web" }]),
+      false,
+    );
+    expect(both).toMatchObject({ enabled: true, providers: ["telegram"] });
+  });
 });

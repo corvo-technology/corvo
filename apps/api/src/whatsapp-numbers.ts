@@ -11,7 +11,7 @@ export interface WhatsAppNumbersDeps {
   /** Absent where linked WhatsApp numbers are not enabled. */
   whatsapp?: Pick<
     WhatsAppLinkSurface,
-    "startLink" | "linkStatus" | "pause" | "resume" | "disconnect"
+    "startLink" | "linkStatus" | "cancelLink" | "pause" | "resume" | "disconnect"
   >;
 }
 
@@ -80,6 +80,16 @@ export async function whatsAppLinkStatus(
   linkId: string,
 ): Promise<WhatsAppLinkStatus> {
   return surface(deps).linkStatus(linkId, actor.userId);
+}
+
+/** Stops a link before it is scanned; only the person who started it can. */
+export async function cancelWhatsAppLink(
+  deps: WhatsAppNumbersDeps,
+  actor: Actor,
+  linkId: string,
+): Promise<{ ok: true }> {
+  surface(deps).cancelLink(linkId, actor.userId);
+  return { ok: true as const };
 }
 
 export async function listWhatsAppNumbers(

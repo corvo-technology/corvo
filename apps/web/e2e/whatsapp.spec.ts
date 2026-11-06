@@ -51,7 +51,7 @@ test("the Store links a WhatsApp number by QR and lists it", async ({ page }, te
   linked = true;
   await expect(card.getByText(NUMBER.number)).toBeVisible({ timeout: 10_000 });
   await expect(card.getByRole("img", { name: "QR code" })).toHaveCount(0);
-  await expect(card.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
-  await expect(card.getByRole("button", { name: "Disconnect", exact: true })).toBeVisible();
+  await expect(card.getByRole("button", { name: /^Pause/ })).toBeVisible();
+  await expect(card.getByRole("button", { name: /^Disconnect/ })).toBeVisible();
   await captureScreenshot(page, testInfo, "whatsapp-number-linked");
 });

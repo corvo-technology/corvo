@@ -1125,6 +1125,10 @@ export const appContract = {
         /** Starts linking a number to an agent and returns the id to poll for the QR code. */
         start: oc.input(z.object({ botId: Id })).output(z.object({ linkId: z.string() })),
         status: oc.input(z.object({ linkId: z.string() })).output(WhatsAppLinkStatusSchema),
+        /** Stops a link that was not scanned, so its connection to WhatsApp does not linger. */
+        cancel: oc
+          .input(z.object({ linkId: z.string() }))
+          .output(z.object({ ok: z.literal(true) })),
       },
       numbers: {
         list: oc.output(

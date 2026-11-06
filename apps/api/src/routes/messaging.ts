@@ -10,6 +10,7 @@ import {
 import { getLogger } from "@corvo/logging";
 import { ORPCError } from "@orpc/server";
 import {
+  cancelWhatsAppLink,
   disconnectWhatsAppNumber,
   listWhatsAppNumbers,
   startWhatsAppLink,
@@ -67,6 +68,9 @@ export function messagingRoutes(ctx: RouterContext) {
           ),
           status: authed.messaging.whatsapp.link.status.handler(({ context, input }) =>
             whatsAppLinkStatus(deps, context.actor, input.linkId),
+          ),
+          cancel: authed.messaging.whatsapp.link.cancel.handler(({ context, input }) =>
+            cancelWhatsAppLink(deps, context.actor, input.linkId),
           ),
         },
         numbers: {

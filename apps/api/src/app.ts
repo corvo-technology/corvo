@@ -437,14 +437,22 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     : installedMessaging(prisma, secrets, env, legacyMessaging, jobs);
   // Linked WhatsApp numbers: sockets live in this process, which also owns inbound and polling.
   // Only the desktop engine, or a deployment whose operator opted in, ever has the transport.
-  const whatsapp =
+  const whatsappOn =
     !messagingOverride &&
     linkedWhatsAppEnabled({
       desktopStackToken: env.desktopStackToken,
       operatorSwitch: env.whatsappLinkedDevicesEnabled,
-    })
-      ? createWhatsAppLinkSurface({ prisma, secrets, pool: jobPool })
+    });
+  // Every number's lock is held on this one connection, kept apart from the pool the API's own
+  // queries use, so linking numbers never takes a connection those queries need. With a
+  // prisma override (tests) there is no database to lock through.
+  const whatsappLockPool =
+    whatsappOn && !prismaOverride
+      ? createPool(env.databaseUrl, { poolMax: 1, applicationName: "corvo-api-whatsapp-locks" })
       : undefined;
+  const whatsapp = whatsappOn
+    ? createWhatsAppLinkSurface({ prisma, secrets, pool: whatsappLockPool })
+    : undefined;
   const messaging = whatsapp
     ? new CompositeMessagingSurface(messagingBase, whatsapp)
     : messagingBase;
@@ -1506,6 +1514,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       await prisma.$disconnect().catch(() => undefined);
       await created.pool?.end().catch(() => undefined);
       await ownedJobPool?.end().catch(() => undefined);
+      await whatsappLockPool?.end().catch(() => undefined);
       await analytics?.flush();
       await logger.flush({ timeoutMs: 2_000 });
     },

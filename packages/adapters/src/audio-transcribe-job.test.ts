@@ -106,6 +106,29 @@ describe("a visitor's voice note", () => {
     expect(enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
   });
 
+  it("never parks a second job of the same number waiting for the first, which would hold a worker slot", async () => {
+    let finishFirst!: () => void;
+    const firstDone = new Promise<void>((resolve) => {
+      finishFirst = resolve;
+    });
+    const slow = setup({
+      blocks: visitorBlocks,
+      outcome: async () => {
+        await firstDone;
+        return { status: "transcribed", text: "olá", language: "pt" };
+      },
+    });
+    const second = setup({ blocks: visitorBlocks, runId: "run-2" });
+    const first = runAudioTranscribeJob(slow.deps, { runId: "run-1" });
+    await Promise.resolve();
+    // The second returns at once, with a note, while the first is still working.
+    await runAudioTranscribeJob(second.deps, { runId: "run-2" });
+    expect(second.transcribe).not.toHaveBeenCalled();
+    expect(second.prompt.current).toContain("too many audio messages were sent at once");
+    finishFirst();
+    await first;
+  });
+
   it("goes through the gate keyed by the number, never the person", async () => {
     const keys: string[] = [];
     const gate = {

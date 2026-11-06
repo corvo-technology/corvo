@@ -1,4 +1,5 @@
 import type { MessagingSurface } from "@corvo/adapter-kit";
+import { WHATSAPP_LINK_PROVIDER } from "@corvo/adapters";
 
 /**
  * What the status route reports about messaging. Read per request: a platform
@@ -9,14 +10,22 @@ export function messagingStatusSource(
   messaging: MessagingSurface | undefined,
   openSignup: boolean,
 ) {
+  // A number linked by QR has its own screen and cannot be connected with a code, so it is not a
+  // chat app to offer, and the app having it does not turn messaging on.
+  const offered = () =>
+    (messaging?.platforms() ?? []).filter(
+      (platform) => platform.provider !== WHATSAPP_LINK_PROVIDER,
+    );
   return {
-    enabled: Boolean(messaging),
+    get enabled() {
+      return Boolean(messaging) && offered().length > 0;
+    },
     get providers() {
-      return messaging?.platforms().map((platform) => platform.provider) ?? [];
+      return offered().map((platform) => platform.provider);
     },
     get addresses() {
       return Object.fromEntries(
-        (messaging?.platforms() ?? []).flatMap((platform) =>
+        offered().flatMap((platform) =>
           platform.address ? [[platform.provider, platform.address]] : [],
         ),
       );

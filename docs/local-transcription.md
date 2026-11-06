@@ -10,7 +10,7 @@ is sent to a hosted service unless the owner chose one.
 ## What is covered
 
 - Audio in the web chat, and voice notes in a 1:1 conversation with the owner's linked chat app.
-- Audio from the owner. Audio from anyone else is attached as a file and is not transcribed, except a visitor who writes to a linked WhatsApp number: that is transcribed too, with the speech provider the owner chose, but never causes a model to be downloaded, and is limited to one at a time per number with a short queue (see `docs/whatsapp.md`).
+- Audio from the owner. Audio from anyone else is attached as a file and is not transcribed, except a visitor who writes to a linked WhatsApp number: that is transcribed too, with the speech provider the owner chose, but never causes a model to be downloaded, and is limited to one at a time per number, the rest attached with a note (see `docs/whatsapp.md`).
 - English or Portuguese, one language per recording. The language is detected for each recording;
   Settings → Voice can fix it to English or Portuguese, which helps with very short recordings.
 - WAV and Ogg/Opus (what Telegram voice notes use). Other formats, such as mp3, m4a and webm, are

@@ -36,11 +36,13 @@ export interface AudioTranscribeJobDeps {
   announce(run: AnnouncedRun, text: string): Promise<void>;
 }
 
-/** One transcription at a time per number, a short queue, and the rest turned away. */
+/** One transcription at a time per number; the rest are turned away at once. */
 export interface VisitorAudioGate {
   run<T>(key: string, task: () => Promise<T>): Promise<T | "full">;
 }
-const VISITOR_AUDIO_QUEUE = 3;
+// Nothing waits: a job that waited would hold one of the worker's few slots for as long as the
+// transcription before it takes, and a stranger could fill them all and stall the owner's runs.
+const VISITOR_AUDIO_QUEUE = 0;
 const defaultVisitorGate: VisitorAudioGate = createKeyedGate({ maxWaiting: VISITOR_AUDIO_QUEUE });
 
 /** One short line: the owner sees why nothing has happened yet. */

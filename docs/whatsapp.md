@@ -63,8 +63,9 @@ A conversation stays with the agent that had it if the number is later moved to 
   without a reply.
 - Voice notes from visitors are transcribed with the speech provider the owner chose in Settings,
   free local or hosted (`docs/local-transcription.md`). They never cause a model to be downloaded,
-  and run one at a time per number with a short queue; the agent is told when one was not
-  transcribed.
+  and run one at a time per number. A second one that arrives while the first is being read is
+  attached with a note instead of waiting, so a stranger cannot fill the worker's slots; the
+  agent is told when one was not transcribed.
 
 ## Operating it
 
@@ -99,5 +100,7 @@ Tests are offline and use the scripted client; no test contacts WhatsApp. The li
 6.7.24 because 7.0.0-rc14 is refused by WhatsApp's server (`docs/superpowers/specs/2026-11-06-whatsapp-linked-number-spike.md`).
 It pulls `libsignal` from a pinned GitHub tarball.
 
-Not yet: routing a visitor's message to other agents, groups, a message the agent starts, a web
-view of a visitor's conversation (the mobile app lists them), and the mobile screen to link a number.
+Not yet: routing a visitor's message to other agents, groups, a message the agent starts, a way
+for the owner to write into a visitor's conversation (no client can write to those threads today,
+which is also what keeps an owner's message from mixing with a visitor's), a web view of a
+visitor's conversation (the mobile app lists them), and the mobile screen to link a number.

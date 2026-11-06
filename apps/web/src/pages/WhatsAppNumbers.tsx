@@ -89,12 +89,19 @@ function NumberRow({ number }: { number: WhatsAppNumber }) {
             type="button"
             variant="ghost"
             size="sm"
+            aria-label={`${number.paused ? t`Resume` : t`Pause`} ${number.number}`}
             onClick={() => void change({ id: number.id, paused: !number.paused })}
           >
             {number.paused ? <Trans>Resume</Trans> : <Trans>Pause</Trans>}
           </Button>
         )}
-        <Button type="button" variant="ghost" size="sm" onClick={() => void remove()}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          aria-label={`${t`Disconnect`} ${number.number}`}
+          onClick={() => void remove()}
+        >
           <Trans>Disconnect</Trans>
         </Button>
       </div>
@@ -243,7 +250,15 @@ export function WhatsAppNumbers({ botId }: { botId: string | undefined }) {
             <Trans>This uses WhatsApp without the official API. WhatsApp can ban the number.</Trans>
           </p>
           {link.qr ? <Qr text={link.qr} /> : null}
-          <Button type="button" variant="ghost" size="sm" onClick={() => setLink(null)}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              void rpc.messaging.whatsapp.link.cancel({ linkId: link.id }).catch(() => undefined);
+              setLink(null);
+            }}
+          >
             <Trans>Cancel</Trans>
           </Button>
         </div>

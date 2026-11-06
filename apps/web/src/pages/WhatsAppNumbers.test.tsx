@@ -17,6 +17,7 @@ const linkStatus = vi.hoisted(() => ({
 }));
 const linkStart = vi.hoisted(() => vi.fn());
 const linkPoll = vi.hoisted(() => vi.fn());
+const linkCancel = vi.hoisted(() => vi.fn());
 const update = vi.hoisted(() => vi.fn());
 const disconnect = vi.hoisted(() => vi.fn());
 
@@ -24,7 +25,7 @@ vi.mock("../lib/rpc", () => ({
   rpc: {
     messaging: {
       whatsapp: {
-        link: { start: linkStart, status: linkPoll },
+        link: { start: linkStart, status: linkPoll, cancel: linkCancel },
         numbers: { update, disconnect },
       },
     },
@@ -133,6 +134,7 @@ beforeEach(() => {
   numbers.current = { available: true, numbers: [] };
   linkStatus.current = { state: "qr", qr: "qr-string" };
   linkStart.mockReset().mockResolvedValue({ linkId: "link-1" });
+  linkCancel.mockReset().mockResolvedValue({ ok: true });
   linkPoll.mockReset().mockImplementation(async () => linkStatus.current);
   update.mockReset().mockResolvedValue({});
   disconnect.mockReset().mockResolvedValue({ ok: true });
@@ -210,6 +212,8 @@ it("cancels the flow without linking", async () => {
   await flush();
   await click("Cancel");
   expect(host.querySelector("svg[data-testid='whatsapp-qr']")).toBeNull();
+  // The connection to WhatsApp is stopped on the server too, not just hidden here.
+  expect(linkCancel).toHaveBeenCalledWith({ linkId: "link-1" });
 });
 
 it("lists a number with its agent and pauses, resumes and disconnects it", async () => {
@@ -244,4 +248,16 @@ it("marks a number WhatsApp logged out", async () => {
   numbers.current = { available: true, numbers: [{ ...NUMBER, status: "disconnected" }] };
   await render();
   expect(host.textContent).toContain("Disconnected");
+});
+
+it("names each number's buttons with the number, so a screen reader can tell several apart", async () => {
+  numbers.current = {
+    available: true,
+    numbers: [NUMBER, { ...NUMBER, id: "inst-2", number: "+•••••••0200" }],
+  };
+  await render();
+  const names = [...host.querySelectorAll("button")].map((b) => b.getAttribute("aria-label"));
+  expect(names).toContain("Pause +•••••••0100");
+  expect(names).toContain("Pause +•••••••0200");
+  expect(names).toContain("Disconnect +•••••••0200");
 });
