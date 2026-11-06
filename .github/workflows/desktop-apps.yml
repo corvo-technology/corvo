@@ -21,7 +21,7 @@ jobs:
       matrix:
         include:
           - name: macOS
-            os: macos-14
+            os: macos-15
             args: --mac --arm64 -c.mac.identity=- -c.mac.notarize=false
           - name: Windows
             os: windows-2022
