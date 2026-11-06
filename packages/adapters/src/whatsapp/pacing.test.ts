@@ -22,7 +22,15 @@ function fake(random = 0) {
     random: () => random,
   });
   const client = { setTyping: async (_chat: string, on: boolean) => void typing.push(on) };
-  return { pacer, sleeps, typing, client, advance: (ms: number) => void (now += ms) };
+  return {
+    pacer,
+    sleeps,
+    typing,
+    client,
+    advance: (ms: number) => {
+      now += ms;
+    },
+  };
 }
 
 describe("typing before a reply", () => {
