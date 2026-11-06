@@ -69,6 +69,55 @@ describe("createBackgroundJobHandlers", () => {
     installLogger(createLogger({ service: "corvo-worker", level: "off", sinks: [] }));
   });
 
+  it("still mirrors a run's replies when the worker has no messaging platform, since WhatsApp conversations need none to be queued", async () => {
+    vi.mocked(mirrorMessagingOutbound).mockClear();
+    const handlers = createBackgroundJobHandlers({
+      executor: { continueRun: vi.fn(async () => undefined) } as unknown as ReturnType<
+        typeof createRunExecutor
+      >,
+      prisma: { run: owned() } as unknown as PrismaClient,
+      sandbox: {} as unknown as SandboxProvider,
+      home: {} as unknown as AgentHomeStore,
+      artifacts: {} as unknown as ArtifactStore,
+      jobs: { enqueue: vi.fn(async () => undefined) } as unknown as JobPublisher,
+      events: {} as unknown as ThreadEvents,
+      workerId: "worker-1",
+      runtime: {} as unknown as AgentRuntime,
+      secretStore: {} as unknown as EncryptedSecretStore,
+      memoryProviders: { resolve: vi.fn(async () => null) },
+    });
+    await handlers["run.continue"]({ runId: "run-1" });
+    expect(mirrorMessagingOutbound).toHaveBeenCalledWith(
+      expect.objectContaining({ linkedOnly: true }),
+      "run-1",
+    );
+  });
+
+  it("does not set the linked-only mode where the worker has a platform", async () => {
+    vi.mocked(mirrorMessagingOutbound).mockClear();
+    const handlers = createBackgroundJobHandlers({
+      executor: { continueRun: vi.fn(async () => undefined) } as unknown as ReturnType<
+        typeof createRunExecutor
+      >,
+      prisma: { run: owned() } as unknown as PrismaClient,
+      sandbox: {} as unknown as SandboxProvider,
+      home: {} as unknown as AgentHomeStore,
+      artifacts: {} as unknown as ArtifactStore,
+      jobs: { enqueue: vi.fn(async () => undefined) } as unknown as JobPublisher,
+      events: {} as unknown as ThreadEvents,
+      workerId: "worker-1",
+      runtime: {} as unknown as AgentRuntime,
+      secretStore: {} as unknown as EncryptedSecretStore,
+      memoryProviders: { resolve: vi.fn(async () => null) },
+      messaging: {} as unknown as MessagingSurface,
+    });
+    await handlers["run.continue"]({ runId: "run-1" });
+    expect(mirrorMessagingOutbound).toHaveBeenCalledWith(
+      expect.not.objectContaining({ linkedOnly: true }),
+      "run-1",
+    );
+  });
+
   it("leaves linked WhatsApp rows to the process that holds the sockets, which is never the worker", async () => {
     vi.mocked(deliverMessagingOutbound).mockClear();
     const handlers = createBackgroundJobHandlers({
@@ -201,7 +250,7 @@ describe("createBackgroundJobHandlers", () => {
       sandbox: {} as unknown as SandboxProvider,
       home: {} as unknown as AgentHomeStore,
       artifacts: {} as unknown as ArtifactStore,
-      jobs: {} as unknown as JobPublisher,
+      jobs: { enqueue: vi.fn(async () => undefined) } as unknown as JobPublisher,
       events: {} as unknown as ThreadEvents,
       workerId: "worker-1",
       runtime: {} as unknown as AgentRuntime,

@@ -61,6 +61,8 @@ type Running = { client: WhatsAppLinkClient; release: () => Promise<void> };
 type PendingLink = {
   /** Only the person who started a link may read its QR code. */
   userId: string;
+  /** Stops the link when nobody finishes it. */
+  timer?: ReturnType<typeof setTimeout>;
   status: LinkStatus;
   client: WhatsAppLinkClient;
   memory: MemoryWhatsAppAuthStore;
@@ -106,6 +108,8 @@ export class WhatsAppLinkSurface implements MessagingSurface {
   private stopped = false;
 
   private readonly pacer: Pacer;
+  /** Ids of messages this surface sent, so they are not taken for the owner writing. */
+  private readonly sentIds = new Set<string>();
 
   constructor(private readonly deps: WhatsAppLinkSurfaceDeps) {
     this.pacer = deps.pacer ?? createPacer();
@@ -161,7 +165,7 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     if (this.retryTimer) clearInterval(this.retryTimer);
     this.retryTimer = undefined;
     this.waiting.clear();
-    for (const link of this.links.values()) await link.client.close().catch(() => undefined);
+    for (const [linkId] of [...this.links]) this.endLink(linkId);
     this.links.clear();
     const all = [...this.running.entries()];
     this.running.clear();
@@ -179,7 +183,10 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     botId: string;
   }): Promise<{ linkId: string }> {
     const now = this.now().getTime();
-    for (const [id, link] of this.links) if (link.expires < now) this.links.delete(id);
+    // One pending link per person: Add again stops the one before it.
+    for (const [id, link] of this.links) {
+      if (link.userId === input.userId || link.expires < now) this.endLink(id);
+    }
     const linkId = this.newId();
     const memory = new MemoryWhatsAppAuthStore();
     const client = this.deps.createClient(memory);
@@ -191,13 +198,31 @@ export class WhatsAppLinkSurface implements MessagingSurface {
       expires: now + LINK_TTL_MS,
     };
     this.links.set(linkId, link);
+    link.timer = setTimeout(() => this.endLink(linkId), LINK_TTL_MS);
     client.onConnection((event) => {
       if (event.state === "qr") link.status = { state: "qr", qr: event.qr };
       else if (event.state === "open") void this.finishLink(link, event.number, input);
-      else if (event.reason !== "network") link.status = { state: "failed" };
+      // A QR code that times out is the end of the link, not a reason to show new ones forever.
+      else this.endLink(linkId, { state: "failed" });
     });
     await client.connect();
     return { linkId };
+  }
+
+  /** Stops a link's socket and forgets it, leaving a status behind only when asked. */
+  private endLink(linkId: string, status?: LinkStatus) {
+    const link = this.links.get(linkId);
+    if (!link) return;
+    if (link.timer) clearTimeout(link.timer);
+    void link.client.close().catch(() => undefined);
+    if (status) link.status = status;
+    else this.links.delete(linkId);
+  }
+
+  /** The person who started a link can stop it before it is scanned. */
+  cancelLink(linkId: string, userId: string): void {
+    const link = this.links.get(linkId);
+    if (link?.userId === userId) this.endLink(linkId);
   }
 
   linkStatus(linkId: string, userId: string): LinkStatus {
@@ -247,8 +272,17 @@ export class WhatsAppLinkSurface implements MessagingSurface {
               },
             }),
           );
+      // A number linked again starts from its new session alone, and any socket still running
+      // on the old one is stopped.
+      const running = this.running.get(id);
+      if (running) {
+        this.running.delete(id);
+        await running.client.close().catch(() => undefined);
+        await safeRelease(running.release);
+      }
       // The session moves from memory to the number's own encrypted store.
       const store = this.deps.authStoreFor({ id, spaceId: input.spaceId, userId: input.userId });
+      await store.clear();
       for (const [name, value] of link.memory.entries()) await store.set(name, value);
       await link.client.close();
       link.status = { state: "linked", number: maskNumber(number) };
@@ -263,7 +297,7 @@ export class WhatsAppLinkSurface implements MessagingSurface {
 
   private async activate(row: Installation): Promise<void> {
     if (this.running.has(row.id) || this.stopped) return;
-    const release = await this.deps.acquireLock(row.id);
+    const release = await this.deps.acquireLock(row.id, () => void this.onLockLost(row.id));
     if (!release) {
       // Another process holds this number; try again later, which also covers it dying.
       this.waiting.add(row.id);
@@ -302,8 +336,33 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     }
   }
 
+  /** Stops holding a number without logging it out or marking it, and tries to take it again. */
+  private async stopHolding(id: string, options: { release: boolean }) {
+    const running = this.running.get(id);
+    this.running.delete(id);
+    if (running) {
+      await running.client.close().catch(() => undefined);
+      if (options.release) await safeRelease(running.release);
+    }
+    if (!this.stopped) {
+      this.waiting.add(id);
+      this.scheduleRetry();
+    }
+  }
+
+  /** The lock was lost under a running socket: another process may take the number, so stop. */
+  private async onLockLost(id: string) {
+    await this.stopHolding(id, { release: false });
+  }
+
   private async onConnection(id: string, event: WhatsAppConnectionEvent) {
     if (event.state !== "closed" || event.reason === "network") return;
+    // Another connection took over this one. That is not the end of the session: stop here and
+    // try again later, which finds out whether another process of ours holds it.
+    if (event.reason === "replaced") {
+      await this.stopHolding(id, { release: true });
+      return;
+    }
     // WhatsApp ended this device's session, so there is nothing to reconnect.
     await runAsSystem("mark whatsapp number disconnected", () =>
       this.deps.prisma.messagingInstallation.update({
@@ -321,7 +380,20 @@ export class WhatsAppLinkSurface implements MessagingSurface {
       const row = await runAsSystem("read linked whatsapp number", () =>
         this.deps.prisma.messagingInstallation.findUnique({ where: { id } }),
       );
-      if (row?.status !== "active") return;
+      if (!row) {
+        // The number was deleted (an agent's deletion removes it): log the device out and stop.
+        const running = this.running.get(id);
+        this.running.delete(id);
+        if (running) {
+          await running.client.logout().catch(() => undefined);
+          await running.client.close().catch(() => undefined);
+          await safeRelease(running.release);
+        }
+        return;
+      }
+      if (row.status !== "active") return;
+      // What this surface sent comes back as the number's own message: it is not the owner.
+      if (this.sentIds.has(message.messageId)) return;
       const audience = classifyIncoming(message, {
         paused: row.pausedAt !== null,
         linkedAt: row.createdAt,
@@ -429,7 +501,20 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     const { installationId, client, chatId } = this.target(request.threadId);
     await this.pacer.beforeSend(installationId, client, chatId, request.body);
     const sent = await client.sendText(chatId, request.body);
+    this.sentIds.add(sent.id);
+    // Bounded: only the most recent matter, since an echo arrives within moments.
+    if (this.sentIds.size > 500) {
+      const oldest = this.sentIds.values().next().value;
+      if (oldest !== undefined) this.sentIds.delete(oldest);
+    }
     return { handle: sent.id };
+  }
+
+  /** Whether this process holds the number a thread belongs to: only it can send there. */
+  holds(threadId: string): boolean {
+    if (!threadId.startsWith(WHATSAPP_THREAD_PREFIX)) return false;
+    const rest = threadId.slice(WHATSAPP_THREAD_PREFIX.length);
+    return this.running.has(rest.slice(0, rest.indexOf(":")));
   }
 
   async openDirectThread(): Promise<string> {

@@ -75,6 +75,8 @@ async function handleOwner(
     blocks: [
       ...(body ? [{ kind: "text" as const, text: body }] : []),
       ...stored.artifacts.map((artifact) => messageBlockForArtifact(artifact)),
+      // The answer goes back to this chat, not to another app the agent is linked to.
+      { kind: "linked_chat" as const, installationId: installation.id, threadId: event.threadId },
     ],
     prompt: promptTextForAttachments(body, stored.artifacts),
     trigger: "messaging",

@@ -128,6 +128,16 @@ describe("the owner's chat", () => {
       clientNonce: "whatsapp-web:inst-1:wamid-1",
     });
     expect(String(sent[0]?.prompt)).toContain("summarize my day");
+    // The answer is sent back to this chat.
+    expect(sent[0]?.blocks).toEqual(
+      expect.arrayContaining([
+        {
+          kind: "linked_chat",
+          installationId: "inst-1",
+          threadId: "whatsapp-web:inst-1:15550100@s.whatsapp.net",
+        },
+      ]),
+    );
     expect(jobs.enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
   });
 });

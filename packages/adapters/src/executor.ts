@@ -473,21 +473,31 @@ export function createRunExecutor(deps: ExecutorDeps) {
             where: { id: "default" },
           }),
           deps.memoryProviders.resolve(run.spaceId),
-          deps.prisma.taughtSkill.findMany({
-            where: { botId: run.botId, spaceId: run.spaceId, status: "saved" },
-          }),
-          listAgentSkillRecords(deps.prisma, {
-            spaceId: run.spaceId,
-            userId: run.userId,
-          }),
-          deps.prisma.agentSecret.findMany({
-            where: { spaceId: run.spaceId },
-            select: {
-              name: true,
-              secret: { select: { id: true, ciphertext: true } },
-            },
-          }),
-          loadBotCommandEnvironment(deps.prisma, deps.secretStore, run),
+          // A visitor's run is not told the owner's skills, credentials or command environment:
+          // not their names, not their contents, and a skill cannot be expanded by naming it.
+          visitorRun
+            ? Promise.resolve([])
+            : deps.prisma.taughtSkill.findMany({
+                where: { botId: run.botId, spaceId: run.spaceId, status: "saved" },
+              }),
+          visitorRun
+            ? Promise.resolve([])
+            : listAgentSkillRecords(deps.prisma, {
+                spaceId: run.spaceId,
+                userId: run.userId,
+              }),
+          visitorRun
+            ? Promise.resolve([])
+            : deps.prisma.agentSecret.findMany({
+                where: { spaceId: run.spaceId },
+                select: {
+                  name: true,
+                  secret: { select: { id: true, ciphertext: true } },
+                },
+              }),
+          visitorRun
+            ? Promise.resolve({} as Awaited<ReturnType<typeof loadBotCommandEnvironment>>)
+            : loadBotCommandEnvironment(deps.prisma, deps.secretStore, run),
           loadLoginPasswordRedactions(deps.prisma, deps.secretStore, run),
         ]);
         const historySearchBeforeSeq =
@@ -1089,8 +1099,9 @@ export function createRunExecutor(deps: ExecutorDeps) {
           computerKind,
           disabledBuiltinTools,
         );
+        // The owner's operating system, home folder and shell are not for a visitor.
         const hostEnvironment =
-          computerKind === "desktop"
+          computerKind === "desktop" && !visitorRun
             ? await deps.sandbox
                 .environment?.(
                   {
@@ -1333,7 +1344,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
         const runtimeHistory = [...historicalContext, ...historyWithImages];
         // Without a roster a bot only knows the bots it spawned itself.
         const [teammates, groups] = await Promise.all([
-          thread.groupId
+          thread.groupId || visitorRun
             ? []
             : deps.prisma.bot.findMany({
                 where: {
@@ -1347,7 +1358,7 @@ export function createRunExecutor(deps: ExecutorDeps) {
                 orderBy: { createdAt: "asc" },
                 take: BOT_DIRECTORY_LIMIT,
               }),
-          !thread.groupId
+          !thread.groupId && !visitorRun
             ? loadBotGroups(deps.prisma, run, {
                 allGroups:
                   bot.squadRouting &&

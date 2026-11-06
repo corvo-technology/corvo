@@ -1,3 +1,4 @@
+import { getLogger } from "@corvo/logging";
 import type {
   WhatsAppAuthStore,
   WhatsAppConnectionEvent,
@@ -30,7 +31,8 @@ export interface BaileysDeps {
   makeSocket(config: Record<string, unknown>): BaileysSocketLike;
   downloadMedia(raw: RawWhatsAppMessage): Promise<Uint8Array>;
   loadAuth(store: WhatsAppAuthStore): Promise<{ state: unknown; saveCreds(): Promise<void> }>;
-  loggedOutCode: number;
+  /** Close codes after which the session cannot continue: logged out, banned, bad session. */
+  terminalCodes: readonly number[];
   replacedCode: number;
   restartRequiredCode: number;
 }
@@ -73,6 +75,22 @@ export function createBaileysClient(
   const ownIds = (current: BaileysSocketLike) =>
     [current.user?.id, current.user?.lid].filter((id): id is string => Boolean(id));
 
+  /** A reconnect that cannot even open a socket is tried again later, never thrown. */
+  function startFailed(error: unknown) {
+    getLogger().warn("whatsapp reconnect failed", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    if (!stopped) scheduleReconnect();
+  }
+
+  function scheduleReconnect() {
+    attempts += 1;
+    const wait = Math.min(2_000 * 2 ** (attempts - 1), MAX_BACKOFF_MS);
+    timer = setTimeout(() => {
+      if (!stopped) start().catch(startFailed);
+    }, wait);
+  }
+
   async function start(): Promise<void> {
     const lib = await dependencies();
     const { state, saveCreds } = await lib.loadAuth(auth);
@@ -86,7 +104,14 @@ export function createBaileysClient(
       syncFullHistory: false,
     });
     socket = current;
-    current.ev.on("creds.update", (() => void saveCreds()) as Handler);
+    current.ev.on("creds.update", (() => {
+      // A failed save must never take the process down; the next update saves it again.
+      saveCreds().catch((error: unknown) => {
+        getLogger().warn("whatsapp session could not be saved", {
+          reason: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }) as Handler);
     current.ev.on("connection.update", ((update: {
       qr?: string;
       connection?: string;
@@ -100,7 +125,7 @@ export function createBaileysClient(
       }
       if (update.connection !== "close" || stopped) return;
       const code = update.lastDisconnect?.error?.output?.statusCode;
-      if (code === lib.loggedOutCode) {
+      if (code !== undefined && lib.terminalCodes.includes(code)) {
         stopped = true;
         emitConnection({ state: "closed", reason: "logged-out" });
       } else if (code === lib.replacedCode) {
@@ -108,14 +133,10 @@ export function createBaileysClient(
         emitConnection({ state: "closed", reason: "replaced" });
       } else if (code === lib.restartRequiredCode) {
         // Normal right after pairing: open a fresh socket at once.
-        void start();
+        start().catch(startFailed);
       } else {
         emitConnection({ state: "closed", reason: "network" });
-        attempts += 1;
-        const wait = Math.min(2_000 * 2 ** (attempts - 1), MAX_BACKOFF_MS);
-        timer = setTimeout(() => {
-          if (!stopped) void start();
-        }, wait);
+        scheduleReconnect();
       }
     }) as Handler);
     const deliver = (messages: RawWhatsAppMessage[], history: boolean) => {
@@ -224,7 +245,12 @@ async function loadBaileysDeps(): Promise<BaileysDeps> {
         saveCreds: () => store.set("creds", JSON.stringify(creds, BufferJSON.replacer)),
       };
     },
-    loggedOutCode: lib.DisconnectReason.loggedOut,
+    terminalCodes: [
+      lib.DisconnectReason.loggedOut,
+      lib.DisconnectReason.forbidden,
+      lib.DisconnectReason.badSession,
+      lib.DisconnectReason.multideviceMismatch,
+    ],
     replacedCode: lib.DisconnectReason.connectionReplaced,
     restartRequiredCode: lib.DisconnectReason.restartRequired,
   };

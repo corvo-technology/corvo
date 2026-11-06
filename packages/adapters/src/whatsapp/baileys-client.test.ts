@@ -38,17 +38,28 @@ class FakeSocket implements BaileysSocketLike {
   }
 }
 
-function setup() {
+function setup(options: { failSaveCreds?: boolean; failSocketAfter?: number } = {}) {
   const sockets: FakeSocket[] = [];
+  let made = 0;
   const deps: BaileysDeps = {
     makeSocket: () => {
+      made += 1;
+      if (options.failSocketAfter !== undefined && made > options.failSocketAfter) {
+        throw new Error("could not open a socket");
+      }
       const socket = new FakeSocket();
       sockets.push(socket);
       return socket;
     },
     downloadMedia: async () => new Uint8Array([9]),
-    loadAuth: async () => ({ saveCreds: async () => undefined }) as never,
-    loggedOutCode: 401,
+    loadAuth: async () =>
+      ({
+        saveCreds: async () => {
+          if (options.failSaveCreds) throw new Error("secret store timed out");
+        },
+      }) as never,
+    // Logged out, forbidden (banned), bad session, multi-device mismatch: nothing to reconnect.
+    terminalCodes: [401, 403, 500, 411],
     replacedCode: 440,
     restartRequiredCode: 515,
   };
@@ -111,13 +122,13 @@ describe("createBaileysClient", () => {
   it("reconnects after a network close with a growing wait, and reports it", async () => {
     const { client, sockets, events } = setup();
     await client.connect();
-    closeWith(sockets[0] as FakeSocket, 500);
+    closeWith(sockets[0] as FakeSocket, 408);
     expect(events).toEqual([{ state: "closed", reason: "network" }]);
     await vi.advanceTimersByTimeAsync(1_000);
     expect(sockets).toHaveLength(1);
     await vi.advanceTimersByTimeAsync(2_000);
     expect(sockets).toHaveLength(2);
-    closeWith(sockets[1] as FakeSocket, 500);
+    closeWith(sockets[1] as FakeSocket, 408);
     await vi.advanceTimersByTimeAsync(3_000);
     expect(sockets).toHaveLength(2);
     await vi.advanceTimersByTimeAsync(2_000);
@@ -128,7 +139,7 @@ describe("createBaileysClient", () => {
     const { client, sockets } = setup();
     await client.connect();
     await client.close();
-    closeWith(sockets[0] as FakeSocket, 500);
+    closeWith(sockets[0] as FakeSocket, 408);
     await vi.advanceTimersByTimeAsync(120_000);
     expect(sockets).toHaveLength(1);
     expect(sockets[0]?.ended).toBe(true);
@@ -184,5 +195,35 @@ describe("createBaileysClient", () => {
     ]);
     expect(socket.readKeys).toEqual([{ remoteJid: "c1", id: "m1", fromMe: false }]);
     expect(socket.loggedOut).toBe(true);
+  });
+});
+
+describe("createBaileysClient: failures that must not take the process down", () => {
+  it("survives a session save that fails", async () => {
+    const { client, sockets } = setup({ failSaveCreds: true });
+    await client.connect();
+    sockets[0]?.emit("creds.update", {});
+    await vi.advanceTimersByTimeAsync(10);
+    // Reaching here without an unhandled rejection is the assertion.
+    expect(sockets).toHaveLength(1);
+  });
+
+  it("survives a reconnect that cannot open a socket, and tries again", async () => {
+    const { client, sockets } = setup({ failSocketAfter: 1 });
+    await client.connect();
+    closeWith(sockets[0] as FakeSocket, 500 + 1);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(sockets).toHaveLength(1);
+  });
+
+  it("treats a ban, a bad session and a multi-device mismatch like a logout, with no reconnect", async () => {
+    for (const code of [403, 500, 411]) {
+      const { client, sockets, events } = setup();
+      await client.connect();
+      closeWith(sockets[0] as FakeSocket, code);
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(events).toEqual([{ state: "closed", reason: "logged-out" }]);
+      expect(sockets).toHaveLength(1);
+    }
   });
 });

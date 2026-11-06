@@ -1371,7 +1371,15 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         drain: (outboxScope) =>
           runAsSystem("send queued WhatsApp replies", () =>
             deliverMessagingOutbound(
-              { prisma, messaging, events, jobs, artifacts, outboxScope },
+              {
+                prisma,
+                messaging,
+                events,
+                jobs,
+                artifacts,
+                // Only the numbers this process holds: another API process sends the rest.
+                outboxScope: { ...outboxScope, holds: (threadId) => whatsapp.holds(threadId) },
+              },
               {},
               {
                 operationId: "whatsapp.outbox:drain",

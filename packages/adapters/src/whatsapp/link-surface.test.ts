@@ -25,7 +25,10 @@ type Row = {
 const NOW = new Date("2026-01-01T12:00:00Z");
 
 function setup(
-  options: { lock?: () => Promise<(() => Promise<void>) | undefined>; pacer?: Pacer } = {},
+  options: {
+    lock?: (id: string, onLost?: () => void) => Promise<(() => Promise<void>) | undefined>;
+    pacer?: Pacer;
+  } = {},
 ) {
   const rows: Row[] = [];
   const stores = new Map<string, MemoryWhatsAppAuthStore>();
@@ -364,5 +367,150 @@ describe("WhatsAppLinkSurface lifecycle", () => {
     await vi.advanceTimersByTimeAsync(30_000);
     expect(ctx.clients).toHaveLength(1);
     await ctx.surface.shutdown();
+  });
+});
+
+describe("WhatsAppLinkSurface: links that are not finished", () => {
+  it("stops the socket of a link that was cancelled, and only for the person who started it", async () => {
+    const ctx = setup();
+    const { linkId } = await ctx.surface.startLink({
+      spaceId: "space-1",
+      userId: "user-1",
+      botId: "bot-1",
+    });
+    const temporary = ctx.clients[0]?.client as ScriptedWhatsAppClient;
+    ctx.surface.cancelLink(linkId, "someone-else");
+    expect(temporary.connected).toBe(true);
+    ctx.surface.cancelLink(linkId, "user-1");
+    await vi.waitFor(() => expect(temporary.connected).toBe(false));
+    expect(ctx.surface.linkStatus(linkId, "user-1")).toEqual({ state: "failed" });
+  });
+
+  it("stops a link's socket when the QR code times out, instead of showing new ones forever", async () => {
+    const ctx = setup();
+    const { linkId } = await ctx.surface.startLink({
+      spaceId: "space-1",
+      userId: "user-1",
+      botId: "bot-1",
+    });
+    const temporary = ctx.clients[0]?.client as ScriptedWhatsAppClient;
+    temporary.emitConnection({ state: "closed", reason: "network" });
+    await vi.waitFor(() => expect(temporary.connected).toBe(false));
+    expect(ctx.surface.linkStatus(linkId, "user-1")).toEqual({ state: "failed" });
+  });
+
+  it("keeps one pending link per person: a new Add stops the one before it", async () => {
+    const ctx = setup();
+    await ctx.surface.startLink({ spaceId: "space-1", userId: "user-1", botId: "bot-1" });
+    await ctx.surface.startLink({ spaceId: "space-1", userId: "user-1", botId: "bot-1" });
+    await vi.waitFor(() => expect(ctx.clients[0]?.client.connected).toBe(false));
+    expect(ctx.clients[1]?.client.connected).toBe(true);
+  });
+
+  it("stops a link nobody finished once its time is up", async () => {
+    const ctx = setup();
+    await ctx.surface.startLink({ spaceId: "space-1", userId: "user-1", botId: "bot-1" });
+    await vi.advanceTimersByTimeAsync(11 * 60_000);
+    expect(ctx.clients[0]?.client.connected).toBe(false);
+  });
+});
+
+describe("WhatsAppLinkSurface: a number that cannot be held any more", () => {
+  it("stops the socket when the lock is lost, and takes the number again once it can", async () => {
+    let lost: (() => void) | undefined;
+    let free = true;
+    const ctx = setup({
+      lock: async (_id, onLost) => {
+        if (!free) return undefined;
+        lost = onLost;
+        return async () => undefined;
+      },
+    });
+    const { persistent } = await link(ctx);
+    free = false;
+    lost?.();
+    await vi.waitFor(() => expect(persistent.connected).toBe(false));
+    expect(ctx.rows[0]?.status).toBe("active");
+    free = true;
+    await vi.advanceTimersByTimeAsync(30_000);
+    await vi.waitFor(() => expect(ctx.clients.length).toBe(3));
+    expect(ctx.clients[2]?.client.connected).toBe(true);
+  });
+
+  it("does not mark a number disconnected when another connection replaced this one; it waits and tries again", async () => {
+    const ctx = setup();
+    const { persistent } = await link(ctx);
+    persistent.emitConnection({ state: "closed", reason: "replaced" });
+    await vi.waitFor(() => expect(persistent.connected).toBe(false));
+    expect(ctx.rows[0]?.status).toBe("active");
+    await vi.advanceTimersByTimeAsync(30_000);
+    await vi.waitFor(() => expect(ctx.clients.length).toBe(3));
+  });
+
+  it("logs the device out and stops when its number was deleted, as an agent's deletion does", async () => {
+    const ctx = setup();
+    const { persistent } = await link(ctx);
+    ctx.rows.length = 0;
+    persistent.emitMessage(message({ messageId: "after-delete" }));
+    await vi.waitFor(() => expect(persistent.connected).toBe(false));
+    expect(ctx.released).toHaveBeenCalled();
+  });
+
+  it("says whether a thread belongs to a number this process holds", async () => {
+    const ctx = setup();
+    await link(ctx);
+    const id = ctx.rows[0]?.id ?? "";
+    expect(ctx.surface.holds(`whatsapp-web:${id}:15550200@s.whatsapp.net`)).toBe(true);
+    expect(ctx.surface.holds("whatsapp-web:other:15550200@s.whatsapp.net")).toBe(false);
+    expect(ctx.surface.holds("telegram:1")).toBe(false);
+  });
+});
+
+describe("WhatsAppLinkSurface: its own replies", () => {
+  it("does not take a reply it sent into the self chat for the owner writing again", async () => {
+    const ctx = setup();
+    const { persistent } = await link(ctx);
+    const thread = `whatsapp-web:${ctx.rows[0]?.id}:15550100@s.whatsapp.net`;
+    const sent = await ctx.surface.sendToThread(
+      { threadId: thread, body: "here you go" },
+      {} as never,
+    );
+    persistent.emitMessage(
+      message({
+        messageId: sent.handle,
+        chat: { id: "15550100@s.whatsapp.net", kind: "self" },
+        fromMe: true,
+        text: "here you go",
+      }),
+    );
+    persistent.emitMessage(
+      message({
+        messageId: "typed",
+        chat: { id: "15550100@s.whatsapp.net", kind: "self" },
+        fromMe: true,
+      }),
+    );
+    await vi.waitFor(() => expect(ctx.inbound.length).toBeGreaterThanOrEqual(1));
+    expect(ctx.inbound.map((e) => e.handle)).toEqual(["typed"]);
+  });
+});
+
+describe("WhatsAppLinkSurface: linking a number again", () => {
+  it("replaces the old session instead of mixing it with the new one", async () => {
+    const ctx = setup();
+    await link(ctx);
+    const id = ctx.rows[0]?.id ?? "";
+    await ctx.stores.get(id)?.set("stale-entry", "old");
+    const { linkId } = await ctx.surface.startLink({
+      spaceId: "space-1",
+      userId: "user-1",
+      botId: "bot-1",
+    });
+    const temporary = ctx.clients[2]?.client as ScriptedWhatsAppClient;
+    await ctx.clients[2]?.auth.set("creds", "fresh-session");
+    temporary.emitConnection({ state: "open", number: "+15550100" });
+    await vi.waitFor(() => expect(ctx.surface.linkStatus(linkId, "user-1").state).toBe("linked"));
+    expect(await ctx.stores.get(id)?.get("stale-entry")).toBeUndefined();
+    expect(await ctx.stores.get(id)?.get("creds")).toBe("fresh-session");
   });
 });

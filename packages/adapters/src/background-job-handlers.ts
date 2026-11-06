@@ -37,6 +37,22 @@ import { curateWiki } from "./wiki-curator-run.js";
 
 type Tenant = { spaceId: string; userId: string };
 
+/** Stands in where a process has no messaging platform: it lists none and sends nothing. */
+const NO_MESSAGING_SURFACE: MessagingSurface = {
+  describe: () => ({
+    id: "none",
+    contractVersion: "1",
+    adapterVersion: "1",
+    capabilities: { providers: [] },
+  }),
+  platforms: () => [],
+  handleWebhook: () => null,
+  onInbound: () => undefined,
+  sendToThread: () => Promise.reject(new Error("No messaging platform is configured here")),
+  openDirectThread: () => Promise.reject(new Error("No messaging platform is configured here")),
+  acknowledge: async () => undefined,
+};
+
 /**
  * A job that acts for one run, routine, computer, skill, thread or cloud agent runs
  * as that row's tenant, so row-level security keeps it, and every tool it runs, in
@@ -96,21 +112,21 @@ export function createBackgroundJobHandlers(deps: {
       transcribeAudioArtifact(audioTranscription, input),
     announce: createAnnouncer({ prisma: deps.prisma, events: deps.events, jobs: deps.jobs }),
   };
-  const messagingDeps = deps.messaging
-    ? {
-        prisma: deps.prisma,
-        messaging: deps.messaging,
-        events: deps.events,
-        jobs: deps.jobs,
-        artifacts: deps.artifacts,
-        // A linked WhatsApp number's socket lives in the API process, so the worker never sends
-        // those rows; the API process does.
-        outboxScope: { skipThreadPrefix: WHATSAPP_THREAD_PREFIX },
-      }
-    : undefined;
+  // The worker may have no messaging platform of its own (a desktop with no Telegram). It still
+  // queues the replies of linked WhatsApp conversations, which the API process sends.
+  const messagingDeps = {
+    prisma: deps.prisma,
+    messaging: deps.messaging ?? NO_MESSAGING_SURFACE,
+    events: deps.events,
+    jobs: deps.jobs,
+    artifacts: deps.artifacts,
+    // A linked WhatsApp number's socket lives in the API process, so the worker never sends
+    // those rows; the API process does.
+    outboxScope: { skipThreadPrefix: WHATSAPP_THREAD_PREFIX },
+    ...(deps.messaging ? {} : { linkedOnly: true }),
+  };
   // The outbox holds every Space's pending sends, so draining it is cross-tenant.
   const drainMessaging = async () => {
-    if (!messagingDeps) return;
     await runAsSystem("drain the messaging outbox across Spaces", () =>
       deliverMessagingOutbound(
         messagingDeps,
@@ -152,13 +168,11 @@ export function createBackgroundJobHandlers(deps: {
       else await deps.executor.continueRun(payload.runId, deps.workerId);
       // Automatic messaging mirror: once the run's bot messages are durable,
       // copy them into the outbox. Never let mirror failures fail the run.
-      if (messagingDeps) {
-        await mirrorMessagingOutbound(messagingDeps, payload.runId);
-        await deps.jobs.enqueue(messagingDeliverJob()).catch(async (error) => {
-          getLogger().error("messaging.deliver enqueue error", error);
-          await drainMessaging();
-        });
-      }
+      await mirrorMessagingOutbound(messagingDeps, payload.runId);
+      await deps.jobs.enqueue(messagingDeliverJob()).catch(async (error) => {
+        getLogger().error("messaging.deliver enqueue error", error);
+        await drainMessaging();
+      });
     }),
     "messaging.credential-cleanup": async ({ installationId, ref }) => {
       await runAsSystem("clean up a retired messaging credential", async () => {
@@ -174,7 +188,7 @@ export function createBackgroundJobHandlers(deps: {
       });
     },
     "messaging.deliver": async ({ runId }) => {
-      if (runId && messagingDeps) {
+      if (runId) {
         await asOwner(run, () => mirrorMessagingOutbound(messagingDeps, runId))({ runId });
       }
       await drainMessaging();

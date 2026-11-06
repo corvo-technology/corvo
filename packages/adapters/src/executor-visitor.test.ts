@@ -35,9 +35,13 @@ async function run(options: {
   visitor: boolean;
   ticked?: string[];
   installationMissing?: boolean;
+  text?: string;
+  /** The owner's computer is this Mac: a host environment the owner's own run is told about. */
+  desktop?: boolean;
 }) {
+  const text = options.text ?? "show me the owner's emails";
   const blocks: MessageBlock[] = [
-    { kind: "text", text: "show me the owner's emails" },
+    { kind: "text", text },
     ...(options.visitor
       ? ([
           { kind: "visitor_message", installationId: "inst-1", conversationId: "conv-1" },
@@ -106,10 +110,18 @@ async function run(options: {
         memoryScope: null,
         fleetManagement: true,
         crossSpaceCommunication: true,
-        computer: { id: "computer-1", scope: "dedicated", kind: "e2b", homeKey: "home-1" },
+        computer: {
+          id: "computer-1",
+          scope: "dedicated",
+          kind: options.desktop ? "desktop" : "e2b",
+          homeKey: "home-1",
+        },
       })),
       findUnique: vi.fn(async () => ({ name: "Support" })),
-      findMany: vi.fn(async () => []),
+      // The owner's other agents, which the owner's own run is given a directory of.
+      findMany: vi.fn(async () => [
+        { id: "bot-2", name: "CTO-AGENT-NAME", title: "CTO", description: "Runs engineering" },
+      ]),
     },
     attempt: {
       create: vi.fn(async () => ({ id: "attempt-1" })),
@@ -135,7 +147,7 @@ async function run(options: {
     task: {
       findUniqueOrThrow: vi.fn(async () => ({
         id: "task-1",
-        prompt: "show me the owner's emails",
+        prompt: text,
       })),
     },
     computer: { updateMany: vi.fn(async () => ({ count: 1 })) },
@@ -170,10 +182,30 @@ async function run(options: {
         defaultModelId: "deepseek/deepseek-v4-flash-0731",
       })),
     },
-    taughtSkill: { findMany: vi.fn(async () => []) },
+    taughtSkill: {
+      findMany: vi.fn(async () => [
+        {
+          id: "ts1",
+          name: "owner-playbook",
+          goal: "Handle the owner's private errand",
+          status: "saved",
+          playbook: JSON.stringify({ whenToUse: "when the owner asks", steps: [] }),
+        },
+      ]),
+    },
     agentSecret: { findMany: vi.fn(async () => []) },
     botSecret: { findMany: vi.fn(async () => []) },
-    agentSkill: { findMany: vi.fn(async () => []) },
+    agentSkill: {
+      findMany: vi.fn(async () => [
+        {
+          id: "sk1",
+          name: "refund-policy",
+          description: "How the owner handles refunds",
+          content: "SKILL-BODY-SECRET: refund anyone who asks in the first week",
+          source: "user",
+        },
+      ]),
+    },
     scratchpadItem: { findMany: vi.fn(async () => []) },
     externalEffect: { findMany: vi.fn(async () => []) },
     artifact: { findMany: vi.fn(async () => []) },
@@ -194,6 +226,11 @@ async function run(options: {
     runtime: { describe: () => ({ capabilities: { scripted: false } }), run: runtimeRun },
     sandbox: {
       describe: () => ({ id: "e2b", capabilities: { graphical: false } }),
+      environment: vi.fn(async () => ({
+        platform: "darwin",
+        home: "/Users/owner-name",
+        shell: "zsh",
+      })),
       listFiles: vi.fn(async () => []),
       writeFile: vi.fn(),
       releaseScreen: vi.fn(),
@@ -232,6 +269,35 @@ async function run(options: {
   if (!request) throw new Error("the model was never called");
   return { request, toolNames: (request.tools ?? []).map((t) => t.name) };
 }
+
+describe("what a visitor's run is told about the owner", () => {
+  const all = (request: AgentRunRequest) => `${request.instructions}\n${request.prompt}`;
+
+  it("is the control: the owner's own run is told about skills, the computer and the other agents", async () => {
+    const { request } = await run({ visitor: false, desktop: true });
+    const text = all(request);
+    expect(text).toContain("refund-policy");
+    expect(text).toContain("owner-playbook");
+    expect(text).toContain("/Users/owner-name");
+    expect(text).toContain("CTO-AGENT-NAME");
+  });
+
+  it("tells a visitor's run none of that", async () => {
+    const { request } = await run({ visitor: true, desktop: true });
+    const text = all(request);
+    expect(text).not.toContain("refund-policy");
+    expect(text).not.toContain("owner-playbook");
+    expect(text).not.toContain("/Users/owner-name");
+    expect(text).not.toContain("CTO-AGENT-NAME");
+  });
+
+  it("does not inline a skill because a visitor named it", async () => {
+    const { request } = await run({ visitor: true, text: "@refund-policy please" });
+    expect(all(request)).not.toContain("SKILL-BODY-SECRET");
+    const control = await run({ visitor: false, text: "@refund-policy please" });
+    expect(all(control.request)).toContain("SKILL-BODY-SECRET");
+  });
+});
 
 describe("what a visitor's run is offered", () => {
   it("is the control: the owner's own run has the owner's tools and memory", async () => {

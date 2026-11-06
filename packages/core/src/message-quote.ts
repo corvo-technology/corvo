@@ -184,7 +184,8 @@ function replyBlockText(block: MessageBlock): string {
     case "file":
       return block.name || blocksToAgentHistoryText([block]);
     case "visitor_message":
-      // A marker only: the visitor's words are in the message's text block.
+    case "linked_chat":
+      // Markers only: the words are in the message's text block.
       return "";
   }
 }

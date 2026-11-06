@@ -19,6 +19,9 @@ function setup(
     conversation?: boolean;
     replies?: Array<{ id: string; text: string }>;
     outboxScope?: MessagingDeliveryDeps["outboxScope"];
+    /** The run's source message blocks; a visitor's by default. */
+    blocks?: unknown[];
+    linkedOnly?: boolean;
   } = {},
 ) {
   const rows: Row[] = [];
@@ -32,7 +35,7 @@ function setup(
         botId: "bot-1",
         trigger: "messaging",
         sourceMessage: {
-          blocks: [
+          blocks: options.blocks ?? [
             { kind: "text", text: "hi" },
             { kind: "visitor_message", installationId: "inst-1", conversationId: "conv-1" },
           ],
@@ -96,6 +99,7 @@ function setup(
     jobs: { enqueue: vi.fn(async () => undefined) },
     artifacts: { get: vi.fn() } as never,
     ...(options.outboxScope ? { outboxScope: options.outboxScope } : {}),
+    ...(options.linkedOnly ? { linkedOnly: true } : {}),
   };
   return { deps, rows, sendToThread };
 }
@@ -175,5 +179,72 @@ describe("draining the outbox by where a row goes", () => {
       expect.anything(),
     );
     expect(rows.find((row) => row.id === "other")?.status).toBe("pending");
+  });
+});
+
+describe("mirroring the owner's own WhatsApp chat", () => {
+  const ownerBlocks = [
+    { kind: "text", text: "summarize my day" },
+    {
+      kind: "linked_chat",
+      installationId: "inst-1",
+      threadId: "whatsapp-web:inst-1:15550100@s.whatsapp.net",
+    },
+  ];
+
+  it("answers in that chat, not in the agent's Telegram or Slack", async () => {
+    const { deps, rows } = setup({ blocks: ownerBlocks });
+    await mirrorMessagingOutbound(deps, "run-1");
+    expect(rows.map((row) => [row.kind, row.threadId, row.body])).toEqual([
+      ["group", "whatsapp-web:inst-1:15550100@s.whatsapp.net", "Hello, how can I help?"],
+    ]);
+  });
+});
+
+describe("a worker with no messaging platform of its own", () => {
+  it("still queues the replies of WhatsApp conversations, which need no platform to be queued", async () => {
+    const { deps, rows } = setup({ linkedOnly: true });
+    await mirrorMessagingOutbound(deps, "run-1");
+    expect(rows).toHaveLength(1);
+  });
+
+  it("queues nothing for an ordinary messaging run, which has no platform to send through", async () => {
+    const { deps, rows } = setup({ linkedOnly: true, blocks: [{ kind: "text", text: "hi" }] });
+    await mirrorMessagingOutbound(deps, "run-1");
+    expect(rows).toHaveLength(0);
+  });
+});
+
+describe("sending only the numbers this process holds", () => {
+  it("leaves the rows of a number held elsewhere pending, so another API process can send them", async () => {
+    const ctx = setup({
+      outboxScope: {
+        onlyThreadPrefix: "whatsapp-web:",
+        holds: (threadId) => threadId.startsWith("whatsapp-web:mine:"),
+      },
+    });
+    ctx.rows.push(
+      {
+        id: "a",
+        status: "pending",
+        kind: "group",
+        threadId: "whatsapp-web:mine:x@s.whatsapp.net",
+        idempotencyKey: "a",
+        body: "mine",
+        createdAt: new Date(1),
+      },
+      {
+        id: "b",
+        status: "pending",
+        kind: "group",
+        threadId: "whatsapp-web:theirs:y@s.whatsapp.net",
+        idempotencyKey: "b",
+        body: "theirs",
+        createdAt: new Date(2),
+      },
+    );
+    await deliverMessagingOutbound(ctx.deps, {}, {} as never);
+    expect(ctx.sendToThread).toHaveBeenCalledTimes(1);
+    expect(ctx.rows.find((row) => row.id === "b")?.status).toBe("pending");
   });
 });

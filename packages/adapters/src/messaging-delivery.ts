@@ -42,7 +42,17 @@ export interface MessagingDeliveryDeps {
    * number's socket lives in one process, so the others leave its rows alone (`skipThreadPrefix`)
    * and that one sends only those (`onlyThreadPrefix`).
    */
-  outboxScope?: { skipThreadPrefix?: string; onlyThreadPrefix?: string };
+  outboxScope?: {
+    skipThreadPrefix?: string;
+    onlyThreadPrefix?: string;
+    /** With `onlyThreadPrefix`: sends only the threads this returns true for. */
+    holds?: (threadId: string) => boolean;
+  };
+  /**
+   * This process has no messaging platform of its own: it still queues the replies of linked
+   * WhatsApp conversations, which another process sends, and nothing else.
+   */
+  linkedOnly?: boolean;
 }
 
 type IdentityRow = {
@@ -110,6 +120,16 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
       await mirrorVisitorRun(deps, run, visitorBlock);
       return;
     }
+    const linkedChat = sourceBlocks.find(
+      (block): block is Extract<MessageBlock, { kind: "linked_chat" }> =>
+        block.kind === "linked_chat",
+    );
+    if (linkedChat) {
+      await mirrorLinkedChatRun(deps, run, linkedChat.threadId);
+      return;
+    }
+    // Without a platform of its own this process has nothing else to send through.
+    if (deps.linkedOnly) return;
   } else if (run.trigger !== "bot_message") {
     // Mirror inbound messaging runs and delegated bot_message replies only.
     // Do not push in-app user/routine runs out to the linked chat.
@@ -163,20 +183,12 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
   await deps.prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
 }
 
-/**
- * A visitor's run answers in the visitor's own chat: each reply is queued for the provider thread
- * of their conversation, as plain text, and nothing else is posted or fanned out.
- */
-async function mirrorVisitorRun(
+/** Queues each text reply of a run for one provider thread, as plain text. */
+async function queueRepliesForThread(
   deps: MessagingDeliveryDeps,
   run: { id: string },
-  visitorBlock: Extract<MessageBlock, { kind: "visitor_message" }>,
+  threadId: string,
 ): Promise<void> {
-  const conversation = await deps.prisma.externalConversation.findUnique({
-    where: { id: visitorBlock.conversationId },
-    select: { provider: true, conversationId: true },
-  });
-  if (!conversation) return;
   const replies = await deps.prisma.message.findMany({
     select: { id: true, blocks: true },
     where: { runId: run.id, role: "bot" },
@@ -189,13 +201,39 @@ async function mirrorVisitorRun(
     .map(({ message, text }, index) => ({
       idempotencyKey: `msg:${message.id}`,
       kind: "group",
-      threadId: conversation.conversationId,
+      threadId,
       body: text,
       sourceMessageId: message.id,
       createdAt: new Date(createdAt + index),
     }));
   if (rows.length === 0) return;
   await deps.prisma.messagingOutbound.createMany({ data: rows, skipDuplicates: true });
+}
+
+/**
+ * A visitor's run answers in the visitor's own chat: each reply is queued for the provider thread
+ * of their conversation, and nothing else is posted or fanned out.
+ */
+async function mirrorVisitorRun(
+  deps: MessagingDeliveryDeps,
+  run: { id: string },
+  visitorBlock: Extract<MessageBlock, { kind: "visitor_message" }>,
+): Promise<void> {
+  const conversation = await deps.prisma.externalConversation.findUnique({
+    where: { id: visitorBlock.conversationId },
+    select: { provider: true, conversationId: true },
+  });
+  if (!conversation) return;
+  await queueRepliesForThread(deps, run, conversation.conversationId);
+}
+
+/** The owner wrote in their own chat of a linked number: the answer goes back to that chat. */
+async function mirrorLinkedChatRun(
+  deps: MessagingDeliveryDeps,
+  run: { id: string },
+  threadId: string,
+): Promise<void> {
+  await queueRepliesForThread(deps, run, threadId);
 }
 
 /**
@@ -462,7 +500,10 @@ async function drain(deps: MessagingDeliveryDeps, context: AdapterContext): Prom
       orderBy: { createdAt: "asc" },
     })
   ).filter((row) => {
-    if (scope?.onlyThreadPrefix) return row.threadId?.startsWith(scope.onlyThreadPrefix) ?? false;
+    if (scope?.onlyThreadPrefix) {
+      if (!row.threadId?.startsWith(scope.onlyThreadPrefix)) return false;
+      return scope.holds ? scope.holds(row.threadId) : true;
+    }
     if (scope?.skipThreadPrefix) return !row.threadId?.startsWith(scope.skipThreadPrefix);
     return true;
   });
