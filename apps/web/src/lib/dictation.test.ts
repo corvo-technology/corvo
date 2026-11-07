@@ -340,6 +340,61 @@ describe("Dictation recorder fallback", () => {
     expect(JSON.parse(String(sent?.body)).language).toBe("es");
   });
 
+  it("sends a browser recording as wav so the local engine can read it", async () => {
+    const track = { stop: vi.fn() };
+    vi.stubGlobal("navigator", {
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/141 Mobile Safari/537.36",
+      mediaDevices: { getUserMedia: vi.fn(async () => ({ getTracks: () => [track] })) },
+      language: "en-US",
+    });
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) =>
+      Response.json({ text: "hello" }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    class FakeContext {
+      async decodeAudioData() {
+        return {
+          length: 2,
+          sampleRate: 16000,
+          numberOfChannels: 1,
+          getChannelData: () => new Float32Array([0.1, -0.1]),
+        };
+      }
+      close() {
+        return Promise.resolve();
+      }
+    }
+    vi.stubGlobal("AudioContext", FakeContext);
+    class FakeRecorder {
+      state = "inactive";
+      ondataavailable: ((event: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
+      start() {
+        this.state = "recording";
+      }
+      stop() {
+        this.state = "inactive";
+        this.ondataavailable?.({
+          data: new Blob(["webm"], { type: "audio/webm;codecs=opus" }),
+        });
+        this.onstop?.();
+      }
+    }
+    vi.stubGlobal("MediaRecorder", FakeRecorder);
+
+    const onFinal = vi.fn();
+    const dictation = new Dictation();
+    await dictation.listen({ mode: "hold", onFinal });
+    dictation.submitHold();
+    await vi.waitFor(() => expect(onFinal).toHaveBeenCalledWith("hello"));
+
+    const sent = fetchMock.mock.calls[0]?.[1] as { body?: string } | undefined;
+    const body = JSON.parse(String(sent?.body));
+    expect(body.mimeType).toBe("audio/wav");
+    expect(atob(body.audioBase64).slice(0, 4)).toBe("RIFF");
+  });
+
   it("rejects oversized transcription responses without waiting for cancellation", async () => {
     const cancel = vi.fn(() => new Promise<void>(() => undefined));
     const fetchMock = vi.fn(
