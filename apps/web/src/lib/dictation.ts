@@ -1,6 +1,7 @@
 import { cancelResponseBody, readJsonObjectWithin, speechLocaleTag, withAbort } from "@corvo/core";
 import { getActiveUiLocale } from "./i18n.js";
 import { selectedSpaceId, withSpaceHeaders } from "./rpc.js";
+import { recordingToWav } from "./speech-wav.js";
 import { errorText, voiceAccountErrorText } from "./user-error.js";
 
 export type DictationMode = "hold" | "endpoint";
@@ -534,9 +535,9 @@ export class Dictation {
 
   private async transcribeChunks(mine: number, spaceId: string | null) {
     if (this.token !== mine) return;
-    const blob = new Blob(this.chunks, { type: this.chunks[0]?.type || "audio/webm" });
+    const recorded = new Blob(this.chunks, { type: this.chunks[0]?.type || "audio/webm" });
     this.chunks = [];
-    if (!blob.size) {
+    if (!recorded.size) {
       const prefix = normalizedTranscript(this.snapshot.transcript);
       if (!prefix) {
         this.set(IDLE);
@@ -553,6 +554,8 @@ export class Dictation {
       TRANSCRIPTION_RESPONSE_TIMEOUT_MS,
     );
     try {
+      const blob = await recordingToWav(recorded);
+      if (this.token !== mine) return;
       const audioBase64 = await blobToBase64(blob);
       if (this.token !== mine) return;
       const res = await withAbort(
