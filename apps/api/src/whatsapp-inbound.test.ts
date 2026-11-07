@@ -21,6 +21,7 @@ function setup(
       conversationId: string;
     }>;
     allowRun?: boolean;
+    mode?: "assistant" | "service";
   } = {},
 ) {
   const conversations = options.conversations ?? [];
@@ -59,7 +60,9 @@ function setup(
     },
   );
   const prisma = {
-    messagingInstallation: { findUnique: vi.fn(async () => installation) },
+    messagingInstallation: {
+      findUnique: vi.fn(async () => ({ ...installation, mode: options.mode ?? "service" })),
+    },
     thread: { findFirst: vi.fn(async () => ({ id: "main-thread" })) },
     externalConversation: {
       upsert,
@@ -139,6 +142,23 @@ describe("the owner's chat", () => {
       ]),
     );
     expect(jobs.enqueue).toHaveBeenCalledWith(expect.objectContaining({ name: "run.continue" }));
+  });
+});
+
+describe("a number set as the owner's assistant", () => {
+  it("answers the owner's chat", async () => {
+    const { handler, sent } = setup({ mode: "assistant" });
+    await handler(event({ audience: "owner", content: "summarize my day" }));
+    expect(sent).toHaveLength(1);
+  });
+
+  it("never answers, records or opens a conversation for anyone else", async () => {
+    const { handler, sent, upsert, jobs } = setup({ mode: "assistant" });
+    await handler(event({ audience: "visitor" }));
+    await handler(event({ audience: "record", handle: "wamid-2" }));
+    expect(sent).toHaveLength(0);
+    expect(upsert).not.toHaveBeenCalled();
+    expect(jobs.enqueue).not.toHaveBeenCalled();
   });
 });
 

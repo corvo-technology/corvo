@@ -28,6 +28,7 @@ type Row = {
   status: string;
   pausedAt: Date | null;
   visitorConnectors: string[];
+  mode: string;
   bot?: { name: string } | null;
 };
 
@@ -38,6 +39,7 @@ const dto = (row: Row): WhatsAppNumber => ({
   ...(row.bot ? { botName: row.bot.name } : {}),
   status: row.status === "disconnected" ? "disconnected" : "active",
   paused: row.pausedAt !== null,
+  mode: row.mode === "assistant" ? "assistant" : "service",
   visitorConnectors: row.visitorConnectors,
 });
 
@@ -67,11 +69,16 @@ async function ownBot(deps: WhatsAppNumbersDeps, actor: Actor, botId: string) {
 export async function startWhatsAppLink(
   deps: WhatsAppNumbersDeps,
   actor: Actor,
-  input: { botId: string },
+  input: { botId: string; mode: "assistant" | "service" },
 ): Promise<{ linkId: string }> {
   const whatsapp = surface(deps);
   const bot = await ownBot(deps, actor, input.botId);
-  return whatsapp.startLink({ spaceId: bot.spaceId, userId: actor.userId, botId: bot.id });
+  return whatsapp.startLink({
+    spaceId: bot.spaceId,
+    userId: actor.userId,
+    botId: bot.id,
+    mode: input.mode,
+  });
 }
 
 export async function whatsAppLinkStatus(
@@ -110,11 +117,18 @@ export async function listWhatsAppNumbers(
 export async function updateWhatsAppNumber(
   deps: WhatsAppNumbersDeps,
   actor: Actor,
-  input: { id: string; botId?: string; visitorConnectors?: string[]; paused?: boolean },
+  input: {
+    id: string;
+    botId?: string;
+    mode?: "assistant" | "service";
+    visitorConnectors?: string[];
+    paused?: boolean;
+  },
 ): Promise<WhatsAppNumber> {
   const whatsapp = surface(deps);
   const current = await ownNumber(deps, actor, input.id);
-  const data: { botId?: string; visitorConnectors?: string[] } = {};
+  const data: { botId?: string; mode?: string; visitorConnectors?: string[] } = {};
+  if (input.mode !== undefined) data.mode = input.mode;
   if (input.botId !== undefined) {
     await ownBot(deps, actor, input.botId);
     data.botId = input.botId;

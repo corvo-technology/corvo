@@ -10,6 +10,7 @@ const NUMBER = {
   botName: "Chief",
   status: "active",
   paused: false,
+  mode: "service",
   visitorConnectors: [] as string[],
 };
 
@@ -37,21 +38,28 @@ test("the Store links a WhatsApp number by QR and lists it", async ({ page }, te
   await completeOnboarding(page);
   await page.getByRole("button", { name: "Store", exact: true }).click();
 
-  const card = page.getByTestId("whatsapp-numbers");
-  await expect(card.getByText("WhatsApp", { exact: true })).toBeVisible();
-  await expect(card.getByText(/official API/)).toHaveCount(0);
+  // WhatsApp is one line in the list; its numbers and the way to add one are on its own screen.
+  const row = page.getByTestId("whatsapp-numbers");
+  await expect(row.getByText("WhatsApp", { exact: true })).toBeVisible();
+  await captureScreenshot(page, testInfo, "whatsapp-store-list");
+  await row.click();
 
-  await card.getByRole("button", { name: "Add", exact: true }).click();
+  const screen = page.getByTestId("whatsapp-app");
+  await expect(screen.getByText(/official API/)).toHaveCount(0);
+  await screen.getByRole("button", { name: "Add number", exact: true }).click();
+
+  const dialog = page.getByTestId("whatsapp-link");
   await expect(
-    card.getByText("This uses WhatsApp without the official API.", { exact: false }),
+    dialog.getByText("This uses WhatsApp without the official API.", { exact: false }),
   ).toBeVisible();
-  await expect(card.getByRole("img", { name: "QR code" })).toBeVisible();
+  await captureScreenshot(page, testInfo, "whatsapp-link-choose");
+  await dialog.getByRole("button", { name: "Show QR code" }).click();
+  await expect(dialog.getByRole("img", { name: "QR code" })).toBeVisible();
   await captureScreenshot(page, testInfo, "whatsapp-link-qr");
 
   linked = true;
-  await expect(card.getByText(NUMBER.number)).toBeVisible({ timeout: 10_000 });
-  await expect(card.getByRole("img", { name: "QR code" })).toHaveCount(0);
-  await expect(card.getByRole("button", { name: /^Pause/ })).toBeVisible();
-  await expect(card.getByRole("button", { name: /^Disconnect/ })).toBeVisible();
+  await expect(dialog).toHaveCount(0, { timeout: 10_000 });
+  await expect(screen.getByText(NUMBER.number)).toBeVisible();
+  await expect(screen.getByRole("button", { name: `More ${NUMBER.number}` })).toBeVisible();
   await captureScreenshot(page, testInfo, "whatsapp-number-linked");
 });

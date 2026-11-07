@@ -4,11 +4,13 @@ import { fetchFresh } from "@corvo/core/query";
 import { Button } from "@corvo/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { providerLabel } from "../lib/messaging";
 import { useSpaceQueries } from "../lib/query";
 import { rpc } from "../lib/rpc";
 import { errorText } from "../lib/user-error";
+import { AppLetter, StoreAppHeader } from "./StoreAppHeader";
 
 const LINK_POLL_MS = 3_000;
 
@@ -23,12 +25,18 @@ export function ChatAppsRow({
   botId,
   query,
   only,
+  onOpen,
+  onBack,
   connectedInSidebar,
 }: {
   botId: string | undefined;
   query: string;
   /** Show just this chat app, as its own screen. */
   only?: string;
+  /** In the list, choosing a chat app opens its own screen. */
+  onOpen?: (provider: string) => void;
+  /** On its own screen, the way back to the list. */
+  onBack?: () => void;
   /** Wide screens list connected chat apps in the Store's side column, so their rows are hidden here. */
   connectedInSidebar?: boolean;
 }) {
@@ -120,9 +128,83 @@ export function ChatAppsRow({
     }
   }
 
+  if (only) {
+    const identity = linked(only);
+    const name = providerLabel(only);
+    const pending = request?.provider === only ? request : null;
+    // These names are the placeholders of the existing translated sentences.
+    const linkApp = name;
+    const linkAddress = status?.addresses?.[only];
+    const linkCode = pending?.code ?? "";
+    const url = pending ? messagingLinkUrl(only, linkAddress, linkCode) : undefined;
+    return (
+      <div className="space-y-5" data-testid={`chat-app-${only}`}>
+        <StoreAppHeader
+          name={name}
+          onBack={() => onBack?.()}
+          action={
+            identity ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => void unlink(identity.id)}
+              >
+                <Trans>Unlink</Trans>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={pending !== null}
+                onClick={() => void connect(only)}
+              >
+                <Trans>Connect</Trans>
+              </Button>
+            )
+          }
+        />
+        {identity ? (
+          <p className="px-1 text-[13px] text-muted-foreground">
+            <Trans>Connected</Trans>
+          </p>
+        ) : null}
+        {pending ? (
+          <div className="space-y-2 px-1" data-testid="chat-app-code">
+            {url ? (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+              >
+                <Trans>Open {name}</Trans>
+              </Button>
+            ) : null}
+            <p className="text-[14px] text-foreground/75">
+              {linkAddress ? (
+                <Trans>
+                  Send <span className="font-mono text-foreground">{linkCode}</span> to{" "}
+                  <span className="text-foreground">{linkAddress}</span> from {linkApp} within 10
+                  minutes.
+                </Trans>
+              ) : (
+                <Trans>
+                  Send <span className="font-mono text-foreground">{linkCode}</span> from {linkApp}{" "}
+                  within 10 minutes.
+                </Trans>
+              )}
+            </p>
+          </div>
+        ) : null}
+        {error ? <p className="text-[13px] text-destructive">{error}</p> : null}
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`mb-6 space-y-1 ${
+      className={`space-y-1 ${
         connectedInSidebar && providers.every((provider) => linked(provider)) ? "md:hidden" : ""
       }`}
       data-testid="chat-apps"
@@ -130,80 +212,27 @@ export function ChatAppsRow({
       {providers.map((provider) => {
         const identity = linked(provider);
         const name = providerLabel(provider);
-        const pending = request?.provider === provider ? request : null;
-        // These names are the placeholders of the existing translated sentences.
-        const linkApp = name;
-        const linkAddress = status?.addresses?.[provider];
-        const linkCode = pending?.code ?? "";
-        const url = pending ? messagingLinkUrl(provider, linkAddress, linkCode) : undefined;
         return (
-          <div
+          <button
             key={provider}
+            type="button"
             data-testid={`chat-app-${provider}`}
-            className={identity && connectedInSidebar ? "md:hidden" : undefined}
+            className={`flex w-full min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 text-start hover:bg-accent/60 focus-visible:outline-2 ${
+              identity && connectedInSidebar ? "md:hidden" : ""
+            }`}
+            onClick={() => onOpen?.(provider)}
           >
-            <div className="flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-foreground">
-                {name[0]}
-              </div>
-              <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{name}</span>
-              {identity ? (
-                <>
-                  <span className="shrink-0 text-[12.5px] text-muted-foreground">
-                    <Trans>Connected</Trans>
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => void unlink(identity.id)}
-                  >
-                    <Trans>Unlink</Trans>
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  disabled={pending !== null}
-                  onClick={() => void connect(provider)}
-                >
-                  <Trans>Connect</Trans>
-                </Button>
-              )}
-            </div>
-            {pending ? (
-              <div className="space-y-2 px-2.5 pb-2" data-testid="chat-app-code">
-                {url ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
-                  >
-                    <Trans>Open {name}</Trans>
-                  </Button>
-                ) : null}
-                <p className="text-[14px] text-foreground/75">
-                  {linkAddress ? (
-                    <Trans>
-                      Send <span className="font-mono text-foreground">{linkCode}</span> to{" "}
-                      <span className="text-foreground">{linkAddress}</span> from {linkApp} within
-                      10 minutes.
-                    </Trans>
-                  ) : (
-                    <Trans>
-                      Send <span className="font-mono text-foreground">{linkCode}</span> from{" "}
-                      {linkApp} within 10 minutes.
-                    </Trans>
-                  )}
-                </p>
-              </div>
+            <AppLetter name={name} />
+            <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{name}</span>
+            {identity ? (
+              <span className="shrink-0 text-[12.5px] text-muted-foreground">
+                <Trans>Connected</Trans>
+              </span>
             ) : null}
-          </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button>
         );
       })}
-      {error ? <p className="px-2.5 text-[13px] text-destructive">{error}</p> : null}
     </div>
   );
 }

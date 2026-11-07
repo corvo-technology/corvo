@@ -2054,6 +2054,9 @@ model MessagingInstallation {
   ciphertext        String
   /// Connector ids a visitor's run may use on a linked WhatsApp number; everything else is off.
   visitorConnectors String[]            @default([])
+  /// "assistant" answers only the owner's own chat; "service" also answers anyone who writes.
+  /// Existing numbers answered everyone, so that is the column default; new links choose.
+  mode              String              @default("service")
   /// "active" or "disconnected" (WhatsApp logged the linked device out).
   status            String              @default("active")
   pausedAt          DateTime?

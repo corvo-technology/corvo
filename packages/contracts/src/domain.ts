@@ -1184,6 +1184,8 @@ export const WhatsAppNumberSchema = z.object({
   botName: z.string().optional(),
   status: z.enum(["active", "disconnected"]),
   paused: z.boolean(),
+  /** "assistant" answers only the owner's own chat; "service" also answers anyone who writes. */
+  mode: z.enum(["assistant", "service"]),
   /** Connected apps the agent may use when a visitor writes to this number. */
   visitorConnectors: z.array(z.string()),
 });

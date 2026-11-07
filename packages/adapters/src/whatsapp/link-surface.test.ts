@@ -124,6 +124,7 @@ async function link(ctx: ReturnType<typeof setup>) {
     spaceId: "space-1",
     userId: "user-1",
     botId: "bot-1",
+    mode: "assistant",
   });
   const temporary = ctx.clients[0]?.client as ScriptedWhatsAppClient;
   temporary.emitConnection({ state: "qr", qr: "qr-1" });
@@ -155,6 +156,7 @@ describe("WhatsAppLinkSurface linking", () => {
       botId: "bot-1",
       spaceId: "space-1",
       userId: "user-1",
+      mode: "assistant",
       status: "active",
     });
     // The session moved from the temporary memory to the number's own store, and the temporary client stopped.
@@ -178,6 +180,7 @@ describe("WhatsAppLinkSurface linking", () => {
       spaceId: "space-1",
       userId: "user-1",
       botId: "bot-1",
+      mode: "assistant",
     });
     const second = ctx.clients[2]?.client as ScriptedWhatsAppClient;
     second.emitConnection({ state: "open", number: "+15550100" });
@@ -377,6 +380,7 @@ describe("WhatsAppLinkSurface: links that are not finished", () => {
       spaceId: "space-1",
       userId: "user-1",
       botId: "bot-1",
+      mode: "assistant",
     });
     const temporary = ctx.clients[0]?.client as ScriptedWhatsAppClient;
     ctx.surface.cancelLink(linkId, "someone-else");
@@ -392,6 +396,7 @@ describe("WhatsAppLinkSurface: links that are not finished", () => {
       spaceId: "space-1",
       userId: "user-1",
       botId: "bot-1",
+      mode: "assistant",
     });
     const temporary = ctx.clients[0]?.client as ScriptedWhatsAppClient;
     temporary.emitConnection({ state: "closed", reason: "network" });
@@ -401,15 +406,30 @@ describe("WhatsAppLinkSurface: links that are not finished", () => {
 
   it("keeps one pending link per person: a new Add stops the one before it", async () => {
     const ctx = setup();
-    await ctx.surface.startLink({ spaceId: "space-1", userId: "user-1", botId: "bot-1" });
-    await ctx.surface.startLink({ spaceId: "space-1", userId: "user-1", botId: "bot-1" });
+    await ctx.surface.startLink({
+      spaceId: "space-1",
+      userId: "user-1",
+      botId: "bot-1",
+      mode: "assistant",
+    });
+    await ctx.surface.startLink({
+      spaceId: "space-1",
+      userId: "user-1",
+      botId: "bot-1",
+      mode: "assistant",
+    });
     await vi.waitFor(() => expect(ctx.clients[0]?.client.connected).toBe(false));
     expect(ctx.clients[1]?.client.connected).toBe(true);
   });
 
   it("stops a link nobody finished once its time is up", async () => {
     const ctx = setup();
-    await ctx.surface.startLink({ spaceId: "space-1", userId: "user-1", botId: "bot-1" });
+    await ctx.surface.startLink({
+      spaceId: "space-1",
+      userId: "user-1",
+      botId: "bot-1",
+      mode: "assistant",
+    });
     await vi.advanceTimersByTimeAsync(11 * 60_000);
     expect(ctx.clients[0]?.client.connected).toBe(false);
   });
@@ -505,6 +525,7 @@ describe("WhatsAppLinkSurface: linking a number again", () => {
       spaceId: "space-1",
       userId: "user-1",
       botId: "bot-1",
+      mode: "assistant",
     });
     const temporary = ctx.clients[2]?.client as ScriptedWhatsAppClient;
     await ctx.clients[2]?.auth.set("creds", "fresh-session");
