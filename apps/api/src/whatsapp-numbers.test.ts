@@ -22,6 +22,7 @@ const row = (over: Record<string, unknown> = {}) => ({
   status: "active",
   pausedAt: null,
   visitorConnectors: [] as string[],
+  mode: "service",
   bot: { name: "Support" },
   ...over,
 });
@@ -93,13 +94,16 @@ describe("WhatsApp numbers: availability", () => {
 describe("WhatsApp numbers: linking", () => {
   it("links only to an agent the caller owns in their space", async () => {
     const owned = setup();
-    expect(await startWhatsAppLink(owned.deps, actor, { botId: "bot-1" })).toEqual({
+    expect(
+      await startWhatsAppLink(owned.deps, actor, { botId: "bot-1", mode: "assistant" }),
+    ).toEqual({
       linkId: "link-1",
     });
     expect(owned.whatsapp?.startLink).toHaveBeenCalledWith({
       spaceId: "space-1",
       userId: "user-1",
       botId: "bot-1",
+      mode: "assistant",
     });
     expect(owned.prisma.bot.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -112,7 +116,9 @@ describe("WhatsApp numbers: linking", () => {
       }),
     );
     const foreign = setup({ ownsBot: false });
-    await expect(startWhatsAppLink(foreign.deps, actor, { botId: "bot-9" })).rejects.toMatchObject({
+    await expect(
+      startWhatsAppLink(foreign.deps, actor, { botId: "bot-9", mode: "assistant" }),
+    ).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
     expect(foreign.whatsapp?.startLink).not.toHaveBeenCalled();
@@ -144,6 +150,7 @@ describe("WhatsApp numbers: list", () => {
           botName: "Support",
           status: "active",
           paused: true,
+          mode: "service",
           visitorConnectors: ["linear"],
         },
       ],
@@ -193,6 +200,14 @@ describe("WhatsApp numbers: update", () => {
       updateWhatsAppNumber(bad.deps, actor, { id: "inst-1", visitorConnectors: ["gmail"] }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(bad.installationUpdate).not.toHaveBeenCalled();
+  });
+
+  it("switches a number between assistant and service", async () => {
+    const { deps, prisma } = setup();
+    await updateWhatsAppNumber(deps, actor, { id: "inst-1", mode: "assistant" });
+    expect(prisma.messagingInstallation.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { mode: "assistant" } }),
+    );
   });
 
   it("pauses and resumes through the surface", async () => {

@@ -52,7 +52,10 @@ import { AppCatalogGrid } from "./AppCatalogGrid";
 import { ChatAppsRow } from "./ChatAppsRow";
 import { SkillsStore } from "./SkillsStore";
 import { StoreInstalledApps } from "./StoreInstalledApps";
-import { WhatsAppNumbers } from "./WhatsAppNumbers";
+import { WhatsAppApp, WhatsAppListRow } from "./WhatsAppNumbers";
+
+/** The chat-app key of linked WhatsApp numbers, which have their own screen in the Store. */
+const WHATSAPP_APP = "whatsapp-web";
 
 function ConnectorIcon({ name, logo }: { name: string; logo?: string | null }) {
   return logo ? (
@@ -149,6 +152,10 @@ export function PluginsOverlay({
         .map((identity) => identity.provider),
     ),
   ].map((provider) => ({ provider, label: providerLabel(provider) }));
+  const whatsappNumbers = useQuery(queries.messaging.whatsapp.numbers.list.queryOptions()).data;
+  if (whatsappNumbers?.numbers.length) {
+    chatApps.push({ provider: WHATSAPP_APP, label: "WhatsApp" });
+  }
   const mcpError = mcpQuery.error ? errorText(mcpQuery.error, t`Could not load MCP servers`) : null;
   async function loadIntegrations() {
     // The catalog call reconciles connection rows, so list them after it settles.
@@ -906,28 +913,30 @@ export function PluginsOverlay({
               </section>
             ) : null}
 
-            {chatDetail ? (
-              <div className="space-y-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground"
-                  aria-label={t`Back`}
-                  onClick={() => setChatDetail(null)}
-                >
-                  <ChevronLeft />
-                </Button>
-                <ChatAppsRow botId={activeBotId ?? undefined} query="" only={chatDetail} />
-              </div>
+            {chatDetail === WHATSAPP_APP ? (
+              <WhatsAppApp botId={activeBotId ?? undefined} onBack={() => setChatDetail(null)} />
+            ) : chatDetail ? (
+              <ChatAppsRow
+                botId={activeBotId ?? undefined}
+                query=""
+                only={chatDetail}
+                onBack={() => setChatDetail(null)}
+              />
             ) : detailItem ? (
               renderDetail(detailItem)
             ) : (
               <>
-                <ChatAppsRow botId={activeBotId ?? undefined} query={query} connectedInSidebar />
-                {!query.trim() || "whatsapp".includes(query.trim().toLowerCase()) ? (
-                  <WhatsAppNumbers botId={activeBotId ?? undefined} />
-                ) : null}
+                <div className="mb-6 space-y-1">
+                  <ChatAppsRow
+                    botId={activeBotId ?? undefined}
+                    query={query}
+                    onOpen={setChatDetail}
+                    connectedInSidebar
+                  />
+                  {!query.trim() || "whatsapp".includes(query.trim().toLowerCase()) ? (
+                    <WhatsAppListRow onOpen={() => setChatDetail(WHATSAPP_APP)} />
+                  ) : null}
+                </div>
                 <AppCatalogGrid
                   query={query}
                   servers={mcpServers}

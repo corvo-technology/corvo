@@ -161,6 +161,10 @@ msgstr "Computadora de {botName}"
 msgid "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
 msgstr "{commandVariable} está reservada y no puede usarse como variable de comando. Elige otro nombre."
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "{count, plural, one {# number} other {# numbers}}"
+msgstr "{count, plural, one {# número} other {# números}}"
+
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# fila} other {# filas}}"
@@ -546,7 +550,6 @@ msgstr "Actividad"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/ScratchpadSection.tsx
 #: src/pages/shell/agent-import.tsx
-#: src/pages/WhatsAppNumbers.tsx
 msgid "Add"
 msgstr "Agregar"
 
@@ -657,6 +660,10 @@ msgstr "Agregar elemento"
 msgid "Add MCP server"
 msgstr "Agregar servidor MCP"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Add number"
+msgstr "Añadir número"
+
 #: src/pages/ScratchpadSection.tsx
 msgid "Add open work"
 msgstr "Añadir trabajo pendiente"
@@ -741,6 +748,7 @@ msgstr "Avanzado..."
 
 #: src/pages/AddStepDialog.tsx
 #: src/pages/NewRoutineDialog.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Agent"
 msgstr "Agente"
 
@@ -886,6 +894,18 @@ msgstr "Respondido"
 #: src/components/AskCard.tsx
 msgid "Answered: {answer}"
 msgstr "Respondido: {answer}"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers"
+msgstr "Responde"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers anyone who writes to this number."
+msgstr "Responde a cualquiera que escriba a este número."
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers your own chat with yourself."
+msgstr "Responde solo en tu chat contigo mismo."
 
 #: src/pages/Onboarding.tsx
 msgid "Anthropic API"
@@ -1098,6 +1118,7 @@ msgstr "Estudio de avatares"
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/SquadPage.tsx
+#: src/pages/StoreAppHeader.tsx
 #: src/pages/WikiBrowser.tsx
 msgid "Back"
 msgstr "Atrás"
@@ -2533,6 +2554,10 @@ msgstr "Color personalizado"
 #: src/pages/shell/bot-credentials.tsx
 msgid "Custom header"
 msgstr "Encabezado personalizado"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Customer service"
+msgstr "Atención al cliente"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Customer support"
@@ -4110,6 +4135,7 @@ msgstr "Los créditos mensuales caducan en la renovación. Las recargas no caduc
 
 #: src/components/RailMore.tsx
 #: src/pages/shell/message-hover-actions.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "More"
 msgstr "Más"
 
@@ -4152,6 +4178,10 @@ msgstr "Silenciar"
 #: src/components/call/CallCard.tsx
 msgid "Muted"
 msgstr "Silenciado"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "My assistant"
+msgstr "Mi asistente"
 
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -4771,6 +4801,7 @@ msgstr "Pausar"
 
 #: src/lib/routine-trigger.ts
 #: src/pages/shell/import-status.ts
+#: src/pages/WhatsAppNumbers.tsx
 #: src/pages/Workflows.tsx
 msgid "Paused"
 msgstr "En pausa"
@@ -5742,6 +5773,10 @@ msgstr "Mostrar más"
 #: src/components/I18nBootstrap.tsx
 msgid "Show password"
 msgstr "Mostrar contraseña"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Show QR code"
+msgstr "Mostrar código QR"
 
 #: src/pages/GroupPanel.tsx
 msgid "Show selected"

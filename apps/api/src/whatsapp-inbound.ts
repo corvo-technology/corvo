@@ -40,10 +40,12 @@ export function createWhatsAppInboundHandler(deps: WhatsAppInboundDeps) {
     const installation = await runAsSystem("read linked whatsapp number", () =>
       deps.prisma.messagingInstallation.findUnique({
         where: { id: event.installationId },
-        select: { id: true, userId: true, spaceId: true, botId: true, status: true },
+        select: { id: true, userId: true, spaceId: true, botId: true, status: true, mode: true },
       }),
     );
     if (installation?.status !== "active") return;
+    // An assistant number is the owner's alone: nobody else is answered, recorded or given a thread.
+    if (installation.mode === "assistant" && event.audience !== "owner") return;
     if (event.audience === "owner") return handleOwner(deps, installation, event);
     if (event.audience === "visitor") return handleVisitor(deps, installation, event);
     return handleRecord(deps, installation, event);

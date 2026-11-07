@@ -70,7 +70,14 @@ beforeEach(() => {
 });
 
 async function mount(
-  props: { botId?: string; query?: string; only?: string; connectedInSidebar?: boolean } = {},
+  props: {
+    botId?: string;
+    query?: string;
+    only?: string;
+    connectedInSidebar?: boolean;
+    onOpen?: (provider: string) => void;
+    onBack?: () => void;
+  } = {},
 ) {
   const host = document.createElement("div");
   document.body.append(host);
@@ -83,6 +90,8 @@ async function mount(
           botId={"botId" in props ? props.botId : "bot-1"}
           query={props.query ?? ""}
           only={props.only}
+          onOpen={props.onOpen}
+          onBack={props.onBack}
           connectedInSidebar={props.connectedInSidebar}
         />
       </QueryClientProvider>,
@@ -96,9 +105,21 @@ async function mount(
 const button = (host: HTMLElement, text: string) =>
   Array.from(host.querySelectorAll("button")).find((item) => item.textContent === text);
 
-it("opens Telegram with the code attached when Connect is pressed", async () => {
-  const { host, unmount } = await mount();
+it("lists each chat app as one line that opens its own screen, with no code flow in the list", async () => {
+  const onOpen = vi.fn();
+  const { host, unmount } = await mount({ onOpen });
   expect(host.querySelector('[data-testid="chat-app-slack"]')).toBeNull();
+  expect(button(host, "Connect")).toBeUndefined();
+  await act(async () =>
+    (host.querySelector('[data-testid="chat-app-telegram"]') as HTMLElement).click(),
+  );
+  expect(onOpen).toHaveBeenCalledWith("telegram");
+  expect(linkStart).not.toHaveBeenCalled();
+  await unmount();
+});
+
+it("opens Telegram with the code attached when Connect is pressed on its screen", async () => {
+  const { host, unmount } = await mount({ only: "telegram" });
   await act(async () => button(host, "Connect")?.click());
   expect(linkStart).toHaveBeenCalledWith({ botId: "bot-1" });
   expect(open).toHaveBeenCalledWith(
@@ -112,7 +133,7 @@ it("opens Telegram with the code attached when Connect is pressed", async () => 
 
 it("falls back to the code alone while the bot's username is unknown", async () => {
   status.current = { ...status.current, addresses: {} };
-  const { host, unmount } = await mount();
+  const { host, unmount } = await mount({ only: "telegram" });
   await act(async () => button(host, "Connect")?.click());
   expect(open).not.toHaveBeenCalled();
   expect(button(host, "Open Telegram")).toBeUndefined();
@@ -122,7 +143,7 @@ it("falls back to the code alone while the bot's username is unknown", async () 
 
 it("uses the bot's username learned after the screen loaded", async () => {
   status.current = { ...status.current, addresses: {} };
-  const { host, unmount } = await mount();
+  const { host, unmount } = await mount({ only: "telegram" });
   status.current = { ...status.current, addresses: { telegram: "@corvo_example_bot" } };
   await act(async () => button(host, "Connect")?.click());
   expect(open).toHaveBeenCalledWith(
@@ -138,7 +159,7 @@ it("shows Connected with Unlink once this bot is linked", async () => {
     ...status.current,
     identities: [{ id: "mi-1", provider: "telegram", botId: "bot-1", address: "424242" }],
   };
-  const { host, unmount } = await mount();
+  const { host, unmount } = await mount({ only: "telegram" });
   expect(button(host, "Connect")).toBeUndefined();
   expect(host.textContent).toContain("Connected");
   await act(async () => button(host, "Unlink")?.click());
@@ -153,6 +174,15 @@ it("shows nothing without a bot or when the search does not match", async () => 
   const noMatch = await mount({ query: "linear" });
   expect(noMatch.host.querySelector('[data-testid="chat-apps"]')).toBeNull();
   await noMatch.unmount();
+});
+
+it("goes back from a chat app's own screen", async () => {
+  const onBack = vi.fn();
+  const { host, unmount } = await mount({ only: "telegram", onBack });
+  const back = Array.from(host.querySelectorAll("button"))[0] as HTMLButtonElement;
+  await act(async () => back.click());
+  expect(onBack).toHaveBeenCalled();
+  await unmount();
 });
 
 it("shows just the chat app it is asked for", async () => {

@@ -181,6 +181,7 @@ export class WhatsAppLinkSurface implements MessagingSurface {
     spaceId: string;
     userId: string;
     botId: string;
+    mode: "assistant" | "service";
   }): Promise<{ linkId: string }> {
     const now = this.now().getTime();
     // One pending link per person: Add again stops the one before it.
@@ -233,7 +234,7 @@ export class WhatsAppLinkSurface implements MessagingSurface {
   private async finishLink(
     link: PendingLink,
     number: string,
-    input: { spaceId: string; userId: string; botId: string },
+    input: { spaceId: string; userId: string; botId: string; mode: "assistant" | "service" },
   ): Promise<void> {
     try {
       const workspaceId = number.replace(/\D/g, "");
@@ -250,6 +251,7 @@ export class WhatsAppLinkSurface implements MessagingSurface {
       const id = existing?.id ?? this.newId();
       const data = {
         botId: input.botId,
+        mode: input.mode,
         status: "active",
         pausedAt: null,
         resumedAt: null,

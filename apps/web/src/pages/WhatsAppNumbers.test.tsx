@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { WhatsAppNumbers } from "./WhatsAppNumbers";
+import { WhatsAppApp, WhatsAppListRow } from "./WhatsAppNumbers";
 
 const numbers = vi.hoisted(() => ({
   current: { available: true, numbers: [] } as {
@@ -79,36 +79,84 @@ vi.mock("@lingui/react/macro", () => ({
 }));
 vi.mock("@corvo/ui-web", async () => {
   const { createElement } = await import("react");
+  type Props = { children?: ReactNode } & Record<string, unknown>;
+  const plain =
+    (tag: string) =>
+    ({ children, ...rest }: Props) =>
+      createElement(tag, rest, children);
   return {
-    Button: ({
+    Button: ({ children, onClick, disabled, ...rest }: Props) =>
+      createElement("button", { onClick, disabled, ...rest }, children),
+    Dialog: ({ open, children }: Props & { open?: boolean }) => (open ? children : null),
+    DialogContent: plain("div"),
+    DialogHeader: plain("div"),
+    DialogTitle: plain("h2"),
+    Disclosure: ({ summary, children }: Props & { summary?: ReactNode }) =>
+      createElement("div", null, createElement("div", null, summary), children),
+    DropdownMenu: plain("div"),
+    DropdownMenuContent: plain("div"),
+    DropdownMenuItem: ({ children, onClick }: Props & { onClick?: () => void }) =>
+      createElement("button", { onClick }, children),
+    DropdownMenuTrigger: ({ "aria-label": label, children }: Props) =>
+      createElement("button", { "aria-label": label as string }, children),
+    OptionSelect: ({
+      options,
+      value,
+      onValueChange,
+      "aria-label": label,
+    }: {
+      options: Array<{ value: string; label: string }>;
+      value: string | null;
+      onValueChange: (value: string) => void;
+      "aria-label"?: string;
+    }) =>
+      createElement(
+        "select",
+        {
+          "aria-label": label,
+          value: value ?? "",
+          onChange: (event: { target: { value: string } }) => onValueChange(event.target.value),
+        },
+        options.map((option) =>
+          createElement("option", { key: option.value, value: option.value }, option.label),
+        ),
+      ),
+    RadioGroup: ({
       children,
-      onClick,
-      disabled,
-      ...rest
-    }: { children?: ReactNode; onClick?: () => void; disabled?: boolean } & Record<
-      string,
-      unknown
-    >) => createElement("button", { onClick, disabled, ...rest }, children),
+      value,
+      onValueChange,
+    }: Props & { value?: string; onValueChange?: (value: string) => void }) =>
+      createElement(
+        "div",
+        {
+          "data-value": value,
+          onClick: (event: { target: HTMLElement }) => {
+            const choice = (event.target as HTMLElement).closest("[data-choice]");
+            if (choice) onValueChange?.(choice.getAttribute("data-choice") ?? "");
+          },
+        },
+        children,
+      ),
+    RadioGroupItem: ({ value, ...rest }: { value: string } & Record<string, unknown>) =>
+      createElement("span", { "data-choice": value, ...rest }),
   };
 });
 
 let root: ReturnType<typeof createRoot> | undefined;
 let host: HTMLDivElement;
 
-async function render(botId: string | undefined = "bot-1") {
+async function render(node: ReactNode) {
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   await act(async () => {
-    root?.render(
-      <QueryClientProvider client={client}>
-        <WhatsAppNumbers botId={botId} />
-      </QueryClientProvider>,
-    );
+    root?.render(<QueryClientProvider client={client}>{node}</QueryClientProvider>);
   });
   await settle();
 }
+const renderApp = (botId: string | undefined = "bot-1") =>
+  render(<WhatsAppApp botId={botId} onBack={() => undefined} />);
 /** Lets queued queries and effects run; a few rounds, since each one schedules the next. */
 async function settle() {
   for (let round = 0; round < 6; round += 1) {
@@ -117,7 +165,6 @@ async function settle() {
     });
   }
 }
-const flush = settle;
 const button = (text: string) =>
   [...host.querySelectorAll("button")].find((b) => b.textContent?.trim() === text) as
     | HTMLButtonElement
@@ -126,6 +173,21 @@ const click = async (text: string) => {
   await act(async () => {
     button(text)?.click();
     await Promise.resolve();
+  });
+  await settle();
+};
+const choose = async (selector: string) => {
+  await act(async () => {
+    (host.querySelector(selector) as HTMLElement | null)?.click();
+  });
+  await settle();
+};
+const pick = async (label: string, value: string) => {
+  const select = host.querySelector(`select[aria-label='${label}']`) as HTMLSelectElement;
+  await act(async () => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
+    setter?.call(select, value);
+    select.dispatchEvent(new Event("change", { bubbles: true }));
   });
   await settle();
 };
@@ -151,65 +213,86 @@ const NUMBER = {
   botName: "Support",
   status: "active",
   paused: false,
+  mode: "assistant",
   visitorConnectors: [] as string[],
 };
 
-it("shows nothing where linked numbers are not available", async () => {
+async function openDialog() {
+  await renderApp("bot-2");
+  await click("Add number");
+}
+
+it("shows nothing in the list where linked numbers are not available", async () => {
   numbers.current = { available: false, numbers: [] };
-  await render();
+  await render(<WhatsAppListRow onOpen={() => undefined} />);
   expect(host.textContent).toBe("");
 });
 
-it("shows the WhatsApp card with Add, and nothing else before it is used", async () => {
-  await render();
+it("lists WhatsApp as one line that opens its own screen", async () => {
+  numbers.current = { available: true, numbers: [NUMBER] };
+  const open = vi.fn();
+  await render(<WhatsAppListRow onOpen={open} />);
   expect(host.textContent).toContain("WhatsApp");
-  expect(button("Add")).toBeDefined();
+  expect(host.textContent).not.toContain("+•••••••0100");
+  (host.querySelector("button") as HTMLButtonElement).click();
+  expect(open).toHaveBeenCalled();
+});
+
+it("offers one way to add a number before any is linked, with no warning yet", async () => {
+  await renderApp();
+  expect(button("Add number")).toBeDefined();
   expect(host.textContent).not.toContain("official API");
 });
 
-it("shows the warning and the QR code after Add, for the open agent", async () => {
-  await render("bot-2");
-  await click("Add");
-  await flush();
-  expect(linkStart).toHaveBeenCalledWith({ botId: "bot-2" });
+it("asks for the agent's role and shows the warning once, before the QR code", async () => {
+  await openDialog();
   expect(host.textContent).toContain(
     "This uses WhatsApp without the official API. WhatsApp can ban the number.",
   );
+  expect(host.querySelector("svg[data-testid='whatsapp-qr']")).toBeNull();
+  await click("Show QR code");
+  // The open agent and the safe role are what is chosen when nothing is changed.
+  expect(linkStart).toHaveBeenCalledWith({ botId: "bot-2", mode: "assistant" });
   expect(host.querySelector("svg[data-testid='whatsapp-qr']")).not.toBeNull();
+  expect(host.textContent).not.toContain("official API");
 });
 
-it("closes the flow and lists the number once it is linked", async () => {
-  await render();
-  await click("Add");
-  await flush();
+it("links a number for customer service, with the agent that was picked", async () => {
+  await openDialog();
+  await choose("[data-testid='whatsapp-mode-service']");
+  await pick("Agent", "bot-1");
+  await click("Show QR code");
+  expect(linkStart).toHaveBeenCalledWith({ botId: "bot-1", mode: "service" });
+});
+
+it("closes the dialog and lists the number once it is linked", async () => {
+  await openDialog();
+  await click("Show QR code");
   linkStatus.current = { state: "linked", number: "+•••••••0100" };
   numbers.current = { available: true, numbers: [NUMBER] };
   await act(async () => {
     await new Promise((done) => setTimeout(done, 1_800));
   });
   await settle();
-  expect(host.querySelector("svg[data-testid='whatsapp-qr']")).toBeNull();
-  expect(host.textContent).not.toContain("official API");
+  expect(host.querySelector("[data-testid='whatsapp-link']")).toBeNull();
   expect(host.textContent).toContain("+•••••••0100");
 });
 
 it("reports a link that failed, and lets the person try again", async () => {
-  await render();
-  await click("Add");
-  await flush();
+  await openDialog();
+  await click("Show QR code");
   linkStatus.current = { state: "failed" };
   await act(async () => {
     await new Promise((done) => setTimeout(done, 1_800));
   });
   await settle();
   expect(host.textContent).toContain("Could not connect");
-  expect(button("Add")).toBeDefined();
+  expect(button("Show QR code")).toBeDefined();
 });
 
-it("cancels the flow without linking", async () => {
-  await render();
-  await click("Add");
-  await flush();
+it("cancels the link, on the server too, without linking", async () => {
+  await openDialog();
+  await click("Show QR code");
   await click("Cancel");
   expect(host.querySelector("svg[data-testid='whatsapp-qr']")).toBeNull();
   // The connection to WhatsApp is stopped on the server too, not just hidden here.
@@ -218,46 +301,64 @@ it("cancels the flow without linking", async () => {
 
 it("lists a number with its agent and pauses, resumes and disconnects it", async () => {
   numbers.current = { available: true, numbers: [NUMBER] };
-  await render();
-  expect(host.textContent).toContain("Support");
+  await renderApp();
+  expect(host.querySelector("select[aria-label='Agent']")).not.toBeNull();
+  // The list is read again after a change, so it already holds what the server will say.
+  numbers.current = { available: true, numbers: [{ ...NUMBER, paused: true }] };
   await click("Pause");
   expect(update).toHaveBeenCalledWith({ id: "inst-1", paused: true });
-  numbers.current = { available: true, numbers: [{ ...NUMBER, paused: true }] };
-  await settle();
+  expect(host.textContent).toContain("Paused");
+  await click("Resume");
+  expect(update).toHaveBeenCalledWith({ id: "inst-1", paused: false });
   await click("Disconnect");
   expect(disconnect).toHaveBeenCalledWith({ id: "inst-1" });
 });
 
 it("moves a number to another agent", async () => {
   numbers.current = { available: true, numbers: [NUMBER] };
-  await render();
-  await click("Sales");
+  await renderApp();
+  await pick("Agent", "bot-2");
   expect(update).toHaveBeenCalledWith({ id: "inst-1", botId: "bot-2" });
 });
 
-it("offers only the connected apps for visitors, and saves the ticked ones", async () => {
-  numbers.current = { available: true, numbers: [{ ...NUMBER, visitorConnectors: ["linear"] }] };
-  await render();
+it("switches who a number answers", async () => {
+  numbers.current = { available: true, numbers: [NUMBER] };
+  await renderApp();
+  await pick("Answers", "service");
+  expect(update).toHaveBeenCalledWith({ id: "inst-1", mode: "service" });
+});
+
+it("offers visitor apps only on a customer service number, and saves the ticked ones", async () => {
+  numbers.current = { available: true, numbers: [NUMBER] };
+  await renderApp();
+  expect(host.textContent).not.toContain("Apps visitors can use");
+  await act(async () => root?.unmount());
+  host.remove();
+  numbers.current = {
+    available: true,
+    numbers: [{ ...NUMBER, mode: "service", visitorConnectors: ["linear"] }],
+  };
+  await renderApp();
   expect(button("Linear")?.getAttribute("aria-pressed")).toBe("true");
   expect(button("Gmail")?.getAttribute("aria-pressed")).toBe("false");
   await click("Gmail");
   expect(update).toHaveBeenCalledWith({ id: "inst-1", visitorConnectors: ["gmail", "linear"] });
 });
 
-it("marks a number WhatsApp logged out", async () => {
+it("marks a number WhatsApp logged out, with nothing to pause", async () => {
   numbers.current = { available: true, numbers: [{ ...NUMBER, status: "disconnected" }] };
-  await render();
+  await renderApp();
   expect(host.textContent).toContain("Disconnected");
+  expect(button("Pause")).toBeUndefined();
 });
 
-it("names each number's buttons with the number, so a screen reader can tell several apart", async () => {
+it("names each number's menu with the number, so a screen reader can tell several apart", async () => {
   numbers.current = {
     available: true,
     numbers: [NUMBER, { ...NUMBER, id: "inst-2", number: "+•••••••0200" }],
   };
-  await render();
+  await renderApp();
   const names = [...host.querySelectorAll("button")].map((b) => b.getAttribute("aria-label"));
-  expect(names).toContain("Pause +•••••••0100");
-  expect(names).toContain("Pause +•••••••0200");
-  expect(names).toContain("Disconnect +•••••••0200");
+  expect(names).toContain("More +•••••••0100");
+  expect(names).toContain("More +•••••••0200");
 });

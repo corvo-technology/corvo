@@ -161,6 +161,10 @@ msgstr "{botName}のコンピューター"
 msgid "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
 msgstr "{commandVariable}は予約済みのため、コマンド変数として使用できません。別の名前を選んでください。"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "{count, plural, one {# number} other {# numbers}}"
+msgstr "{count, plural, other {#件の番号}}"
+
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 行} other {# 行}}"
@@ -546,7 +550,6 @@ msgstr "アクティビティ"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/ScratchpadSection.tsx
 #: src/pages/shell/agent-import.tsx
-#: src/pages/WhatsAppNumbers.tsx
 msgid "Add"
 msgstr "追加"
 
@@ -657,6 +660,10 @@ msgstr "項目を追加"
 msgid "Add MCP server"
 msgstr "MCPサーバーを追加"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Add number"
+msgstr "番号を追加"
+
 #: src/pages/ScratchpadSection.tsx
 msgid "Add open work"
 msgstr "未完了の作業を追加"
@@ -741,6 +748,7 @@ msgstr "詳細設定..."
 
 #: src/pages/AddStepDialog.tsx
 #: src/pages/NewRoutineDialog.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Agent"
 msgstr "エージェント"
 
@@ -886,6 +894,18 @@ msgstr "回答済み"
 #: src/components/AskCard.tsx
 msgid "Answered: {answer}"
 msgstr "回答済み: {answer}"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers"
+msgstr "応答先"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers anyone who writes to this number."
+msgstr "この番号にメッセージを送る人全員に応答します。"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers your own chat with yourself."
+msgstr "自分自身とのチャットにだけ応答します。"
 
 #: src/pages/Onboarding.tsx
 msgid "Anthropic API"
@@ -1098,6 +1118,7 @@ msgstr "Avatar Studio"
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/SquadPage.tsx
+#: src/pages/StoreAppHeader.tsx
 #: src/pages/WikiBrowser.tsx
 msgid "Back"
 msgstr "戻る"
@@ -2533,6 +2554,10 @@ msgstr "カスタムカラー"
 #: src/pages/shell/bot-credentials.tsx
 msgid "Custom header"
 msgstr "カスタムヘッダー"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Customer service"
+msgstr "カスタマーサービス"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Customer support"
@@ -4110,6 +4135,7 @@ msgstr "月間クレジットは更新時に失効します。追加購入分は
 
 #: src/components/RailMore.tsx
 #: src/pages/shell/message-hover-actions.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "More"
 msgstr "その他"
 
@@ -4152,6 +4178,10 @@ msgstr "ミュート"
 #: src/components/call/CallCard.tsx
 msgid "Muted"
 msgstr "ミュート中"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "My assistant"
+msgstr "自分のアシスタント"
 
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -4771,6 +4801,7 @@ msgstr "一時停止"
 
 #: src/lib/routine-trigger.ts
 #: src/pages/shell/import-status.ts
+#: src/pages/WhatsAppNumbers.tsx
 #: src/pages/Workflows.tsx
 msgid "Paused"
 msgstr "一時停止中"
@@ -5742,6 +5773,10 @@ msgstr "さらに表示"
 #: src/components/I18nBootstrap.tsx
 msgid "Show password"
 msgstr "パスワードを表示"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Show QR code"
+msgstr "QRコードを表示"
 
 #: src/pages/GroupPanel.tsx
 msgid "Show selected"

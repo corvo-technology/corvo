@@ -161,6 +161,10 @@ msgstr "{botName}’s computer"
 msgid "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
 msgstr "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "{count, plural, one {# number} other {# numbers}}"
+msgstr "{count, plural, one {# number} other {# numbers}}"
+
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# row} other {# rows}}"
@@ -546,7 +550,6 @@ msgstr "Activity"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/ScratchpadSection.tsx
 #: src/pages/shell/agent-import.tsx
-#: src/pages/WhatsAppNumbers.tsx
 msgid "Add"
 msgstr "Add"
 
@@ -657,6 +660,10 @@ msgstr "Add item"
 msgid "Add MCP server"
 msgstr "Add MCP server"
 
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Add number"
+msgstr "Add number"
+
 #: src/pages/ScratchpadSection.tsx
 msgid "Add open work"
 msgstr "Add open work"
@@ -741,6 +748,7 @@ msgstr "Advanced..."
 
 #: src/pages/AddStepDialog.tsx
 #: src/pages/NewRoutineDialog.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "Agent"
 msgstr "Agent"
 
@@ -886,6 +894,18 @@ msgstr "Answered"
 #: src/components/AskCard.tsx
 msgid "Answered: {answer}"
 msgstr "Answered: {answer}"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers"
+msgstr "Answers"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers anyone who writes to this number."
+msgstr "Answers anyone who writes to this number."
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Answers your own chat with yourself."
+msgstr "Answers your own chat with yourself."
 
 #: src/pages/Onboarding.tsx
 msgid "Anthropic API"
@@ -1098,6 +1118,7 @@ msgstr "Avatar Studio"
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/SquadPage.tsx
+#: src/pages/StoreAppHeader.tsx
 #: src/pages/WikiBrowser.tsx
 msgid "Back"
 msgstr "Back"
@@ -2533,6 +2554,10 @@ msgstr "Custom color"
 #: src/pages/shell/bot-credentials.tsx
 msgid "Custom header"
 msgstr "Custom header"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Customer service"
+msgstr "Customer service"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Customer support"
@@ -4110,6 +4135,7 @@ msgstr "Monthly credits expire at renewal. Top-ups do not expire."
 
 #: src/components/RailMore.tsx
 #: src/pages/shell/message-hover-actions.tsx
+#: src/pages/WhatsAppNumbers.tsx
 msgid "More"
 msgstr "More"
 
@@ -4152,6 +4178,10 @@ msgstr "Mute"
 #: src/components/call/CallCard.tsx
 msgid "Muted"
 msgstr "Muted"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "My assistant"
+msgstr "My assistant"
 
 #: src/components/teach/SkillDraftCard.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -4771,6 +4801,7 @@ msgstr "Pause"
 
 #: src/lib/routine-trigger.ts
 #: src/pages/shell/import-status.ts
+#: src/pages/WhatsAppNumbers.tsx
 #: src/pages/Workflows.tsx
 msgid "Paused"
 msgstr "Paused"
@@ -5742,6 +5773,10 @@ msgstr "Show more"
 #: src/components/I18nBootstrap.tsx
 msgid "Show password"
 msgstr "Show password"
+
+#: src/pages/WhatsAppNumbers.tsx
+msgid "Show QR code"
+msgstr "Show QR code"
 
 #: src/pages/GroupPanel.tsx
 msgid "Show selected"
